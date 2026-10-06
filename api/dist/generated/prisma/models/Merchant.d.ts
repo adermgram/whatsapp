@@ -1,0 +1,1493 @@
+import type * as runtime from "@prisma/client/runtime/client";
+import type * as Prisma from "../internal/prismaNamespace.js";
+export type MerchantModel = runtime.Types.Result.DefaultSelection<Prisma.$MerchantPayload>;
+export type AggregateMerchant = {
+    _count: MerchantCountAggregateOutputType | null;
+    _avg: MerchantAvgAggregateOutputType | null;
+    _sum: MerchantSumAggregateOutputType | null;
+    _min: MerchantMinAggregateOutputType | null;
+    _max: MerchantMaxAggregateOutputType | null;
+};
+export type MerchantAvgAggregateOutputType = {
+    maxDiscountPercent: number | null;
+    receiptCounter: number | null;
+    orderCounter: number | null;
+};
+export type MerchantSumAggregateOutputType = {
+    maxDiscountPercent: number | null;
+    receiptCounter: number | null;
+    orderCounter: number | null;
+};
+export type MerchantMinAggregateOutputType = {
+    id: string | null;
+    businessName: string | null;
+    ownerName: string | null;
+    ownerPhone: string | null;
+    ownerEmail: string | null;
+    passwordHash: string | null;
+    maxDiscountPercent: number | null;
+    aiEnabled: boolean | null;
+    paystackSecretEnc: string | null;
+    receiptCounter: number | null;
+    orderCounter: number | null;
+    createdAt: Date | null;
+    updatedAt: Date | null;
+};
+export type MerchantMaxAggregateOutputType = {
+    id: string | null;
+    businessName: string | null;
+    ownerName: string | null;
+    ownerPhone: string | null;
+    ownerEmail: string | null;
+    passwordHash: string | null;
+    maxDiscountPercent: number | null;
+    aiEnabled: boolean | null;
+    paystackSecretEnc: string | null;
+    receiptCounter: number | null;
+    orderCounter: number | null;
+    createdAt: Date | null;
+    updatedAt: Date | null;
+};
+export type MerchantCountAggregateOutputType = {
+    id: number;
+    businessName: number;
+    ownerName: number;
+    ownerPhone: number;
+    ownerEmail: number;
+    passwordHash: number;
+    maxDiscountPercent: number;
+    aiEnabled: number;
+    paystackSecretEnc: number;
+    receiptCounter: number;
+    orderCounter: number;
+    createdAt: number;
+    updatedAt: number;
+    _all: number;
+};
+export type MerchantAvgAggregateInputType = {
+    maxDiscountPercent?: true;
+    receiptCounter?: true;
+    orderCounter?: true;
+};
+export type MerchantSumAggregateInputType = {
+    maxDiscountPercent?: true;
+    receiptCounter?: true;
+    orderCounter?: true;
+};
+export type MerchantMinAggregateInputType = {
+    id?: true;
+    businessName?: true;
+    ownerName?: true;
+    ownerPhone?: true;
+    ownerEmail?: true;
+    passwordHash?: true;
+    maxDiscountPercent?: true;
+    aiEnabled?: true;
+    paystackSecretEnc?: true;
+    receiptCounter?: true;
+    orderCounter?: true;
+    createdAt?: true;
+    updatedAt?: true;
+};
+export type MerchantMaxAggregateInputType = {
+    id?: true;
+    businessName?: true;
+    ownerName?: true;
+    ownerPhone?: true;
+    ownerEmail?: true;
+    passwordHash?: true;
+    maxDiscountPercent?: true;
+    aiEnabled?: true;
+    paystackSecretEnc?: true;
+    receiptCounter?: true;
+    orderCounter?: true;
+    createdAt?: true;
+    updatedAt?: true;
+};
+export type MerchantCountAggregateInputType = {
+    id?: true;
+    businessName?: true;
+    ownerName?: true;
+    ownerPhone?: true;
+    ownerEmail?: true;
+    passwordHash?: true;
+    maxDiscountPercent?: true;
+    aiEnabled?: true;
+    paystackSecretEnc?: true;
+    receiptCounter?: true;
+    orderCounter?: true;
+    createdAt?: true;
+    updatedAt?: true;
+    _all?: true;
+};
+export type MerchantAggregateArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    where?: Prisma.MerchantWhereInput;
+    orderBy?: Prisma.MerchantOrderByWithRelationInput | Prisma.MerchantOrderByWithRelationInput[];
+    cursor?: Prisma.MerchantWhereUniqueInput;
+    take?: number;
+    skip?: number;
+    _count?: true | MerchantCountAggregateInputType;
+    _avg?: MerchantAvgAggregateInputType;
+    _sum?: MerchantSumAggregateInputType;
+    _min?: MerchantMinAggregateInputType;
+    _max?: MerchantMaxAggregateInputType;
+};
+export type GetMerchantAggregateType<T extends MerchantAggregateArgs> = {
+    [P in keyof T & keyof AggregateMerchant]: P extends '_count' | 'count' ? T[P] extends true ? number : Prisma.GetScalarType<T[P], AggregateMerchant[P]> : Prisma.GetScalarType<T[P], AggregateMerchant[P]>;
+};
+export type MerchantGroupByArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    where?: Prisma.MerchantWhereInput;
+    orderBy?: Prisma.MerchantOrderByWithAggregationInput | Prisma.MerchantOrderByWithAggregationInput[];
+    by: Prisma.MerchantScalarFieldEnum[] | Prisma.MerchantScalarFieldEnum;
+    having?: Prisma.MerchantScalarWhereWithAggregatesInput;
+    take?: number;
+    skip?: number;
+    _count?: MerchantCountAggregateInputType | true;
+    _avg?: MerchantAvgAggregateInputType;
+    _sum?: MerchantSumAggregateInputType;
+    _min?: MerchantMinAggregateInputType;
+    _max?: MerchantMaxAggregateInputType;
+};
+export type MerchantGroupByOutputType = {
+    id: string;
+    businessName: string;
+    ownerName: string;
+    ownerPhone: string;
+    ownerEmail: string;
+    passwordHash: string;
+    maxDiscountPercent: number;
+    aiEnabled: boolean;
+    paystackSecretEnc: string | null;
+    receiptCounter: number;
+    orderCounter: number;
+    createdAt: Date;
+    updatedAt: Date;
+    _count: MerchantCountAggregateOutputType | null;
+    _avg: MerchantAvgAggregateOutputType | null;
+    _sum: MerchantSumAggregateOutputType | null;
+    _min: MerchantMinAggregateOutputType | null;
+    _max: MerchantMaxAggregateOutputType | null;
+};
+export type GetMerchantGroupByPayload<T extends MerchantGroupByArgs> = Prisma.PrismaPromise<Array<Prisma.PickEnumerable<MerchantGroupByOutputType, T['by']> & {
+    [P in ((keyof T) & (keyof MerchantGroupByOutputType))]: P extends '_count' ? T[P] extends boolean ? number : Prisma.GetScalarType<T[P], MerchantGroupByOutputType[P]> : Prisma.GetScalarType<T[P], MerchantGroupByOutputType[P]>;
+}>>;
+export type MerchantWhereInput = {
+    AND?: Prisma.MerchantWhereInput | Prisma.MerchantWhereInput[];
+    OR?: Prisma.MerchantWhereInput[];
+    NOT?: Prisma.MerchantWhereInput | Prisma.MerchantWhereInput[];
+    id?: Prisma.StringFilter<"Merchant"> | string;
+    businessName?: Prisma.StringFilter<"Merchant"> | string;
+    ownerName?: Prisma.StringFilter<"Merchant"> | string;
+    ownerPhone?: Prisma.StringFilter<"Merchant"> | string;
+    ownerEmail?: Prisma.StringFilter<"Merchant"> | string;
+    passwordHash?: Prisma.StringFilter<"Merchant"> | string;
+    maxDiscountPercent?: Prisma.IntFilter<"Merchant"> | number;
+    aiEnabled?: Prisma.BoolFilter<"Merchant"> | boolean;
+    paystackSecretEnc?: Prisma.StringNullableFilter<"Merchant"> | string | null;
+    receiptCounter?: Prisma.IntFilter<"Merchant"> | number;
+    orderCounter?: Prisma.IntFilter<"Merchant"> | number;
+    createdAt?: Prisma.DateTimeFilter<"Merchant"> | Date | string;
+    updatedAt?: Prisma.DateTimeFilter<"Merchant"> | Date | string;
+    session?: Prisma.XOR<Prisma.WhatsAppSessionNullableScalarRelationFilter, Prisma.WhatsAppSessionWhereInput> | null;
+    authItems?: Prisma.WaAuthItemListRelationFilter;
+    products?: Prisma.ProductListRelationFilter;
+    customers?: Prisma.CustomerListRelationFilter;
+    conversations?: Prisma.ConversationListRelationFilter;
+    orders?: Prisma.OrderListRelationFilter;
+};
+export type MerchantOrderByWithRelationInput = {
+    id?: Prisma.SortOrder;
+    businessName?: Prisma.SortOrder;
+    ownerName?: Prisma.SortOrder;
+    ownerPhone?: Prisma.SortOrder;
+    ownerEmail?: Prisma.SortOrder;
+    passwordHash?: Prisma.SortOrder;
+    maxDiscountPercent?: Prisma.SortOrder;
+    aiEnabled?: Prisma.SortOrder;
+    paystackSecretEnc?: Prisma.SortOrderInput | Prisma.SortOrder;
+    receiptCounter?: Prisma.SortOrder;
+    orderCounter?: Prisma.SortOrder;
+    createdAt?: Prisma.SortOrder;
+    updatedAt?: Prisma.SortOrder;
+    session?: Prisma.WhatsAppSessionOrderByWithRelationInput;
+    authItems?: Prisma.WaAuthItemOrderByRelationAggregateInput;
+    products?: Prisma.ProductOrderByRelationAggregateInput;
+    customers?: Prisma.CustomerOrderByRelationAggregateInput;
+    conversations?: Prisma.ConversationOrderByRelationAggregateInput;
+    orders?: Prisma.OrderOrderByRelationAggregateInput;
+};
+export type MerchantWhereUniqueInput = Prisma.AtLeast<{
+    id?: string;
+    ownerEmail?: string;
+    AND?: Prisma.MerchantWhereInput | Prisma.MerchantWhereInput[];
+    OR?: Prisma.MerchantWhereInput[];
+    NOT?: Prisma.MerchantWhereInput | Prisma.MerchantWhereInput[];
+    businessName?: Prisma.StringFilter<"Merchant"> | string;
+    ownerName?: Prisma.StringFilter<"Merchant"> | string;
+    ownerPhone?: Prisma.StringFilter<"Merchant"> | string;
+    passwordHash?: Prisma.StringFilter<"Merchant"> | string;
+    maxDiscountPercent?: Prisma.IntFilter<"Merchant"> | number;
+    aiEnabled?: Prisma.BoolFilter<"Merchant"> | boolean;
+    paystackSecretEnc?: Prisma.StringNullableFilter<"Merchant"> | string | null;
+    receiptCounter?: Prisma.IntFilter<"Merchant"> | number;
+    orderCounter?: Prisma.IntFilter<"Merchant"> | number;
+    createdAt?: Prisma.DateTimeFilter<"Merchant"> | Date | string;
+    updatedAt?: Prisma.DateTimeFilter<"Merchant"> | Date | string;
+    session?: Prisma.XOR<Prisma.WhatsAppSessionNullableScalarRelationFilter, Prisma.WhatsAppSessionWhereInput> | null;
+    authItems?: Prisma.WaAuthItemListRelationFilter;
+    products?: Prisma.ProductListRelationFilter;
+    customers?: Prisma.CustomerListRelationFilter;
+    conversations?: Prisma.ConversationListRelationFilter;
+    orders?: Prisma.OrderListRelationFilter;
+}, "id" | "ownerEmail">;
+export type MerchantOrderByWithAggregationInput = {
+    id?: Prisma.SortOrder;
+    businessName?: Prisma.SortOrder;
+    ownerName?: Prisma.SortOrder;
+    ownerPhone?: Prisma.SortOrder;
+    ownerEmail?: Prisma.SortOrder;
+    passwordHash?: Prisma.SortOrder;
+    maxDiscountPercent?: Prisma.SortOrder;
+    aiEnabled?: Prisma.SortOrder;
+    paystackSecretEnc?: Prisma.SortOrderInput | Prisma.SortOrder;
+    receiptCounter?: Prisma.SortOrder;
+    orderCounter?: Prisma.SortOrder;
+    createdAt?: Prisma.SortOrder;
+    updatedAt?: Prisma.SortOrder;
+    _count?: Prisma.MerchantCountOrderByAggregateInput;
+    _avg?: Prisma.MerchantAvgOrderByAggregateInput;
+    _max?: Prisma.MerchantMaxOrderByAggregateInput;
+    _min?: Prisma.MerchantMinOrderByAggregateInput;
+    _sum?: Prisma.MerchantSumOrderByAggregateInput;
+};
+export type MerchantScalarWhereWithAggregatesInput = {
+    AND?: Prisma.MerchantScalarWhereWithAggregatesInput | Prisma.MerchantScalarWhereWithAggregatesInput[];
+    OR?: Prisma.MerchantScalarWhereWithAggregatesInput[];
+    NOT?: Prisma.MerchantScalarWhereWithAggregatesInput | Prisma.MerchantScalarWhereWithAggregatesInput[];
+    id?: Prisma.StringWithAggregatesFilter<"Merchant"> | string;
+    businessName?: Prisma.StringWithAggregatesFilter<"Merchant"> | string;
+    ownerName?: Prisma.StringWithAggregatesFilter<"Merchant"> | string;
+    ownerPhone?: Prisma.StringWithAggregatesFilter<"Merchant"> | string;
+    ownerEmail?: Prisma.StringWithAggregatesFilter<"Merchant"> | string;
+    passwordHash?: Prisma.StringWithAggregatesFilter<"Merchant"> | string;
+    maxDiscountPercent?: Prisma.IntWithAggregatesFilter<"Merchant"> | number;
+    aiEnabled?: Prisma.BoolWithAggregatesFilter<"Merchant"> | boolean;
+    paystackSecretEnc?: Prisma.StringNullableWithAggregatesFilter<"Merchant"> | string | null;
+    receiptCounter?: Prisma.IntWithAggregatesFilter<"Merchant"> | number;
+    orderCounter?: Prisma.IntWithAggregatesFilter<"Merchant"> | number;
+    createdAt?: Prisma.DateTimeWithAggregatesFilter<"Merchant"> | Date | string;
+    updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Merchant"> | Date | string;
+};
+export type MerchantCreateInput = {
+    id?: string;
+    businessName: string;
+    ownerName: string;
+    ownerPhone: string;
+    ownerEmail: string;
+    passwordHash: string;
+    maxDiscountPercent?: number;
+    aiEnabled?: boolean;
+    paystackSecretEnc?: string | null;
+    receiptCounter?: number;
+    orderCounter?: number;
+    createdAt?: Date | string;
+    updatedAt?: Date | string;
+    session?: Prisma.WhatsAppSessionCreateNestedOneWithoutMerchantInput;
+    authItems?: Prisma.WaAuthItemCreateNestedManyWithoutMerchantInput;
+    products?: Prisma.ProductCreateNestedManyWithoutMerchantInput;
+    customers?: Prisma.CustomerCreateNestedManyWithoutMerchantInput;
+    conversations?: Prisma.ConversationCreateNestedManyWithoutMerchantInput;
+    orders?: Prisma.OrderCreateNestedManyWithoutMerchantInput;
+};
+export type MerchantUncheckedCreateInput = {
+    id?: string;
+    businessName: string;
+    ownerName: string;
+    ownerPhone: string;
+    ownerEmail: string;
+    passwordHash: string;
+    maxDiscountPercent?: number;
+    aiEnabled?: boolean;
+    paystackSecretEnc?: string | null;
+    receiptCounter?: number;
+    orderCounter?: number;
+    createdAt?: Date | string;
+    updatedAt?: Date | string;
+    session?: Prisma.WhatsAppSessionUncheckedCreateNestedOneWithoutMerchantInput;
+    authItems?: Prisma.WaAuthItemUncheckedCreateNestedManyWithoutMerchantInput;
+    products?: Prisma.ProductUncheckedCreateNestedManyWithoutMerchantInput;
+    customers?: Prisma.CustomerUncheckedCreateNestedManyWithoutMerchantInput;
+    conversations?: Prisma.ConversationUncheckedCreateNestedManyWithoutMerchantInput;
+    orders?: Prisma.OrderUncheckedCreateNestedManyWithoutMerchantInput;
+};
+export type MerchantUpdateInput = {
+    id?: Prisma.StringFieldUpdateOperationsInput | string;
+    businessName?: Prisma.StringFieldUpdateOperationsInput | string;
+    ownerName?: Prisma.StringFieldUpdateOperationsInput | string;
+    ownerPhone?: Prisma.StringFieldUpdateOperationsInput | string;
+    ownerEmail?: Prisma.StringFieldUpdateOperationsInput | string;
+    passwordHash?: Prisma.StringFieldUpdateOperationsInput | string;
+    maxDiscountPercent?: Prisma.IntFieldUpdateOperationsInput | number;
+    aiEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    paystackSecretEnc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    receiptCounter?: Prisma.IntFieldUpdateOperationsInput | number;
+    orderCounter?: Prisma.IntFieldUpdateOperationsInput | number;
+    createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    session?: Prisma.WhatsAppSessionUpdateOneWithoutMerchantNestedInput;
+    authItems?: Prisma.WaAuthItemUpdateManyWithoutMerchantNestedInput;
+    products?: Prisma.ProductUpdateManyWithoutMerchantNestedInput;
+    customers?: Prisma.CustomerUpdateManyWithoutMerchantNestedInput;
+    conversations?: Prisma.ConversationUpdateManyWithoutMerchantNestedInput;
+    orders?: Prisma.OrderUpdateManyWithoutMerchantNestedInput;
+};
+export type MerchantUncheckedUpdateInput = {
+    id?: Prisma.StringFieldUpdateOperationsInput | string;
+    businessName?: Prisma.StringFieldUpdateOperationsInput | string;
+    ownerName?: Prisma.StringFieldUpdateOperationsInput | string;
+    ownerPhone?: Prisma.StringFieldUpdateOperationsInput | string;
+    ownerEmail?: Prisma.StringFieldUpdateOperationsInput | string;
+    passwordHash?: Prisma.StringFieldUpdateOperationsInput | string;
+    maxDiscountPercent?: Prisma.IntFieldUpdateOperationsInput | number;
+    aiEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    paystackSecretEnc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    receiptCounter?: Prisma.IntFieldUpdateOperationsInput | number;
+    orderCounter?: Prisma.IntFieldUpdateOperationsInput | number;
+    createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    session?: Prisma.WhatsAppSessionUncheckedUpdateOneWithoutMerchantNestedInput;
+    authItems?: Prisma.WaAuthItemUncheckedUpdateManyWithoutMerchantNestedInput;
+    products?: Prisma.ProductUncheckedUpdateManyWithoutMerchantNestedInput;
+    customers?: Prisma.CustomerUncheckedUpdateManyWithoutMerchantNestedInput;
+    conversations?: Prisma.ConversationUncheckedUpdateManyWithoutMerchantNestedInput;
+    orders?: Prisma.OrderUncheckedUpdateManyWithoutMerchantNestedInput;
+};
+export type MerchantCreateManyInput = {
+    id?: string;
+    businessName: string;
+    ownerName: string;
+    ownerPhone: string;
+    ownerEmail: string;
+    passwordHash: string;
+    maxDiscountPercent?: number;
+    aiEnabled?: boolean;
+    paystackSecretEnc?: string | null;
+    receiptCounter?: number;
+    orderCounter?: number;
+    createdAt?: Date | string;
+    updatedAt?: Date | string;
+};
+export type MerchantUpdateManyMutationInput = {
+    id?: Prisma.StringFieldUpdateOperationsInput | string;
+    businessName?: Prisma.StringFieldUpdateOperationsInput | string;
+    ownerName?: Prisma.StringFieldUpdateOperationsInput | string;
+    ownerPhone?: Prisma.StringFieldUpdateOperationsInput | string;
+    ownerEmail?: Prisma.StringFieldUpdateOperationsInput | string;
+    passwordHash?: Prisma.StringFieldUpdateOperationsInput | string;
+    maxDiscountPercent?: Prisma.IntFieldUpdateOperationsInput | number;
+    aiEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    paystackSecretEnc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    receiptCounter?: Prisma.IntFieldUpdateOperationsInput | number;
+    orderCounter?: Prisma.IntFieldUpdateOperationsInput | number;
+    createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+};
+export type MerchantUncheckedUpdateManyInput = {
+    id?: Prisma.StringFieldUpdateOperationsInput | string;
+    businessName?: Prisma.StringFieldUpdateOperationsInput | string;
+    ownerName?: Prisma.StringFieldUpdateOperationsInput | string;
+    ownerPhone?: Prisma.StringFieldUpdateOperationsInput | string;
+    ownerEmail?: Prisma.StringFieldUpdateOperationsInput | string;
+    passwordHash?: Prisma.StringFieldUpdateOperationsInput | string;
+    maxDiscountPercent?: Prisma.IntFieldUpdateOperationsInput | number;
+    aiEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    paystackSecretEnc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    receiptCounter?: Prisma.IntFieldUpdateOperationsInput | number;
+    orderCounter?: Prisma.IntFieldUpdateOperationsInput | number;
+    createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+};
+export type MerchantCountOrderByAggregateInput = {
+    id?: Prisma.SortOrder;
+    businessName?: Prisma.SortOrder;
+    ownerName?: Prisma.SortOrder;
+    ownerPhone?: Prisma.SortOrder;
+    ownerEmail?: Prisma.SortOrder;
+    passwordHash?: Prisma.SortOrder;
+    maxDiscountPercent?: Prisma.SortOrder;
+    aiEnabled?: Prisma.SortOrder;
+    paystackSecretEnc?: Prisma.SortOrder;
+    receiptCounter?: Prisma.SortOrder;
+    orderCounter?: Prisma.SortOrder;
+    createdAt?: Prisma.SortOrder;
+    updatedAt?: Prisma.SortOrder;
+};
+export type MerchantAvgOrderByAggregateInput = {
+    maxDiscountPercent?: Prisma.SortOrder;
+    receiptCounter?: Prisma.SortOrder;
+    orderCounter?: Prisma.SortOrder;
+};
+export type MerchantMaxOrderByAggregateInput = {
+    id?: Prisma.SortOrder;
+    businessName?: Prisma.SortOrder;
+    ownerName?: Prisma.SortOrder;
+    ownerPhone?: Prisma.SortOrder;
+    ownerEmail?: Prisma.SortOrder;
+    passwordHash?: Prisma.SortOrder;
+    maxDiscountPercent?: Prisma.SortOrder;
+    aiEnabled?: Prisma.SortOrder;
+    paystackSecretEnc?: Prisma.SortOrder;
+    receiptCounter?: Prisma.SortOrder;
+    orderCounter?: Prisma.SortOrder;
+    createdAt?: Prisma.SortOrder;
+    updatedAt?: Prisma.SortOrder;
+};
+export type MerchantMinOrderByAggregateInput = {
+    id?: Prisma.SortOrder;
+    businessName?: Prisma.SortOrder;
+    ownerName?: Prisma.SortOrder;
+    ownerPhone?: Prisma.SortOrder;
+    ownerEmail?: Prisma.SortOrder;
+    passwordHash?: Prisma.SortOrder;
+    maxDiscountPercent?: Prisma.SortOrder;
+    aiEnabled?: Prisma.SortOrder;
+    paystackSecretEnc?: Prisma.SortOrder;
+    receiptCounter?: Prisma.SortOrder;
+    orderCounter?: Prisma.SortOrder;
+    createdAt?: Prisma.SortOrder;
+    updatedAt?: Prisma.SortOrder;
+};
+export type MerchantSumOrderByAggregateInput = {
+    maxDiscountPercent?: Prisma.SortOrder;
+    receiptCounter?: Prisma.SortOrder;
+    orderCounter?: Prisma.SortOrder;
+};
+export type MerchantScalarRelationFilter = {
+    is?: Prisma.MerchantWhereInput;
+    isNot?: Prisma.MerchantWhereInput;
+};
+export type StringFieldUpdateOperationsInput = {
+    set?: string;
+};
+export type IntFieldUpdateOperationsInput = {
+    set?: number;
+    increment?: number;
+    decrement?: number;
+    multiply?: number;
+    divide?: number;
+};
+export type BoolFieldUpdateOperationsInput = {
+    set?: boolean;
+};
+export type NullableStringFieldUpdateOperationsInput = {
+    set?: string | null;
+};
+export type DateTimeFieldUpdateOperationsInput = {
+    set?: Date | string;
+};
+export type MerchantCreateNestedOneWithoutSessionInput = {
+    create?: Prisma.XOR<Prisma.MerchantCreateWithoutSessionInput, Prisma.MerchantUncheckedCreateWithoutSessionInput>;
+    connectOrCreate?: Prisma.MerchantCreateOrConnectWithoutSessionInput;
+    connect?: Prisma.MerchantWhereUniqueInput;
+};
+export type MerchantUpdateOneRequiredWithoutSessionNestedInput = {
+    create?: Prisma.XOR<Prisma.MerchantCreateWithoutSessionInput, Prisma.MerchantUncheckedCreateWithoutSessionInput>;
+    connectOrCreate?: Prisma.MerchantCreateOrConnectWithoutSessionInput;
+    upsert?: Prisma.MerchantUpsertWithoutSessionInput;
+    connect?: Prisma.MerchantWhereUniqueInput;
+    update?: Prisma.XOR<Prisma.XOR<Prisma.MerchantUpdateToOneWithWhereWithoutSessionInput, Prisma.MerchantUpdateWithoutSessionInput>, Prisma.MerchantUncheckedUpdateWithoutSessionInput>;
+};
+export type MerchantCreateNestedOneWithoutAuthItemsInput = {
+    create?: Prisma.XOR<Prisma.MerchantCreateWithoutAuthItemsInput, Prisma.MerchantUncheckedCreateWithoutAuthItemsInput>;
+    connectOrCreate?: Prisma.MerchantCreateOrConnectWithoutAuthItemsInput;
+    connect?: Prisma.MerchantWhereUniqueInput;
+};
+export type MerchantUpdateOneRequiredWithoutAuthItemsNestedInput = {
+    create?: Prisma.XOR<Prisma.MerchantCreateWithoutAuthItemsInput, Prisma.MerchantUncheckedCreateWithoutAuthItemsInput>;
+    connectOrCreate?: Prisma.MerchantCreateOrConnectWithoutAuthItemsInput;
+    upsert?: Prisma.MerchantUpsertWithoutAuthItemsInput;
+    connect?: Prisma.MerchantWhereUniqueInput;
+    update?: Prisma.XOR<Prisma.XOR<Prisma.MerchantUpdateToOneWithWhereWithoutAuthItemsInput, Prisma.MerchantUpdateWithoutAuthItemsInput>, Prisma.MerchantUncheckedUpdateWithoutAuthItemsInput>;
+};
+export type MerchantCreateNestedOneWithoutProductsInput = {
+    create?: Prisma.XOR<Prisma.MerchantCreateWithoutProductsInput, Prisma.MerchantUncheckedCreateWithoutProductsInput>;
+    connectOrCreate?: Prisma.MerchantCreateOrConnectWithoutProductsInput;
+    connect?: Prisma.MerchantWhereUniqueInput;
+};
+export type MerchantUpdateOneRequiredWithoutProductsNestedInput = {
+    create?: Prisma.XOR<Prisma.MerchantCreateWithoutProductsInput, Prisma.MerchantUncheckedCreateWithoutProductsInput>;
+    connectOrCreate?: Prisma.MerchantCreateOrConnectWithoutProductsInput;
+    upsert?: Prisma.MerchantUpsertWithoutProductsInput;
+    connect?: Prisma.MerchantWhereUniqueInput;
+    update?: Prisma.XOR<Prisma.XOR<Prisma.MerchantUpdateToOneWithWhereWithoutProductsInput, Prisma.MerchantUpdateWithoutProductsInput>, Prisma.MerchantUncheckedUpdateWithoutProductsInput>;
+};
+export type MerchantCreateNestedOneWithoutCustomersInput = {
+    create?: Prisma.XOR<Prisma.MerchantCreateWithoutCustomersInput, Prisma.MerchantUncheckedCreateWithoutCustomersInput>;
+    connectOrCreate?: Prisma.MerchantCreateOrConnectWithoutCustomersInput;
+    connect?: Prisma.MerchantWhereUniqueInput;
+};
+export type MerchantUpdateOneRequiredWithoutCustomersNestedInput = {
+    create?: Prisma.XOR<Prisma.MerchantCreateWithoutCustomersInput, Prisma.MerchantUncheckedCreateWithoutCustomersInput>;
+    connectOrCreate?: Prisma.MerchantCreateOrConnectWithoutCustomersInput;
+    upsert?: Prisma.MerchantUpsertWithoutCustomersInput;
+    connect?: Prisma.MerchantWhereUniqueInput;
+    update?: Prisma.XOR<Prisma.XOR<Prisma.MerchantUpdateToOneWithWhereWithoutCustomersInput, Prisma.MerchantUpdateWithoutCustomersInput>, Prisma.MerchantUncheckedUpdateWithoutCustomersInput>;
+};
+export type MerchantCreateNestedOneWithoutConversationsInput = {
+    create?: Prisma.XOR<Prisma.MerchantCreateWithoutConversationsInput, Prisma.MerchantUncheckedCreateWithoutConversationsInput>;
+    connectOrCreate?: Prisma.MerchantCreateOrConnectWithoutConversationsInput;
+    connect?: Prisma.MerchantWhereUniqueInput;
+};
+export type MerchantUpdateOneRequiredWithoutConversationsNestedInput = {
+    create?: Prisma.XOR<Prisma.MerchantCreateWithoutConversationsInput, Prisma.MerchantUncheckedCreateWithoutConversationsInput>;
+    connectOrCreate?: Prisma.MerchantCreateOrConnectWithoutConversationsInput;
+    upsert?: Prisma.MerchantUpsertWithoutConversationsInput;
+    connect?: Prisma.MerchantWhereUniqueInput;
+    update?: Prisma.XOR<Prisma.XOR<Prisma.MerchantUpdateToOneWithWhereWithoutConversationsInput, Prisma.MerchantUpdateWithoutConversationsInput>, Prisma.MerchantUncheckedUpdateWithoutConversationsInput>;
+};
+export type MerchantCreateNestedOneWithoutOrdersInput = {
+    create?: Prisma.XOR<Prisma.MerchantCreateWithoutOrdersInput, Prisma.MerchantUncheckedCreateWithoutOrdersInput>;
+    connectOrCreate?: Prisma.MerchantCreateOrConnectWithoutOrdersInput;
+    connect?: Prisma.MerchantWhereUniqueInput;
+};
+export type MerchantUpdateOneRequiredWithoutOrdersNestedInput = {
+    create?: Prisma.XOR<Prisma.MerchantCreateWithoutOrdersInput, Prisma.MerchantUncheckedCreateWithoutOrdersInput>;
+    connectOrCreate?: Prisma.MerchantCreateOrConnectWithoutOrdersInput;
+    upsert?: Prisma.MerchantUpsertWithoutOrdersInput;
+    connect?: Prisma.MerchantWhereUniqueInput;
+    update?: Prisma.XOR<Prisma.XOR<Prisma.MerchantUpdateToOneWithWhereWithoutOrdersInput, Prisma.MerchantUpdateWithoutOrdersInput>, Prisma.MerchantUncheckedUpdateWithoutOrdersInput>;
+};
+export type MerchantCreateWithoutSessionInput = {
+    id?: string;
+    businessName: string;
+    ownerName: string;
+    ownerPhone: string;
+    ownerEmail: string;
+    passwordHash: string;
+    maxDiscountPercent?: number;
+    aiEnabled?: boolean;
+    paystackSecretEnc?: string | null;
+    receiptCounter?: number;
+    orderCounter?: number;
+    createdAt?: Date | string;
+    updatedAt?: Date | string;
+    authItems?: Prisma.WaAuthItemCreateNestedManyWithoutMerchantInput;
+    products?: Prisma.ProductCreateNestedManyWithoutMerchantInput;
+    customers?: Prisma.CustomerCreateNestedManyWithoutMerchantInput;
+    conversations?: Prisma.ConversationCreateNestedManyWithoutMerchantInput;
+    orders?: Prisma.OrderCreateNestedManyWithoutMerchantInput;
+};
+export type MerchantUncheckedCreateWithoutSessionInput = {
+    id?: string;
+    businessName: string;
+    ownerName: string;
+    ownerPhone: string;
+    ownerEmail: string;
+    passwordHash: string;
+    maxDiscountPercent?: number;
+    aiEnabled?: boolean;
+    paystackSecretEnc?: string | null;
+    receiptCounter?: number;
+    orderCounter?: number;
+    createdAt?: Date | string;
+    updatedAt?: Date | string;
+    authItems?: Prisma.WaAuthItemUncheckedCreateNestedManyWithoutMerchantInput;
+    products?: Prisma.ProductUncheckedCreateNestedManyWithoutMerchantInput;
+    customers?: Prisma.CustomerUncheckedCreateNestedManyWithoutMerchantInput;
+    conversations?: Prisma.ConversationUncheckedCreateNestedManyWithoutMerchantInput;
+    orders?: Prisma.OrderUncheckedCreateNestedManyWithoutMerchantInput;
+};
+export type MerchantCreateOrConnectWithoutSessionInput = {
+    where: Prisma.MerchantWhereUniqueInput;
+    create: Prisma.XOR<Prisma.MerchantCreateWithoutSessionInput, Prisma.MerchantUncheckedCreateWithoutSessionInput>;
+};
+export type MerchantUpsertWithoutSessionInput = {
+    update: Prisma.XOR<Prisma.MerchantUpdateWithoutSessionInput, Prisma.MerchantUncheckedUpdateWithoutSessionInput>;
+    create: Prisma.XOR<Prisma.MerchantCreateWithoutSessionInput, Prisma.MerchantUncheckedCreateWithoutSessionInput>;
+    where?: Prisma.MerchantWhereInput;
+};
+export type MerchantUpdateToOneWithWhereWithoutSessionInput = {
+    where?: Prisma.MerchantWhereInput;
+    data: Prisma.XOR<Prisma.MerchantUpdateWithoutSessionInput, Prisma.MerchantUncheckedUpdateWithoutSessionInput>;
+};
+export type MerchantUpdateWithoutSessionInput = {
+    id?: Prisma.StringFieldUpdateOperationsInput | string;
+    businessName?: Prisma.StringFieldUpdateOperationsInput | string;
+    ownerName?: Prisma.StringFieldUpdateOperationsInput | string;
+    ownerPhone?: Prisma.StringFieldUpdateOperationsInput | string;
+    ownerEmail?: Prisma.StringFieldUpdateOperationsInput | string;
+    passwordHash?: Prisma.StringFieldUpdateOperationsInput | string;
+    maxDiscountPercent?: Prisma.IntFieldUpdateOperationsInput | number;
+    aiEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    paystackSecretEnc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    receiptCounter?: Prisma.IntFieldUpdateOperationsInput | number;
+    orderCounter?: Prisma.IntFieldUpdateOperationsInput | number;
+    createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    authItems?: Prisma.WaAuthItemUpdateManyWithoutMerchantNestedInput;
+    products?: Prisma.ProductUpdateManyWithoutMerchantNestedInput;
+    customers?: Prisma.CustomerUpdateManyWithoutMerchantNestedInput;
+    conversations?: Prisma.ConversationUpdateManyWithoutMerchantNestedInput;
+    orders?: Prisma.OrderUpdateManyWithoutMerchantNestedInput;
+};
+export type MerchantUncheckedUpdateWithoutSessionInput = {
+    id?: Prisma.StringFieldUpdateOperationsInput | string;
+    businessName?: Prisma.StringFieldUpdateOperationsInput | string;
+    ownerName?: Prisma.StringFieldUpdateOperationsInput | string;
+    ownerPhone?: Prisma.StringFieldUpdateOperationsInput | string;
+    ownerEmail?: Prisma.StringFieldUpdateOperationsInput | string;
+    passwordHash?: Prisma.StringFieldUpdateOperationsInput | string;
+    maxDiscountPercent?: Prisma.IntFieldUpdateOperationsInput | number;
+    aiEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    paystackSecretEnc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    receiptCounter?: Prisma.IntFieldUpdateOperationsInput | number;
+    orderCounter?: Prisma.IntFieldUpdateOperationsInput | number;
+    createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    authItems?: Prisma.WaAuthItemUncheckedUpdateManyWithoutMerchantNestedInput;
+    products?: Prisma.ProductUncheckedUpdateManyWithoutMerchantNestedInput;
+    customers?: Prisma.CustomerUncheckedUpdateManyWithoutMerchantNestedInput;
+    conversations?: Prisma.ConversationUncheckedUpdateManyWithoutMerchantNestedInput;
+    orders?: Prisma.OrderUncheckedUpdateManyWithoutMerchantNestedInput;
+};
+export type MerchantCreateWithoutAuthItemsInput = {
+    id?: string;
+    businessName: string;
+    ownerName: string;
+    ownerPhone: string;
+    ownerEmail: string;
+    passwordHash: string;
+    maxDiscountPercent?: number;
+    aiEnabled?: boolean;
+    paystackSecretEnc?: string | null;
+    receiptCounter?: number;
+    orderCounter?: number;
+    createdAt?: Date | string;
+    updatedAt?: Date | string;
+    session?: Prisma.WhatsAppSessionCreateNestedOneWithoutMerchantInput;
+    products?: Prisma.ProductCreateNestedManyWithoutMerchantInput;
+    customers?: Prisma.CustomerCreateNestedManyWithoutMerchantInput;
+    conversations?: Prisma.ConversationCreateNestedManyWithoutMerchantInput;
+    orders?: Prisma.OrderCreateNestedManyWithoutMerchantInput;
+};
+export type MerchantUncheckedCreateWithoutAuthItemsInput = {
+    id?: string;
+    businessName: string;
+    ownerName: string;
+    ownerPhone: string;
+    ownerEmail: string;
+    passwordHash: string;
+    maxDiscountPercent?: number;
+    aiEnabled?: boolean;
+    paystackSecretEnc?: string | null;
+    receiptCounter?: number;
+    orderCounter?: number;
+    createdAt?: Date | string;
+    updatedAt?: Date | string;
+    session?: Prisma.WhatsAppSessionUncheckedCreateNestedOneWithoutMerchantInput;
+    products?: Prisma.ProductUncheckedCreateNestedManyWithoutMerchantInput;
+    customers?: Prisma.CustomerUncheckedCreateNestedManyWithoutMerchantInput;
+    conversations?: Prisma.ConversationUncheckedCreateNestedManyWithoutMerchantInput;
+    orders?: Prisma.OrderUncheckedCreateNestedManyWithoutMerchantInput;
+};
+export type MerchantCreateOrConnectWithoutAuthItemsInput = {
+    where: Prisma.MerchantWhereUniqueInput;
+    create: Prisma.XOR<Prisma.MerchantCreateWithoutAuthItemsInput, Prisma.MerchantUncheckedCreateWithoutAuthItemsInput>;
+};
+export type MerchantUpsertWithoutAuthItemsInput = {
+    update: Prisma.XOR<Prisma.MerchantUpdateWithoutAuthItemsInput, Prisma.MerchantUncheckedUpdateWithoutAuthItemsInput>;
+    create: Prisma.XOR<Prisma.MerchantCreateWithoutAuthItemsInput, Prisma.MerchantUncheckedCreateWithoutAuthItemsInput>;
+    where?: Prisma.MerchantWhereInput;
+};
+export type MerchantUpdateToOneWithWhereWithoutAuthItemsInput = {
+    where?: Prisma.MerchantWhereInput;
+    data: Prisma.XOR<Prisma.MerchantUpdateWithoutAuthItemsInput, Prisma.MerchantUncheckedUpdateWithoutAuthItemsInput>;
+};
+export type MerchantUpdateWithoutAuthItemsInput = {
+    id?: Prisma.StringFieldUpdateOperationsInput | string;
+    businessName?: Prisma.StringFieldUpdateOperationsInput | string;
+    ownerName?: Prisma.StringFieldUpdateOperationsInput | string;
+    ownerPhone?: Prisma.StringFieldUpdateOperationsInput | string;
+    ownerEmail?: Prisma.StringFieldUpdateOperationsInput | string;
+    passwordHash?: Prisma.StringFieldUpdateOperationsInput | string;
+    maxDiscountPercent?: Prisma.IntFieldUpdateOperationsInput | number;
+    aiEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    paystackSecretEnc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    receiptCounter?: Prisma.IntFieldUpdateOperationsInput | number;
+    orderCounter?: Prisma.IntFieldUpdateOperationsInput | number;
+    createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    session?: Prisma.WhatsAppSessionUpdateOneWithoutMerchantNestedInput;
+    products?: Prisma.ProductUpdateManyWithoutMerchantNestedInput;
+    customers?: Prisma.CustomerUpdateManyWithoutMerchantNestedInput;
+    conversations?: Prisma.ConversationUpdateManyWithoutMerchantNestedInput;
+    orders?: Prisma.OrderUpdateManyWithoutMerchantNestedInput;
+};
+export type MerchantUncheckedUpdateWithoutAuthItemsInput = {
+    id?: Prisma.StringFieldUpdateOperationsInput | string;
+    businessName?: Prisma.StringFieldUpdateOperationsInput | string;
+    ownerName?: Prisma.StringFieldUpdateOperationsInput | string;
+    ownerPhone?: Prisma.StringFieldUpdateOperationsInput | string;
+    ownerEmail?: Prisma.StringFieldUpdateOperationsInput | string;
+    passwordHash?: Prisma.StringFieldUpdateOperationsInput | string;
+    maxDiscountPercent?: Prisma.IntFieldUpdateOperationsInput | number;
+    aiEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    paystackSecretEnc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    receiptCounter?: Prisma.IntFieldUpdateOperationsInput | number;
+    orderCounter?: Prisma.IntFieldUpdateOperationsInput | number;
+    createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    session?: Prisma.WhatsAppSessionUncheckedUpdateOneWithoutMerchantNestedInput;
+    products?: Prisma.ProductUncheckedUpdateManyWithoutMerchantNestedInput;
+    customers?: Prisma.CustomerUncheckedUpdateManyWithoutMerchantNestedInput;
+    conversations?: Prisma.ConversationUncheckedUpdateManyWithoutMerchantNestedInput;
+    orders?: Prisma.OrderUncheckedUpdateManyWithoutMerchantNestedInput;
+};
+export type MerchantCreateWithoutProductsInput = {
+    id?: string;
+    businessName: string;
+    ownerName: string;
+    ownerPhone: string;
+    ownerEmail: string;
+    passwordHash: string;
+    maxDiscountPercent?: number;
+    aiEnabled?: boolean;
+    paystackSecretEnc?: string | null;
+    receiptCounter?: number;
+    orderCounter?: number;
+    createdAt?: Date | string;
+    updatedAt?: Date | string;
+    session?: Prisma.WhatsAppSessionCreateNestedOneWithoutMerchantInput;
+    authItems?: Prisma.WaAuthItemCreateNestedManyWithoutMerchantInput;
+    customers?: Prisma.CustomerCreateNestedManyWithoutMerchantInput;
+    conversations?: Prisma.ConversationCreateNestedManyWithoutMerchantInput;
+    orders?: Prisma.OrderCreateNestedManyWithoutMerchantInput;
+};
+export type MerchantUncheckedCreateWithoutProductsInput = {
+    id?: string;
+    businessName: string;
+    ownerName: string;
+    ownerPhone: string;
+    ownerEmail: string;
+    passwordHash: string;
+    maxDiscountPercent?: number;
+    aiEnabled?: boolean;
+    paystackSecretEnc?: string | null;
+    receiptCounter?: number;
+    orderCounter?: number;
+    createdAt?: Date | string;
+    updatedAt?: Date | string;
+    session?: Prisma.WhatsAppSessionUncheckedCreateNestedOneWithoutMerchantInput;
+    authItems?: Prisma.WaAuthItemUncheckedCreateNestedManyWithoutMerchantInput;
+    customers?: Prisma.CustomerUncheckedCreateNestedManyWithoutMerchantInput;
+    conversations?: Prisma.ConversationUncheckedCreateNestedManyWithoutMerchantInput;
+    orders?: Prisma.OrderUncheckedCreateNestedManyWithoutMerchantInput;
+};
+export type MerchantCreateOrConnectWithoutProductsInput = {
+    where: Prisma.MerchantWhereUniqueInput;
+    create: Prisma.XOR<Prisma.MerchantCreateWithoutProductsInput, Prisma.MerchantUncheckedCreateWithoutProductsInput>;
+};
+export type MerchantUpsertWithoutProductsInput = {
+    update: Prisma.XOR<Prisma.MerchantUpdateWithoutProductsInput, Prisma.MerchantUncheckedUpdateWithoutProductsInput>;
+    create: Prisma.XOR<Prisma.MerchantCreateWithoutProductsInput, Prisma.MerchantUncheckedCreateWithoutProductsInput>;
+    where?: Prisma.MerchantWhereInput;
+};
+export type MerchantUpdateToOneWithWhereWithoutProductsInput = {
+    where?: Prisma.MerchantWhereInput;
+    data: Prisma.XOR<Prisma.MerchantUpdateWithoutProductsInput, Prisma.MerchantUncheckedUpdateWithoutProductsInput>;
+};
+export type MerchantUpdateWithoutProductsInput = {
+    id?: Prisma.StringFieldUpdateOperationsInput | string;
+    businessName?: Prisma.StringFieldUpdateOperationsInput | string;
+    ownerName?: Prisma.StringFieldUpdateOperationsInput | string;
+    ownerPhone?: Prisma.StringFieldUpdateOperationsInput | string;
+    ownerEmail?: Prisma.StringFieldUpdateOperationsInput | string;
+    passwordHash?: Prisma.StringFieldUpdateOperationsInput | string;
+    maxDiscountPercent?: Prisma.IntFieldUpdateOperationsInput | number;
+    aiEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    paystackSecretEnc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    receiptCounter?: Prisma.IntFieldUpdateOperationsInput | number;
+    orderCounter?: Prisma.IntFieldUpdateOperationsInput | number;
+    createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    session?: Prisma.WhatsAppSessionUpdateOneWithoutMerchantNestedInput;
+    authItems?: Prisma.WaAuthItemUpdateManyWithoutMerchantNestedInput;
+    customers?: Prisma.CustomerUpdateManyWithoutMerchantNestedInput;
+    conversations?: Prisma.ConversationUpdateManyWithoutMerchantNestedInput;
+    orders?: Prisma.OrderUpdateManyWithoutMerchantNestedInput;
+};
+export type MerchantUncheckedUpdateWithoutProductsInput = {
+    id?: Prisma.StringFieldUpdateOperationsInput | string;
+    businessName?: Prisma.StringFieldUpdateOperationsInput | string;
+    ownerName?: Prisma.StringFieldUpdateOperationsInput | string;
+    ownerPhone?: Prisma.StringFieldUpdateOperationsInput | string;
+    ownerEmail?: Prisma.StringFieldUpdateOperationsInput | string;
+    passwordHash?: Prisma.StringFieldUpdateOperationsInput | string;
+    maxDiscountPercent?: Prisma.IntFieldUpdateOperationsInput | number;
+    aiEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    paystackSecretEnc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    receiptCounter?: Prisma.IntFieldUpdateOperationsInput | number;
+    orderCounter?: Prisma.IntFieldUpdateOperationsInput | number;
+    createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    session?: Prisma.WhatsAppSessionUncheckedUpdateOneWithoutMerchantNestedInput;
+    authItems?: Prisma.WaAuthItemUncheckedUpdateManyWithoutMerchantNestedInput;
+    customers?: Prisma.CustomerUncheckedUpdateManyWithoutMerchantNestedInput;
+    conversations?: Prisma.ConversationUncheckedUpdateManyWithoutMerchantNestedInput;
+    orders?: Prisma.OrderUncheckedUpdateManyWithoutMerchantNestedInput;
+};
+export type MerchantCreateWithoutCustomersInput = {
+    id?: string;
+    businessName: string;
+    ownerName: string;
+    ownerPhone: string;
+    ownerEmail: string;
+    passwordHash: string;
+    maxDiscountPercent?: number;
+    aiEnabled?: boolean;
+    paystackSecretEnc?: string | null;
+    receiptCounter?: number;
+    orderCounter?: number;
+    createdAt?: Date | string;
+    updatedAt?: Date | string;
+    session?: Prisma.WhatsAppSessionCreateNestedOneWithoutMerchantInput;
+    authItems?: Prisma.WaAuthItemCreateNestedManyWithoutMerchantInput;
+    products?: Prisma.ProductCreateNestedManyWithoutMerchantInput;
+    conversations?: Prisma.ConversationCreateNestedManyWithoutMerchantInput;
+    orders?: Prisma.OrderCreateNestedManyWithoutMerchantInput;
+};
+export type MerchantUncheckedCreateWithoutCustomersInput = {
+    id?: string;
+    businessName: string;
+    ownerName: string;
+    ownerPhone: string;
+    ownerEmail: string;
+    passwordHash: string;
+    maxDiscountPercent?: number;
+    aiEnabled?: boolean;
+    paystackSecretEnc?: string | null;
+    receiptCounter?: number;
+    orderCounter?: number;
+    createdAt?: Date | string;
+    updatedAt?: Date | string;
+    session?: Prisma.WhatsAppSessionUncheckedCreateNestedOneWithoutMerchantInput;
+    authItems?: Prisma.WaAuthItemUncheckedCreateNestedManyWithoutMerchantInput;
+    products?: Prisma.ProductUncheckedCreateNestedManyWithoutMerchantInput;
+    conversations?: Prisma.ConversationUncheckedCreateNestedManyWithoutMerchantInput;
+    orders?: Prisma.OrderUncheckedCreateNestedManyWithoutMerchantInput;
+};
+export type MerchantCreateOrConnectWithoutCustomersInput = {
+    where: Prisma.MerchantWhereUniqueInput;
+    create: Prisma.XOR<Prisma.MerchantCreateWithoutCustomersInput, Prisma.MerchantUncheckedCreateWithoutCustomersInput>;
+};
+export type MerchantUpsertWithoutCustomersInput = {
+    update: Prisma.XOR<Prisma.MerchantUpdateWithoutCustomersInput, Prisma.MerchantUncheckedUpdateWithoutCustomersInput>;
+    create: Prisma.XOR<Prisma.MerchantCreateWithoutCustomersInput, Prisma.MerchantUncheckedCreateWithoutCustomersInput>;
+    where?: Prisma.MerchantWhereInput;
+};
+export type MerchantUpdateToOneWithWhereWithoutCustomersInput = {
+    where?: Prisma.MerchantWhereInput;
+    data: Prisma.XOR<Prisma.MerchantUpdateWithoutCustomersInput, Prisma.MerchantUncheckedUpdateWithoutCustomersInput>;
+};
+export type MerchantUpdateWithoutCustomersInput = {
+    id?: Prisma.StringFieldUpdateOperationsInput | string;
+    businessName?: Prisma.StringFieldUpdateOperationsInput | string;
+    ownerName?: Prisma.StringFieldUpdateOperationsInput | string;
+    ownerPhone?: Prisma.StringFieldUpdateOperationsInput | string;
+    ownerEmail?: Prisma.StringFieldUpdateOperationsInput | string;
+    passwordHash?: Prisma.StringFieldUpdateOperationsInput | string;
+    maxDiscountPercent?: Prisma.IntFieldUpdateOperationsInput | number;
+    aiEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    paystackSecretEnc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    receiptCounter?: Prisma.IntFieldUpdateOperationsInput | number;
+    orderCounter?: Prisma.IntFieldUpdateOperationsInput | number;
+    createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    session?: Prisma.WhatsAppSessionUpdateOneWithoutMerchantNestedInput;
+    authItems?: Prisma.WaAuthItemUpdateManyWithoutMerchantNestedInput;
+    products?: Prisma.ProductUpdateManyWithoutMerchantNestedInput;
+    conversations?: Prisma.ConversationUpdateManyWithoutMerchantNestedInput;
+    orders?: Prisma.OrderUpdateManyWithoutMerchantNestedInput;
+};
+export type MerchantUncheckedUpdateWithoutCustomersInput = {
+    id?: Prisma.StringFieldUpdateOperationsInput | string;
+    businessName?: Prisma.StringFieldUpdateOperationsInput | string;
+    ownerName?: Prisma.StringFieldUpdateOperationsInput | string;
+    ownerPhone?: Prisma.StringFieldUpdateOperationsInput | string;
+    ownerEmail?: Prisma.StringFieldUpdateOperationsInput | string;
+    passwordHash?: Prisma.StringFieldUpdateOperationsInput | string;
+    maxDiscountPercent?: Prisma.IntFieldUpdateOperationsInput | number;
+    aiEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    paystackSecretEnc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    receiptCounter?: Prisma.IntFieldUpdateOperationsInput | number;
+    orderCounter?: Prisma.IntFieldUpdateOperationsInput | number;
+    createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    session?: Prisma.WhatsAppSessionUncheckedUpdateOneWithoutMerchantNestedInput;
+    authItems?: Prisma.WaAuthItemUncheckedUpdateManyWithoutMerchantNestedInput;
+    products?: Prisma.ProductUncheckedUpdateManyWithoutMerchantNestedInput;
+    conversations?: Prisma.ConversationUncheckedUpdateManyWithoutMerchantNestedInput;
+    orders?: Prisma.OrderUncheckedUpdateManyWithoutMerchantNestedInput;
+};
+export type MerchantCreateWithoutConversationsInput = {
+    id?: string;
+    businessName: string;
+    ownerName: string;
+    ownerPhone: string;
+    ownerEmail: string;
+    passwordHash: string;
+    maxDiscountPercent?: number;
+    aiEnabled?: boolean;
+    paystackSecretEnc?: string | null;
+    receiptCounter?: number;
+    orderCounter?: number;
+    createdAt?: Date | string;
+    updatedAt?: Date | string;
+    session?: Prisma.WhatsAppSessionCreateNestedOneWithoutMerchantInput;
+    authItems?: Prisma.WaAuthItemCreateNestedManyWithoutMerchantInput;
+    products?: Prisma.ProductCreateNestedManyWithoutMerchantInput;
+    customers?: Prisma.CustomerCreateNestedManyWithoutMerchantInput;
+    orders?: Prisma.OrderCreateNestedManyWithoutMerchantInput;
+};
+export type MerchantUncheckedCreateWithoutConversationsInput = {
+    id?: string;
+    businessName: string;
+    ownerName: string;
+    ownerPhone: string;
+    ownerEmail: string;
+    passwordHash: string;
+    maxDiscountPercent?: number;
+    aiEnabled?: boolean;
+    paystackSecretEnc?: string | null;
+    receiptCounter?: number;
+    orderCounter?: number;
+    createdAt?: Date | string;
+    updatedAt?: Date | string;
+    session?: Prisma.WhatsAppSessionUncheckedCreateNestedOneWithoutMerchantInput;
+    authItems?: Prisma.WaAuthItemUncheckedCreateNestedManyWithoutMerchantInput;
+    products?: Prisma.ProductUncheckedCreateNestedManyWithoutMerchantInput;
+    customers?: Prisma.CustomerUncheckedCreateNestedManyWithoutMerchantInput;
+    orders?: Prisma.OrderUncheckedCreateNestedManyWithoutMerchantInput;
+};
+export type MerchantCreateOrConnectWithoutConversationsInput = {
+    where: Prisma.MerchantWhereUniqueInput;
+    create: Prisma.XOR<Prisma.MerchantCreateWithoutConversationsInput, Prisma.MerchantUncheckedCreateWithoutConversationsInput>;
+};
+export type MerchantUpsertWithoutConversationsInput = {
+    update: Prisma.XOR<Prisma.MerchantUpdateWithoutConversationsInput, Prisma.MerchantUncheckedUpdateWithoutConversationsInput>;
+    create: Prisma.XOR<Prisma.MerchantCreateWithoutConversationsInput, Prisma.MerchantUncheckedCreateWithoutConversationsInput>;
+    where?: Prisma.MerchantWhereInput;
+};
+export type MerchantUpdateToOneWithWhereWithoutConversationsInput = {
+    where?: Prisma.MerchantWhereInput;
+    data: Prisma.XOR<Prisma.MerchantUpdateWithoutConversationsInput, Prisma.MerchantUncheckedUpdateWithoutConversationsInput>;
+};
+export type MerchantUpdateWithoutConversationsInput = {
+    id?: Prisma.StringFieldUpdateOperationsInput | string;
+    businessName?: Prisma.StringFieldUpdateOperationsInput | string;
+    ownerName?: Prisma.StringFieldUpdateOperationsInput | string;
+    ownerPhone?: Prisma.StringFieldUpdateOperationsInput | string;
+    ownerEmail?: Prisma.StringFieldUpdateOperationsInput | string;
+    passwordHash?: Prisma.StringFieldUpdateOperationsInput | string;
+    maxDiscountPercent?: Prisma.IntFieldUpdateOperationsInput | number;
+    aiEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    paystackSecretEnc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    receiptCounter?: Prisma.IntFieldUpdateOperationsInput | number;
+    orderCounter?: Prisma.IntFieldUpdateOperationsInput | number;
+    createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    session?: Prisma.WhatsAppSessionUpdateOneWithoutMerchantNestedInput;
+    authItems?: Prisma.WaAuthItemUpdateManyWithoutMerchantNestedInput;
+    products?: Prisma.ProductUpdateManyWithoutMerchantNestedInput;
+    customers?: Prisma.CustomerUpdateManyWithoutMerchantNestedInput;
+    orders?: Prisma.OrderUpdateManyWithoutMerchantNestedInput;
+};
+export type MerchantUncheckedUpdateWithoutConversationsInput = {
+    id?: Prisma.StringFieldUpdateOperationsInput | string;
+    businessName?: Prisma.StringFieldUpdateOperationsInput | string;
+    ownerName?: Prisma.StringFieldUpdateOperationsInput | string;
+    ownerPhone?: Prisma.StringFieldUpdateOperationsInput | string;
+    ownerEmail?: Prisma.StringFieldUpdateOperationsInput | string;
+    passwordHash?: Prisma.StringFieldUpdateOperationsInput | string;
+    maxDiscountPercent?: Prisma.IntFieldUpdateOperationsInput | number;
+    aiEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    paystackSecretEnc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    receiptCounter?: Prisma.IntFieldUpdateOperationsInput | number;
+    orderCounter?: Prisma.IntFieldUpdateOperationsInput | number;
+    createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    session?: Prisma.WhatsAppSessionUncheckedUpdateOneWithoutMerchantNestedInput;
+    authItems?: Prisma.WaAuthItemUncheckedUpdateManyWithoutMerchantNestedInput;
+    products?: Prisma.ProductUncheckedUpdateManyWithoutMerchantNestedInput;
+    customers?: Prisma.CustomerUncheckedUpdateManyWithoutMerchantNestedInput;
+    orders?: Prisma.OrderUncheckedUpdateManyWithoutMerchantNestedInput;
+};
+export type MerchantCreateWithoutOrdersInput = {
+    id?: string;
+    businessName: string;
+    ownerName: string;
+    ownerPhone: string;
+    ownerEmail: string;
+    passwordHash: string;
+    maxDiscountPercent?: number;
+    aiEnabled?: boolean;
+    paystackSecretEnc?: string | null;
+    receiptCounter?: number;
+    orderCounter?: number;
+    createdAt?: Date | string;
+    updatedAt?: Date | string;
+    session?: Prisma.WhatsAppSessionCreateNestedOneWithoutMerchantInput;
+    authItems?: Prisma.WaAuthItemCreateNestedManyWithoutMerchantInput;
+    products?: Prisma.ProductCreateNestedManyWithoutMerchantInput;
+    customers?: Prisma.CustomerCreateNestedManyWithoutMerchantInput;
+    conversations?: Prisma.ConversationCreateNestedManyWithoutMerchantInput;
+};
+export type MerchantUncheckedCreateWithoutOrdersInput = {
+    id?: string;
+    businessName: string;
+    ownerName: string;
+    ownerPhone: string;
+    ownerEmail: string;
+    passwordHash: string;
+    maxDiscountPercent?: number;
+    aiEnabled?: boolean;
+    paystackSecretEnc?: string | null;
+    receiptCounter?: number;
+    orderCounter?: number;
+    createdAt?: Date | string;
+    updatedAt?: Date | string;
+    session?: Prisma.WhatsAppSessionUncheckedCreateNestedOneWithoutMerchantInput;
+    authItems?: Prisma.WaAuthItemUncheckedCreateNestedManyWithoutMerchantInput;
+    products?: Prisma.ProductUncheckedCreateNestedManyWithoutMerchantInput;
+    customers?: Prisma.CustomerUncheckedCreateNestedManyWithoutMerchantInput;
+    conversations?: Prisma.ConversationUncheckedCreateNestedManyWithoutMerchantInput;
+};
+export type MerchantCreateOrConnectWithoutOrdersInput = {
+    where: Prisma.MerchantWhereUniqueInput;
+    create: Prisma.XOR<Prisma.MerchantCreateWithoutOrdersInput, Prisma.MerchantUncheckedCreateWithoutOrdersInput>;
+};
+export type MerchantUpsertWithoutOrdersInput = {
+    update: Prisma.XOR<Prisma.MerchantUpdateWithoutOrdersInput, Prisma.MerchantUncheckedUpdateWithoutOrdersInput>;
+    create: Prisma.XOR<Prisma.MerchantCreateWithoutOrdersInput, Prisma.MerchantUncheckedCreateWithoutOrdersInput>;
+    where?: Prisma.MerchantWhereInput;
+};
+export type MerchantUpdateToOneWithWhereWithoutOrdersInput = {
+    where?: Prisma.MerchantWhereInput;
+    data: Prisma.XOR<Prisma.MerchantUpdateWithoutOrdersInput, Prisma.MerchantUncheckedUpdateWithoutOrdersInput>;
+};
+export type MerchantUpdateWithoutOrdersInput = {
+    id?: Prisma.StringFieldUpdateOperationsInput | string;
+    businessName?: Prisma.StringFieldUpdateOperationsInput | string;
+    ownerName?: Prisma.StringFieldUpdateOperationsInput | string;
+    ownerPhone?: Prisma.StringFieldUpdateOperationsInput | string;
+    ownerEmail?: Prisma.StringFieldUpdateOperationsInput | string;
+    passwordHash?: Prisma.StringFieldUpdateOperationsInput | string;
+    maxDiscountPercent?: Prisma.IntFieldUpdateOperationsInput | number;
+    aiEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    paystackSecretEnc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    receiptCounter?: Prisma.IntFieldUpdateOperationsInput | number;
+    orderCounter?: Prisma.IntFieldUpdateOperationsInput | number;
+    createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    session?: Prisma.WhatsAppSessionUpdateOneWithoutMerchantNestedInput;
+    authItems?: Prisma.WaAuthItemUpdateManyWithoutMerchantNestedInput;
+    products?: Prisma.ProductUpdateManyWithoutMerchantNestedInput;
+    customers?: Prisma.CustomerUpdateManyWithoutMerchantNestedInput;
+    conversations?: Prisma.ConversationUpdateManyWithoutMerchantNestedInput;
+};
+export type MerchantUncheckedUpdateWithoutOrdersInput = {
+    id?: Prisma.StringFieldUpdateOperationsInput | string;
+    businessName?: Prisma.StringFieldUpdateOperationsInput | string;
+    ownerName?: Prisma.StringFieldUpdateOperationsInput | string;
+    ownerPhone?: Prisma.StringFieldUpdateOperationsInput | string;
+    ownerEmail?: Prisma.StringFieldUpdateOperationsInput | string;
+    passwordHash?: Prisma.StringFieldUpdateOperationsInput | string;
+    maxDiscountPercent?: Prisma.IntFieldUpdateOperationsInput | number;
+    aiEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+    paystackSecretEnc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    receiptCounter?: Prisma.IntFieldUpdateOperationsInput | number;
+    orderCounter?: Prisma.IntFieldUpdateOperationsInput | number;
+    createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    session?: Prisma.WhatsAppSessionUncheckedUpdateOneWithoutMerchantNestedInput;
+    authItems?: Prisma.WaAuthItemUncheckedUpdateManyWithoutMerchantNestedInput;
+    products?: Prisma.ProductUncheckedUpdateManyWithoutMerchantNestedInput;
+    customers?: Prisma.CustomerUncheckedUpdateManyWithoutMerchantNestedInput;
+    conversations?: Prisma.ConversationUncheckedUpdateManyWithoutMerchantNestedInput;
+};
+export type MerchantCountOutputType = {
+    authItems: number;
+    products: number;
+    customers: number;
+    conversations: number;
+    orders: number;
+};
+export type MerchantCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    authItems?: boolean | MerchantCountOutputTypeCountAuthItemsArgs;
+    products?: boolean | MerchantCountOutputTypeCountProductsArgs;
+    customers?: boolean | MerchantCountOutputTypeCountCustomersArgs;
+    conversations?: boolean | MerchantCountOutputTypeCountConversationsArgs;
+    orders?: boolean | MerchantCountOutputTypeCountOrdersArgs;
+};
+export type MerchantCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    select?: Prisma.MerchantCountOutputTypeSelect<ExtArgs> | null;
+};
+export type MerchantCountOutputTypeCountAuthItemsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    where?: Prisma.WaAuthItemWhereInput;
+};
+export type MerchantCountOutputTypeCountProductsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    where?: Prisma.ProductWhereInput;
+};
+export type MerchantCountOutputTypeCountCustomersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    where?: Prisma.CustomerWhereInput;
+};
+export type MerchantCountOutputTypeCountConversationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    where?: Prisma.ConversationWhereInput;
+};
+export type MerchantCountOutputTypeCountOrdersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    where?: Prisma.OrderWhereInput;
+};
+export type MerchantSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
+    id?: boolean;
+    businessName?: boolean;
+    ownerName?: boolean;
+    ownerPhone?: boolean;
+    ownerEmail?: boolean;
+    passwordHash?: boolean;
+    maxDiscountPercent?: boolean;
+    aiEnabled?: boolean;
+    paystackSecretEnc?: boolean;
+    receiptCounter?: boolean;
+    orderCounter?: boolean;
+    createdAt?: boolean;
+    updatedAt?: boolean;
+    session?: boolean | Prisma.Merchant$sessionArgs<ExtArgs>;
+    authItems?: boolean | Prisma.Merchant$authItemsArgs<ExtArgs>;
+    products?: boolean | Prisma.Merchant$productsArgs<ExtArgs>;
+    customers?: boolean | Prisma.Merchant$customersArgs<ExtArgs>;
+    conversations?: boolean | Prisma.Merchant$conversationsArgs<ExtArgs>;
+    orders?: boolean | Prisma.Merchant$ordersArgs<ExtArgs>;
+    _count?: boolean | Prisma.MerchantCountOutputTypeDefaultArgs<ExtArgs>;
+}, ExtArgs["result"]["merchant"]>;
+export type MerchantSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
+    id?: boolean;
+    businessName?: boolean;
+    ownerName?: boolean;
+    ownerPhone?: boolean;
+    ownerEmail?: boolean;
+    passwordHash?: boolean;
+    maxDiscountPercent?: boolean;
+    aiEnabled?: boolean;
+    paystackSecretEnc?: boolean;
+    receiptCounter?: boolean;
+    orderCounter?: boolean;
+    createdAt?: boolean;
+    updatedAt?: boolean;
+}, ExtArgs["result"]["merchant"]>;
+export type MerchantSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
+    id?: boolean;
+    businessName?: boolean;
+    ownerName?: boolean;
+    ownerPhone?: boolean;
+    ownerEmail?: boolean;
+    passwordHash?: boolean;
+    maxDiscountPercent?: boolean;
+    aiEnabled?: boolean;
+    paystackSecretEnc?: boolean;
+    receiptCounter?: boolean;
+    orderCounter?: boolean;
+    createdAt?: boolean;
+    updatedAt?: boolean;
+}, ExtArgs["result"]["merchant"]>;
+export type MerchantSelectScalar = {
+    id?: boolean;
+    businessName?: boolean;
+    ownerName?: boolean;
+    ownerPhone?: boolean;
+    ownerEmail?: boolean;
+    passwordHash?: boolean;
+    maxDiscountPercent?: boolean;
+    aiEnabled?: boolean;
+    paystackSecretEnc?: boolean;
+    receiptCounter?: boolean;
+    orderCounter?: boolean;
+    createdAt?: boolean;
+    updatedAt?: boolean;
+};
+export type MerchantOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "businessName" | "ownerName" | "ownerPhone" | "ownerEmail" | "passwordHash" | "maxDiscountPercent" | "aiEnabled" | "paystackSecretEnc" | "receiptCounter" | "orderCounter" | "createdAt" | "updatedAt", ExtArgs["result"]["merchant"]>;
+export type MerchantInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    session?: boolean | Prisma.Merchant$sessionArgs<ExtArgs>;
+    authItems?: boolean | Prisma.Merchant$authItemsArgs<ExtArgs>;
+    products?: boolean | Prisma.Merchant$productsArgs<ExtArgs>;
+    customers?: boolean | Prisma.Merchant$customersArgs<ExtArgs>;
+    conversations?: boolean | Prisma.Merchant$conversationsArgs<ExtArgs>;
+    orders?: boolean | Prisma.Merchant$ordersArgs<ExtArgs>;
+    _count?: boolean | Prisma.MerchantCountOutputTypeDefaultArgs<ExtArgs>;
+};
+export type MerchantIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {};
+export type MerchantIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {};
+export type $MerchantPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    name: "Merchant";
+    objects: {
+        session: Prisma.$WhatsAppSessionPayload<ExtArgs> | null;
+        authItems: Prisma.$WaAuthItemPayload<ExtArgs>[];
+        products: Prisma.$ProductPayload<ExtArgs>[];
+        customers: Prisma.$CustomerPayload<ExtArgs>[];
+        conversations: Prisma.$ConversationPayload<ExtArgs>[];
+        orders: Prisma.$OrderPayload<ExtArgs>[];
+    };
+    scalars: runtime.Types.Extensions.GetPayloadResult<{
+        id: string;
+        businessName: string;
+        ownerName: string;
+        ownerPhone: string;
+        ownerEmail: string;
+        passwordHash: string;
+        maxDiscountPercent: number;
+        aiEnabled: boolean;
+        paystackSecretEnc: string | null;
+        receiptCounter: number;
+        orderCounter: number;
+        createdAt: Date;
+        updatedAt: Date;
+    }, ExtArgs["result"]["merchant"]>;
+    composites: {};
+};
+export type MerchantGetPayload<S extends boolean | null | undefined | MerchantDefaultArgs> = runtime.Types.Result.GetResult<Prisma.$MerchantPayload, S>;
+export type MerchantCountArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = Omit<MerchantFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+    select?: MerchantCountAggregateInputType | true;
+};
+export interface MerchantDelegate<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: {
+        types: Prisma.TypeMap<ExtArgs>['model']['Merchant'];
+        meta: {
+            name: 'Merchant';
+        };
+    };
+    findUnique<T extends MerchantFindUniqueArgs>(args: Prisma.SelectSubset<T, MerchantFindUniqueArgs<ExtArgs>>): Prisma.Prisma__MerchantClient<runtime.Types.Result.GetResult<Prisma.$MerchantPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>;
+    findUniqueOrThrow<T extends MerchantFindUniqueOrThrowArgs>(args: Prisma.SelectSubset<T, MerchantFindUniqueOrThrowArgs<ExtArgs>>): Prisma.Prisma__MerchantClient<runtime.Types.Result.GetResult<Prisma.$MerchantPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>;
+    findFirst<T extends MerchantFindFirstArgs>(args?: Prisma.SelectSubset<T, MerchantFindFirstArgs<ExtArgs>>): Prisma.Prisma__MerchantClient<runtime.Types.Result.GetResult<Prisma.$MerchantPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>;
+    findFirstOrThrow<T extends MerchantFindFirstOrThrowArgs>(args?: Prisma.SelectSubset<T, MerchantFindFirstOrThrowArgs<ExtArgs>>): Prisma.Prisma__MerchantClient<runtime.Types.Result.GetResult<Prisma.$MerchantPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>;
+    findMany<T extends MerchantFindManyArgs>(args?: Prisma.SelectSubset<T, MerchantFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$MerchantPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>;
+    create<T extends MerchantCreateArgs>(args: Prisma.SelectSubset<T, MerchantCreateArgs<ExtArgs>>): Prisma.Prisma__MerchantClient<runtime.Types.Result.GetResult<Prisma.$MerchantPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>;
+    createMany<T extends MerchantCreateManyArgs>(args?: Prisma.SelectSubset<T, MerchantCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<Prisma.BatchPayload>;
+    createManyAndReturn<T extends MerchantCreateManyAndReturnArgs>(args?: Prisma.SelectSubset<T, MerchantCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$MerchantPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>;
+    delete<T extends MerchantDeleteArgs>(args: Prisma.SelectSubset<T, MerchantDeleteArgs<ExtArgs>>): Prisma.Prisma__MerchantClient<runtime.Types.Result.GetResult<Prisma.$MerchantPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>;
+    update<T extends MerchantUpdateArgs>(args: Prisma.SelectSubset<T, MerchantUpdateArgs<ExtArgs>>): Prisma.Prisma__MerchantClient<runtime.Types.Result.GetResult<Prisma.$MerchantPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>;
+    deleteMany<T extends MerchantDeleteManyArgs>(args?: Prisma.SelectSubset<T, MerchantDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<Prisma.BatchPayload>;
+    updateMany<T extends MerchantUpdateManyArgs>(args: Prisma.SelectSubset<T, MerchantUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<Prisma.BatchPayload>;
+    updateManyAndReturn<T extends MerchantUpdateManyAndReturnArgs>(args: Prisma.SelectSubset<T, MerchantUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$MerchantPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>;
+    upsert<T extends MerchantUpsertArgs>(args: Prisma.SelectSubset<T, MerchantUpsertArgs<ExtArgs>>): Prisma.Prisma__MerchantClient<runtime.Types.Result.GetResult<Prisma.$MerchantPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>;
+    count<T extends MerchantCountArgs>(args?: Prisma.Subset<T, MerchantCountArgs>): Prisma.PrismaPromise<T extends runtime.Types.Utils.Record<'select', any> ? T['select'] extends true ? number : Prisma.GetScalarType<T['select'], MerchantCountAggregateOutputType> : number>;
+    aggregate<T extends MerchantAggregateArgs>(args: Prisma.Subset<T, MerchantAggregateArgs>): Prisma.PrismaPromise<GetMerchantAggregateType<T>>;
+    groupBy<T extends MerchantGroupByArgs, HasSelectOrTake extends Prisma.Or<Prisma.Extends<'skip', Prisma.Keys<T>>, Prisma.Extends<'take', Prisma.Keys<T>>>, OrderByArg extends Prisma.True extends HasSelectOrTake ? {
+        orderBy: MerchantGroupByArgs['orderBy'];
+    } : {
+        orderBy?: MerchantGroupByArgs['orderBy'];
+    }, OrderFields extends Prisma.ExcludeUnderscoreKeys<Prisma.Keys<Prisma.MaybeTupleToUnion<T['orderBy']>>>, ByFields extends Prisma.MaybeTupleToUnion<T['by']>, ByValid extends Prisma.Has<ByFields, OrderFields>, HavingFields extends Prisma.GetHavingFields<T['having']>, HavingValid extends Prisma.Has<ByFields, HavingFields>, ByEmpty extends T['by'] extends never[] ? Prisma.True : Prisma.False, InputErrors extends ByEmpty extends Prisma.True ? `Error: "by" must not be empty.` : HavingValid extends Prisma.False ? {
+        [P in HavingFields]: P extends ByFields ? never : P extends string ? `Error: Field "${P}" used in "having" needs to be provided in "by".` : [
+            Error,
+            'Field ',
+            P,
+            ` in "having" needs to be provided in "by"`
+        ];
+    }[HavingFields] : 'take' extends Prisma.Keys<T> ? 'orderBy' extends Prisma.Keys<T> ? ByValid extends Prisma.True ? {} : {
+        [P in OrderFields]: P extends ByFields ? never : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`;
+    }[OrderFields] : 'Error: If you provide "take", you also need to provide "orderBy"' : 'skip' extends Prisma.Keys<T> ? 'orderBy' extends Prisma.Keys<T> ? ByValid extends Prisma.True ? {} : {
+        [P in OrderFields]: P extends ByFields ? never : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`;
+    }[OrderFields] : 'Error: If you provide "skip", you also need to provide "orderBy"' : ByValid extends Prisma.True ? {} : {
+        [P in OrderFields]: P extends ByFields ? never : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`;
+    }[OrderFields]>(args: Prisma.SubsetIntersection<T, MerchantGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetMerchantGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>;
+    readonly fields: MerchantFieldRefs;
+}
+export interface Prisma__MerchantClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise";
+    session<T extends Prisma.Merchant$sessionArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Merchant$sessionArgs<ExtArgs>>): Prisma.Prisma__WhatsAppSessionClient<runtime.Types.Result.GetResult<Prisma.$WhatsAppSessionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>;
+    authItems<T extends Prisma.Merchant$authItemsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Merchant$authItemsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$WaAuthItemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>;
+    products<T extends Prisma.Merchant$productsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Merchant$productsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ProductPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>;
+    customers<T extends Prisma.Merchant$customersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Merchant$customersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CustomerPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>;
+    conversations<T extends Prisma.Merchant$conversationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Merchant$conversationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ConversationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>;
+    orders<T extends Prisma.Merchant$ordersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Merchant$ordersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$OrderPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>;
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): runtime.Types.Utils.JsPromise<TResult1 | TResult2>;
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): runtime.Types.Utils.JsPromise<T | TResult>;
+    finally(onfinally?: (() => void) | undefined | null): runtime.Types.Utils.JsPromise<T>;
+}
+export interface MerchantFieldRefs {
+    readonly id: Prisma.FieldRef<"Merchant", 'String'>;
+    readonly businessName: Prisma.FieldRef<"Merchant", 'String'>;
+    readonly ownerName: Prisma.FieldRef<"Merchant", 'String'>;
+    readonly ownerPhone: Prisma.FieldRef<"Merchant", 'String'>;
+    readonly ownerEmail: Prisma.FieldRef<"Merchant", 'String'>;
+    readonly passwordHash: Prisma.FieldRef<"Merchant", 'String'>;
+    readonly maxDiscountPercent: Prisma.FieldRef<"Merchant", 'Int'>;
+    readonly aiEnabled: Prisma.FieldRef<"Merchant", 'Boolean'>;
+    readonly paystackSecretEnc: Prisma.FieldRef<"Merchant", 'String'>;
+    readonly receiptCounter: Prisma.FieldRef<"Merchant", 'Int'>;
+    readonly orderCounter: Prisma.FieldRef<"Merchant", 'Int'>;
+    readonly createdAt: Prisma.FieldRef<"Merchant", 'DateTime'>;
+    readonly updatedAt: Prisma.FieldRef<"Merchant", 'DateTime'>;
+}
+export type MerchantFindUniqueArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    select?: Prisma.MerchantSelect<ExtArgs> | null;
+    omit?: Prisma.MerchantOmit<ExtArgs> | null;
+    include?: Prisma.MerchantInclude<ExtArgs> | null;
+    where: Prisma.MerchantWhereUniqueInput;
+};
+export type MerchantFindUniqueOrThrowArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    select?: Prisma.MerchantSelect<ExtArgs> | null;
+    omit?: Prisma.MerchantOmit<ExtArgs> | null;
+    include?: Prisma.MerchantInclude<ExtArgs> | null;
+    where: Prisma.MerchantWhereUniqueInput;
+};
+export type MerchantFindFirstArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    select?: Prisma.MerchantSelect<ExtArgs> | null;
+    omit?: Prisma.MerchantOmit<ExtArgs> | null;
+    include?: Prisma.MerchantInclude<ExtArgs> | null;
+    where?: Prisma.MerchantWhereInput;
+    orderBy?: Prisma.MerchantOrderByWithRelationInput | Prisma.MerchantOrderByWithRelationInput[];
+    cursor?: Prisma.MerchantWhereUniqueInput;
+    take?: number;
+    skip?: number;
+    distinct?: Prisma.MerchantScalarFieldEnum | Prisma.MerchantScalarFieldEnum[];
+};
+export type MerchantFindFirstOrThrowArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    select?: Prisma.MerchantSelect<ExtArgs> | null;
+    omit?: Prisma.MerchantOmit<ExtArgs> | null;
+    include?: Prisma.MerchantInclude<ExtArgs> | null;
+    where?: Prisma.MerchantWhereInput;
+    orderBy?: Prisma.MerchantOrderByWithRelationInput | Prisma.MerchantOrderByWithRelationInput[];
+    cursor?: Prisma.MerchantWhereUniqueInput;
+    take?: number;
+    skip?: number;
+    distinct?: Prisma.MerchantScalarFieldEnum | Prisma.MerchantScalarFieldEnum[];
+};
+export type MerchantFindManyArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    select?: Prisma.MerchantSelect<ExtArgs> | null;
+    omit?: Prisma.MerchantOmit<ExtArgs> | null;
+    include?: Prisma.MerchantInclude<ExtArgs> | null;
+    where?: Prisma.MerchantWhereInput;
+    orderBy?: Prisma.MerchantOrderByWithRelationInput | Prisma.MerchantOrderByWithRelationInput[];
+    cursor?: Prisma.MerchantWhereUniqueInput;
+    take?: number;
+    skip?: number;
+    distinct?: Prisma.MerchantScalarFieldEnum | Prisma.MerchantScalarFieldEnum[];
+};
+export type MerchantCreateArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    select?: Prisma.MerchantSelect<ExtArgs> | null;
+    omit?: Prisma.MerchantOmit<ExtArgs> | null;
+    include?: Prisma.MerchantInclude<ExtArgs> | null;
+    data: Prisma.XOR<Prisma.MerchantCreateInput, Prisma.MerchantUncheckedCreateInput>;
+};
+export type MerchantCreateManyArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    data: Prisma.MerchantCreateManyInput | Prisma.MerchantCreateManyInput[];
+    skipDuplicates?: boolean;
+};
+export type MerchantCreateManyAndReturnArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    select?: Prisma.MerchantSelectCreateManyAndReturn<ExtArgs> | null;
+    omit?: Prisma.MerchantOmit<ExtArgs> | null;
+    data: Prisma.MerchantCreateManyInput | Prisma.MerchantCreateManyInput[];
+    skipDuplicates?: boolean;
+};
+export type MerchantUpdateArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    select?: Prisma.MerchantSelect<ExtArgs> | null;
+    omit?: Prisma.MerchantOmit<ExtArgs> | null;
+    include?: Prisma.MerchantInclude<ExtArgs> | null;
+    data: Prisma.XOR<Prisma.MerchantUpdateInput, Prisma.MerchantUncheckedUpdateInput>;
+    where: Prisma.MerchantWhereUniqueInput;
+};
+export type MerchantUpdateManyArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    data: Prisma.XOR<Prisma.MerchantUpdateManyMutationInput, Prisma.MerchantUncheckedUpdateManyInput>;
+    where?: Prisma.MerchantWhereInput;
+    limit?: number;
+};
+export type MerchantUpdateManyAndReturnArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    select?: Prisma.MerchantSelectUpdateManyAndReturn<ExtArgs> | null;
+    omit?: Prisma.MerchantOmit<ExtArgs> | null;
+    data: Prisma.XOR<Prisma.MerchantUpdateManyMutationInput, Prisma.MerchantUncheckedUpdateManyInput>;
+    where?: Prisma.MerchantWhereInput;
+    limit?: number;
+};
+export type MerchantUpsertArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    select?: Prisma.MerchantSelect<ExtArgs> | null;
+    omit?: Prisma.MerchantOmit<ExtArgs> | null;
+    include?: Prisma.MerchantInclude<ExtArgs> | null;
+    where: Prisma.MerchantWhereUniqueInput;
+    create: Prisma.XOR<Prisma.MerchantCreateInput, Prisma.MerchantUncheckedCreateInput>;
+    update: Prisma.XOR<Prisma.MerchantUpdateInput, Prisma.MerchantUncheckedUpdateInput>;
+};
+export type MerchantDeleteArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    select?: Prisma.MerchantSelect<ExtArgs> | null;
+    omit?: Prisma.MerchantOmit<ExtArgs> | null;
+    include?: Prisma.MerchantInclude<ExtArgs> | null;
+    where: Prisma.MerchantWhereUniqueInput;
+};
+export type MerchantDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    where?: Prisma.MerchantWhereInput;
+    limit?: number;
+};
+export type Merchant$sessionArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    select?: Prisma.WhatsAppSessionSelect<ExtArgs> | null;
+    omit?: Prisma.WhatsAppSessionOmit<ExtArgs> | null;
+    include?: Prisma.WhatsAppSessionInclude<ExtArgs> | null;
+    where?: Prisma.WhatsAppSessionWhereInput;
+};
+export type Merchant$authItemsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    select?: Prisma.WaAuthItemSelect<ExtArgs> | null;
+    omit?: Prisma.WaAuthItemOmit<ExtArgs> | null;
+    include?: Prisma.WaAuthItemInclude<ExtArgs> | null;
+    where?: Prisma.WaAuthItemWhereInput;
+    orderBy?: Prisma.WaAuthItemOrderByWithRelationInput | Prisma.WaAuthItemOrderByWithRelationInput[];
+    cursor?: Prisma.WaAuthItemWhereUniqueInput;
+    take?: number;
+    skip?: number;
+    distinct?: Prisma.WaAuthItemScalarFieldEnum | Prisma.WaAuthItemScalarFieldEnum[];
+};
+export type Merchant$productsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    select?: Prisma.ProductSelect<ExtArgs> | null;
+    omit?: Prisma.ProductOmit<ExtArgs> | null;
+    include?: Prisma.ProductInclude<ExtArgs> | null;
+    where?: Prisma.ProductWhereInput;
+    orderBy?: Prisma.ProductOrderByWithRelationInput | Prisma.ProductOrderByWithRelationInput[];
+    cursor?: Prisma.ProductWhereUniqueInput;
+    take?: number;
+    skip?: number;
+    distinct?: Prisma.ProductScalarFieldEnum | Prisma.ProductScalarFieldEnum[];
+};
+export type Merchant$customersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    select?: Prisma.CustomerSelect<ExtArgs> | null;
+    omit?: Prisma.CustomerOmit<ExtArgs> | null;
+    include?: Prisma.CustomerInclude<ExtArgs> | null;
+    where?: Prisma.CustomerWhereInput;
+    orderBy?: Prisma.CustomerOrderByWithRelationInput | Prisma.CustomerOrderByWithRelationInput[];
+    cursor?: Prisma.CustomerWhereUniqueInput;
+    take?: number;
+    skip?: number;
+    distinct?: Prisma.CustomerScalarFieldEnum | Prisma.CustomerScalarFieldEnum[];
+};
+export type Merchant$conversationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    select?: Prisma.ConversationSelect<ExtArgs> | null;
+    omit?: Prisma.ConversationOmit<ExtArgs> | null;
+    include?: Prisma.ConversationInclude<ExtArgs> | null;
+    where?: Prisma.ConversationWhereInput;
+    orderBy?: Prisma.ConversationOrderByWithRelationInput | Prisma.ConversationOrderByWithRelationInput[];
+    cursor?: Prisma.ConversationWhereUniqueInput;
+    take?: number;
+    skip?: number;
+    distinct?: Prisma.ConversationScalarFieldEnum | Prisma.ConversationScalarFieldEnum[];
+};
+export type Merchant$ordersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    select?: Prisma.OrderSelect<ExtArgs> | null;
+    omit?: Prisma.OrderOmit<ExtArgs> | null;
+    include?: Prisma.OrderInclude<ExtArgs> | null;
+    where?: Prisma.OrderWhereInput;
+    orderBy?: Prisma.OrderOrderByWithRelationInput | Prisma.OrderOrderByWithRelationInput[];
+    cursor?: Prisma.OrderWhereUniqueInput;
+    take?: number;
+    skip?: number;
+    distinct?: Prisma.OrderScalarFieldEnum | Prisma.OrderScalarFieldEnum[];
+};
+export type MerchantDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    select?: Prisma.MerchantSelect<ExtArgs> | null;
+    omit?: Prisma.MerchantOmit<ExtArgs> | null;
+    include?: Prisma.MerchantInclude<ExtArgs> | null;
+};

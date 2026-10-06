@@ -1,0 +1,18 @@
+import * as Prisma from './internal/prismaNamespaceBrowser.js';
+export { Prisma };
+export * as $Enums from './enums.js';
+export * from './enums.js';
+export type Merchant = Prisma.MerchantModel;
+export type WhatsAppSession = Prisma.WhatsAppSessionModel;
+export type WaAuthItem = Prisma.WaAuthItemModel;
+export type Product = Prisma.ProductModel;
+export type Variant = Prisma.VariantModel;
+export type Customer = Prisma.CustomerModel;
+export type Conversation = Prisma.ConversationModel;
+export type Message = Prisma.MessageModel;
+export type Negotiation = Prisma.NegotiationModel;
+export type Order = Prisma.OrderModel;
+export type OrderItem = Prisma.OrderItemModel;
+export type Payment = Prisma.PaymentModel;
+export type Receipt = Prisma.ReceiptModel;
+export type ProcessedEvent = Prisma.ProcessedEventModel;
