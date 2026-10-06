@@ -9,5 +9,8 @@ export default defineConfig({
     globals: true,
     root: './',
     include: ['**/*.spec.ts'],
+    // The integration specs talk to the real (remote) Supabase database, so each query costs a network round trip.
+    testTimeout: 120_000,
+    hookTimeout: 120_000,
   },
 });

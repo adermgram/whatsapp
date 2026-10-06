@@ -4,18 +4,18 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from '../app.module.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { SimulatorGateway } from '../messaging/simulator.gateway.js';
-import { OrdersService } from '../orders/orders.service.js';
+import { PaymentConfirmationService } from '../payments/payment-confirmation.service.js';
 import { FakePaymentProvider } from '../payments/fake-payment.provider.js';
 import { OwnerNotifier } from '../handoff/owner-notifier.js';
-import { ConversationService } from '../conversations/conversation.service.js';
+import { HandoffService } from '../handoff/handoff.service.js';
 const CHAT_ID = process.env.CHAT_ID ?? '2348011112222';
 const app = await NestFactory.createApplicationContext(AppModule, { logger: process.env.DEBUG_AGENT ? ['error', 'warn', 'debug'] : ['error', 'warn'] });
 const prisma = app.get(PrismaService);
 const gateway = app.get(SimulatorGateway);
-const orders = app.get(OrdersService);
+const confirmation = app.get(PaymentConfirmationService);
 const fake = app.get(FakePaymentProvider);
 const notifier = app.get(OwnerNotifier);
-const conversations = app.get(ConversationService);
+const handoffs = app.get(HandoffService);
 const merchant = await prisma.merchant.findFirstOrThrow({ where: { ownerEmail: 'demo@shopbot.local' } });
 console.log(`Chatting with "${merchant.businessName}" as customer ${CHAT_ID}. Commands: /pay /owner /resume /quit\n`);
 let n = 0;
@@ -39,7 +39,7 @@ for await (const line of rl) {
     }
     if (text === '/resume') {
         const c = await prisma.conversation.findFirstOrThrow({ where: { merchantId: merchant.id, chatId: CHAT_ID } });
-        await conversations.resumeAi(c.id);
+        await handoffs.resumeAi(c.id);
         console.log('(AI resumed)\n');
         continue;
     }
@@ -53,8 +53,13 @@ for await (const line of rl) {
             console.log('(no order awaiting payment)\n');
             continue;
         }
+        const before = gateway.sent.length;
         fake.markPaid(order.payment.reference, order.totalKobo);
-        console.log('(payment result)', await orders.markPaid(order.id, order.totalKobo), '\n');
+        console.log('(payment result)', await confirmation.confirm({ merchantId: merchant.id, reference: order.payment.reference }));
+        for (const s of gateway.sent.slice(before)) {
+            console.log(`bot> ${s.kind === 'text' ? s.text : `[${s.kind}] ${s.fileName ?? ''} (${s.size} bytes) ${s.text ?? ''}`}`);
+        }
+        console.log();
         continue;
     }
     await say(text);

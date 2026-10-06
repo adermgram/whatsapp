@@ -11,6 +11,7 @@ export type ReceiptMinAggregateOutputType = {
     orderId: string | null;
     number: string | null;
     fileKey: string | null;
+    sentAt: Date | null;
     createdAt: Date | null;
 };
 export type ReceiptMaxAggregateOutputType = {
@@ -18,6 +19,7 @@ export type ReceiptMaxAggregateOutputType = {
     orderId: string | null;
     number: string | null;
     fileKey: string | null;
+    sentAt: Date | null;
     createdAt: Date | null;
 };
 export type ReceiptCountAggregateOutputType = {
@@ -25,6 +27,7 @@ export type ReceiptCountAggregateOutputType = {
     orderId: number;
     number: number;
     fileKey: number;
+    sentAt: number;
     createdAt: number;
     _all: number;
 };
@@ -33,6 +36,7 @@ export type ReceiptMinAggregateInputType = {
     orderId?: true;
     number?: true;
     fileKey?: true;
+    sentAt?: true;
     createdAt?: true;
 };
 export type ReceiptMaxAggregateInputType = {
@@ -40,6 +44,7 @@ export type ReceiptMaxAggregateInputType = {
     orderId?: true;
     number?: true;
     fileKey?: true;
+    sentAt?: true;
     createdAt?: true;
 };
 export type ReceiptCountAggregateInputType = {
@@ -47,6 +52,7 @@ export type ReceiptCountAggregateInputType = {
     orderId?: true;
     number?: true;
     fileKey?: true;
+    sentAt?: true;
     createdAt?: true;
     _all?: true;
 };
@@ -79,6 +85,7 @@ export type ReceiptGroupByOutputType = {
     orderId: string;
     number: string;
     fileKey: string;
+    sentAt: Date | null;
     createdAt: Date;
     _count: ReceiptCountAggregateOutputType | null;
     _min: ReceiptMinAggregateOutputType | null;
@@ -95,6 +102,7 @@ export type ReceiptWhereInput = {
     orderId?: Prisma.StringFilter<"Receipt"> | string;
     number?: Prisma.StringFilter<"Receipt"> | string;
     fileKey?: Prisma.StringFilter<"Receipt"> | string;
+    sentAt?: Prisma.DateTimeNullableFilter<"Receipt"> | Date | string | null;
     createdAt?: Prisma.DateTimeFilter<"Receipt"> | Date | string;
     order?: Prisma.XOR<Prisma.OrderScalarRelationFilter, Prisma.OrderWhereInput>;
 };
@@ -103,6 +111,7 @@ export type ReceiptOrderByWithRelationInput = {
     orderId?: Prisma.SortOrder;
     number?: Prisma.SortOrder;
     fileKey?: Prisma.SortOrder;
+    sentAt?: Prisma.SortOrderInput | Prisma.SortOrder;
     createdAt?: Prisma.SortOrder;
     order?: Prisma.OrderOrderByWithRelationInput;
 };
@@ -114,6 +123,7 @@ export type ReceiptWhereUniqueInput = Prisma.AtLeast<{
     NOT?: Prisma.ReceiptWhereInput | Prisma.ReceiptWhereInput[];
     number?: Prisma.StringFilter<"Receipt"> | string;
     fileKey?: Prisma.StringFilter<"Receipt"> | string;
+    sentAt?: Prisma.DateTimeNullableFilter<"Receipt"> | Date | string | null;
     createdAt?: Prisma.DateTimeFilter<"Receipt"> | Date | string;
     order?: Prisma.XOR<Prisma.OrderScalarRelationFilter, Prisma.OrderWhereInput>;
 }, "id" | "orderId">;
@@ -122,6 +132,7 @@ export type ReceiptOrderByWithAggregationInput = {
     orderId?: Prisma.SortOrder;
     number?: Prisma.SortOrder;
     fileKey?: Prisma.SortOrder;
+    sentAt?: Prisma.SortOrderInput | Prisma.SortOrder;
     createdAt?: Prisma.SortOrder;
     _count?: Prisma.ReceiptCountOrderByAggregateInput;
     _max?: Prisma.ReceiptMaxOrderByAggregateInput;
@@ -135,12 +146,14 @@ export type ReceiptScalarWhereWithAggregatesInput = {
     orderId?: Prisma.StringWithAggregatesFilter<"Receipt"> | string;
     number?: Prisma.StringWithAggregatesFilter<"Receipt"> | string;
     fileKey?: Prisma.StringWithAggregatesFilter<"Receipt"> | string;
+    sentAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Receipt"> | Date | string | null;
     createdAt?: Prisma.DateTimeWithAggregatesFilter<"Receipt"> | Date | string;
 };
 export type ReceiptCreateInput = {
     id?: string;
     number: string;
     fileKey: string;
+    sentAt?: Date | string | null;
     createdAt?: Date | string;
     order: Prisma.OrderCreateNestedOneWithoutReceiptInput;
 };
@@ -149,12 +162,14 @@ export type ReceiptUncheckedCreateInput = {
     orderId: string;
     number: string;
     fileKey: string;
+    sentAt?: Date | string | null;
     createdAt?: Date | string;
 };
 export type ReceiptUpdateInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
     number?: Prisma.StringFieldUpdateOperationsInput | string;
     fileKey?: Prisma.StringFieldUpdateOperationsInput | string;
+    sentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     order?: Prisma.OrderUpdateOneRequiredWithoutReceiptNestedInput;
 };
@@ -163,6 +178,7 @@ export type ReceiptUncheckedUpdateInput = {
     orderId?: Prisma.StringFieldUpdateOperationsInput | string;
     number?: Prisma.StringFieldUpdateOperationsInput | string;
     fileKey?: Prisma.StringFieldUpdateOperationsInput | string;
+    sentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
 export type ReceiptCreateManyInput = {
@@ -170,12 +186,14 @@ export type ReceiptCreateManyInput = {
     orderId: string;
     number: string;
     fileKey: string;
+    sentAt?: Date | string | null;
     createdAt?: Date | string;
 };
 export type ReceiptUpdateManyMutationInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
     number?: Prisma.StringFieldUpdateOperationsInput | string;
     fileKey?: Prisma.StringFieldUpdateOperationsInput | string;
+    sentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
 export type ReceiptUncheckedUpdateManyInput = {
@@ -183,6 +201,7 @@ export type ReceiptUncheckedUpdateManyInput = {
     orderId?: Prisma.StringFieldUpdateOperationsInput | string;
     number?: Prisma.StringFieldUpdateOperationsInput | string;
     fileKey?: Prisma.StringFieldUpdateOperationsInput | string;
+    sentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
 export type ReceiptNullableScalarRelationFilter = {
@@ -194,6 +213,7 @@ export type ReceiptCountOrderByAggregateInput = {
     orderId?: Prisma.SortOrder;
     number?: Prisma.SortOrder;
     fileKey?: Prisma.SortOrder;
+    sentAt?: Prisma.SortOrder;
     createdAt?: Prisma.SortOrder;
 };
 export type ReceiptMaxOrderByAggregateInput = {
@@ -201,6 +221,7 @@ export type ReceiptMaxOrderByAggregateInput = {
     orderId?: Prisma.SortOrder;
     number?: Prisma.SortOrder;
     fileKey?: Prisma.SortOrder;
+    sentAt?: Prisma.SortOrder;
     createdAt?: Prisma.SortOrder;
 };
 export type ReceiptMinOrderByAggregateInput = {
@@ -208,6 +229,7 @@ export type ReceiptMinOrderByAggregateInput = {
     orderId?: Prisma.SortOrder;
     number?: Prisma.SortOrder;
     fileKey?: Prisma.SortOrder;
+    sentAt?: Prisma.SortOrder;
     createdAt?: Prisma.SortOrder;
 };
 export type ReceiptCreateNestedOneWithoutOrderInput = {
@@ -242,12 +264,14 @@ export type ReceiptCreateWithoutOrderInput = {
     id?: string;
     number: string;
     fileKey: string;
+    sentAt?: Date | string | null;
     createdAt?: Date | string;
 };
 export type ReceiptUncheckedCreateWithoutOrderInput = {
     id?: string;
     number: string;
     fileKey: string;
+    sentAt?: Date | string | null;
     createdAt?: Date | string;
 };
 export type ReceiptCreateOrConnectWithoutOrderInput = {
@@ -267,12 +291,14 @@ export type ReceiptUpdateWithoutOrderInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
     number?: Prisma.StringFieldUpdateOperationsInput | string;
     fileKey?: Prisma.StringFieldUpdateOperationsInput | string;
+    sentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
 export type ReceiptUncheckedUpdateWithoutOrderInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
     number?: Prisma.StringFieldUpdateOperationsInput | string;
     fileKey?: Prisma.StringFieldUpdateOperationsInput | string;
+    sentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
 export type ReceiptSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -280,6 +306,7 @@ export type ReceiptSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     orderId?: boolean;
     number?: boolean;
     fileKey?: boolean;
+    sentAt?: boolean;
     createdAt?: boolean;
     order?: boolean | Prisma.OrderDefaultArgs<ExtArgs>;
 }, ExtArgs["result"]["receipt"]>;
@@ -288,6 +315,7 @@ export type ReceiptSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
     orderId?: boolean;
     number?: boolean;
     fileKey?: boolean;
+    sentAt?: boolean;
     createdAt?: boolean;
     order?: boolean | Prisma.OrderDefaultArgs<ExtArgs>;
 }, ExtArgs["result"]["receipt"]>;
@@ -296,6 +324,7 @@ export type ReceiptSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
     orderId?: boolean;
     number?: boolean;
     fileKey?: boolean;
+    sentAt?: boolean;
     createdAt?: boolean;
     order?: boolean | Prisma.OrderDefaultArgs<ExtArgs>;
 }, ExtArgs["result"]["receipt"]>;
@@ -304,9 +333,10 @@ export type ReceiptSelectScalar = {
     orderId?: boolean;
     number?: boolean;
     fileKey?: boolean;
+    sentAt?: boolean;
     createdAt?: boolean;
 };
-export type ReceiptOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "orderId" | "number" | "fileKey" | "createdAt", ExtArgs["result"]["receipt"]>;
+export type ReceiptOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "orderId" | "number" | "fileKey" | "sentAt" | "createdAt", ExtArgs["result"]["receipt"]>;
 export type ReceiptInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
     order?: boolean | Prisma.OrderDefaultArgs<ExtArgs>;
 };
@@ -326,6 +356,7 @@ export type $ReceiptPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
         orderId: string;
         number: string;
         fileKey: string;
+        sentAt: Date | null;
         createdAt: Date;
     }, ExtArgs["result"]["receipt"]>;
     composites: {};
@@ -389,6 +420,7 @@ export interface ReceiptFieldRefs {
     readonly orderId: Prisma.FieldRef<"Receipt", 'String'>;
     readonly number: Prisma.FieldRef<"Receipt", 'String'>;
     readonly fileKey: Prisma.FieldRef<"Receipt", 'String'>;
+    readonly sentAt: Prisma.FieldRef<"Receipt", 'DateTime'>;
     readonly createdAt: Prisma.FieldRef<"Receipt", 'DateTime'>;
 }
 export type ReceiptFindUniqueArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {

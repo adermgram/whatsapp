@@ -269,6 +269,7 @@ model Receipt {
   orderId   String   @unique
   number    String // RCP-000123, per merchant
   fileKey   String
+  sentAt    DateTime? // set atomically when the receipt is delivered, so it is never sent twice
   createdAt DateTime @default(now())
 
   order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)

@@ -1,5 +1,13 @@
 import { Injectable } from '@nestjs/common';
 
+export interface PaymentAlert {
+  orderNumber: string;
+  totalKobo: number;
+  customerName: string | null;
+  /** Set when something needs the owner's attention (oversold, amount mismatch, ...). */
+  problem?: string;
+}
+
 export interface HandoffAlert {
   merchantId: string;
   conversationId: string;
@@ -20,7 +28,7 @@ export abstract class OwnerNotifier {
   ): Promise<void>;
   abstract notifyPayment(
     merchantId: string,
-    info: { orderNumber: string; totalKobo: number; customerName: string | null; oversold: boolean },
+    info: PaymentAlert,
   ): Promise<void>;
 }
 
@@ -36,7 +44,7 @@ export class LogOwnerNotifier extends OwnerNotifier {
   }
   async notifyPayment(
     merchantId: string,
-    info: { orderNumber: string; totalKobo: number; customerName: string | null; oversold: boolean },
+    info: PaymentAlert,
   ) {
     this.alerts.push({ type: 'payment', merchantId, ...info });
   }

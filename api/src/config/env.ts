@@ -16,6 +16,7 @@ const schema = z.object({
 
   WHATSAPP_ADAPTER: z.enum(['baileys', 'simulator']).default('simulator'),
   PAYMENT_DRIVER: z.enum(['paystack', 'fake']).default('fake'),
+  STORAGE_DIR: z.string().default('./storage'),
   PUBLIC_BASE_URL: z.string().default('http://localhost:3000'),
   // Paystack needs an email; WhatsApp customers have none, so we synthesise one from their number.
   PAYMENT_EMAIL_DOMAIN: z.string().default('customers.shopbot.app'),

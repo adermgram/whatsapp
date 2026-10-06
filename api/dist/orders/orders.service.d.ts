@@ -129,10 +129,12 @@ export declare class OrdersService {
             }[];
         };
         checkoutUrl: string;
-        expiresAt: Date;
+        expiresAt: Date | null;
         reference: string;
+        reused: boolean;
     }>;
+    cancelAwaiting(orderId: string): Promise<void>;
     private revertToDraft;
     markPaid(orderId: string, paidAmountKobo: number, rawEvent?: unknown): Promise<MarkPaidResult>;
-    expireStale(now?: Date): Promise<number>;
+    expireStale(now?: Date, merchantId?: string): Promise<number>;
 }

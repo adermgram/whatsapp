@@ -112,10 +112,30 @@ let OrdersService = class OrdersService {
         };
     }
     async checkout(merchantId, conversationId, opts = {}) {
+        const pending = await this.prisma.order.findFirst({
+            where: { merchantId, conversationId, status: 'AWAITING_PAYMENT' },
+            include: { items: true, payment: true },
+            orderBy: { createdAt: 'desc' },
+        });
         const draft = await this.prisma.order.findFirst({
             where: { merchantId, conversationId, status: 'DRAFT' },
             include: { items: true, customer: true, merchant: true },
         });
+        if (pending?.payment?.checkoutUrl) {
+            const key = (items) => items.map((i) => `${i.variantId}:${i.quantity}:${i.unitPriceKobo}`).sort().join('|');
+            if (!draft || draft.items.length === 0 || key(draft.items) === key(pending.items)) {
+                if (draft)
+                    await this.prisma.order.delete({ where: { id: draft.id } });
+                return {
+                    order: (await this.summary(pending.id)),
+                    checkoutUrl: pending.payment.checkoutUrl,
+                    expiresAt: pending.expiresAt,
+                    reference: pending.payment.reference,
+                    reused: true,
+                };
+            }
+            await this.cancelAwaiting(pending.id);
+        }
         if (!draft || draft.items.length === 0)
             throw new OrderError('EMPTY_CART', 'The cart is empty');
         if (!draft.customer.name || !draft.customer.address) {
@@ -164,12 +184,25 @@ let OrdersService = class OrdersService {
                 data: { orderId: draft.id, reference, amountKobo: totalKobo, checkoutUrl },
             });
             const order = await this.summary(draft.id);
-            return { order: order, checkoutUrl, expiresAt, reference };
+            return { order: order, checkoutUrl, expiresAt, reference, reused: false };
         }
         catch (err) {
             await this.revertToDraft(draft.id);
             throw new OrderError('PAYMENT_INIT_FAILED', err instanceof Error ? err.message : 'payment failed');
         }
+    }
+    async cancelAwaiting(orderId) {
+        await this.prisma.$transaction(async (tx) => {
+            const won = await tx.order.updateMany({
+                where: { id: orderId, status: 'AWAITING_PAYMENT' },
+                data: { status: 'CANCELLED' },
+            });
+            if (won.count === 0)
+                return;
+            const items = await tx.orderItem.findMany({ where: { orderId } });
+            for (const i of items)
+                await this.inventory.release(tx, i.variantId, i.quantity);
+        });
     }
     async revertToDraft(orderId) {
         await this.prisma.$transaction(async (tx) => {
@@ -214,9 +247,9 @@ let OrdersService = class OrdersService {
             return { status: 'paid', orderId, oversold };
         });
     }
-    async expireStale(now = new Date()) {
+    async expireStale(now = new Date(), merchantId) {
         const stale = await this.prisma.order.findMany({
-            where: { status: 'AWAITING_PAYMENT', expiresAt: { lt: now } },
+            where: { status: 'AWAITING_PAYMENT', expiresAt: { lt: now }, ...(merchantId ? { merchantId } : {}) },
             select: { id: true },
             take: 100,
         });

@@ -3,6 +3,7 @@ import { PrismaService } from '../prisma/prisma.service.js';
 import { AgentService } from '../agent/agent.service.js';
 import { InboundMessage, MessagingGateway } from '../messaging/messaging.types.js';
 import { OwnerNotifier } from '../handoff/owner-notifier.js';
+import { HandoffService } from '../handoff/handoff.service.js';
 import { SpeechToText } from '../speech/speech-to-text.js';
 import { env } from '../config/env.js';
 
@@ -20,6 +21,7 @@ export class ConversationService implements OnModuleInit {
     private readonly gateway: MessagingGateway,
     private readonly agent: AgentService,
     private readonly notifier: OwnerNotifier,
+    private readonly handoffs: HandoffService,
     private readonly speech: SpeechToText,
   ) {}
 
@@ -124,36 +126,7 @@ export class ConversationService implements OnModuleInit {
 
     await this.reply(msg, conversation.id, result.reply, result.meta);
 
-    if (result.handoffReason) await this.handoff(conversation.id, result.handoffReason);
-  }
-
-  /** Switch the chat to the human owner and alert them. */
-  async handoff(conversationId: string, reason: string) {
-    const conv = await this.prisma.conversation.update({
-      where: { id: conversationId },
-      data: { mode: 'HUMAN', humanSince: new Date(), handoffReason: reason },
-      include: { customer: true },
-    });
-    const recent = await this.prisma.message.findMany({
-      where: { conversationId, sender: 'CUSTOMER' },
-      orderBy: { createdAt: 'desc' },
-      take: 3,
-    });
-    await this.notifier.notifyHandoff({
-      merchantId: conv.merchantId,
-      conversationId,
-      customerName: conv.customer.name,
-      customerPhone: conv.customer.phone,
-      reason,
-      recent: recent.reverse().map((m) => m.text ?? ''),
-    });
-  }
-
-  async resumeAi(conversationId: string) {
-    await this.prisma.conversation.update({
-      where: { id: conversationId },
-      data: { mode: 'AI', humanSince: null, handoffReason: null },
-    });
+    if (result.handoffReason) await this.handoffs.handoff(conversation.id, result.handoffReason);
   }
 
   private async reply(msg: InboundMessage, conversationId: string, text: string, meta?: { shown: string[] }) {

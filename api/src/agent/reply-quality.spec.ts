@@ -41,4 +41,15 @@ describe('cleanReply', () => {
   it('collapses blank-line runs and strips zero-width characters', () => {
     expect(cleanReply('a\n\n\n\nb​')).toBe('a\n\nb');
   });
+
+  it('keeps payment links tappable: no asterisks stuck to the URL', () => {
+    expect(cleanReply('*Pay here:* *https://pay.example/abc*')).toBe('*Pay here:* https://pay.example/abc');
+    expect(cleanReply('Pay: **https://pay.example/abc**')).toBe('Pay: https://pay.example/abc');
+  });
+
+  it('unwraps a message the model made entirely bold, and drops unbalanced asterisks', () => {
+    expect(cleanReply('*Yes, we get it. Price is ₦15,000. You wan add am?*')).toBe('Yes, we get it. Price is ₦15,000. You wan add am?');
+    expect(cleanReply('*Your order number is *ORD-000003*. Total ₦13,800')).toBe('Your order number is ORD-000003. Total ₦13,800');
+    expect(cleanReply('Small *bold* word stays')).toBe('Small *bold* word stays');
+  });
 });

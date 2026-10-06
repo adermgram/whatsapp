@@ -5,14 +5,15 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 import { Global, Module } from '@nestjs/common';
+import { HandoffService } from './handoff.service.js';
 import { LogOwnerNotifier, OwnerNotifier } from './owner-notifier.js';
 let HandoffModule = class HandoffModule {
 };
 HandoffModule = __decorate([
     Global(),
     Module({
-        providers: [{ provide: OwnerNotifier, useClass: LogOwnerNotifier }],
-        exports: [OwnerNotifier],
+        providers: [HandoffService, { provide: OwnerNotifier, useClass: LogOwnerNotifier }],
+        exports: [HandoffService, OwnerNotifier],
     })
 ], HandoffModule);
 export { HandoffModule };

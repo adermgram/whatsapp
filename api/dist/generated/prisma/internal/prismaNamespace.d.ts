@@ -1402,6 +1402,7 @@ export declare const ReceiptScalarFieldEnum: {
     readonly orderId: "orderId";
     readonly number: "number";
     readonly fileKey: "fileKey";
+    readonly sentAt: "sentAt";
     readonly createdAt: "createdAt";
 };
 export type ReceiptScalarFieldEnum = (typeof ReceiptScalarFieldEnum)[keyof typeof ReceiptScalarFieldEnum];

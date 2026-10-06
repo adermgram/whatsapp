@@ -25,13 +25,16 @@ let NegotiationService = class NegotiationService {
         const existing = await this.prisma.negotiation.findUnique({
             where: { conversationId_variantId: { conversationId, variantId } },
         });
+        const repeated = !!existing && existing.rounds > 0 && existing.lastOfferKobo === offerKobo;
         const result = evaluateOffer({
             listKobo: variant.priceKobo,
             floorKobo: variant.minPriceKobo,
             maxDiscountPercent: variant.product.merchant.maxDiscountPercent,
             offerKobo,
-            priorRounds: existing?.rounds ?? 0,
+            priorRounds: repeated ? existing.rounds - 1 : (existing?.rounds ?? 0),
         });
+        if (repeated)
+            return this.outcome(result);
         const accepted = result.decision === 'accept';
         await this.prisma.negotiation.upsert({
             where: { conversationId_variantId: { conversationId, variantId } },
@@ -56,6 +59,9 @@ let NegotiationService = class NegotiationService {
                         : 'OPEN',
             },
         });
+        return this.outcome(result);
+    }
+    outcome(result) {
         return {
             decision: result.decision,
             priceKobo: result.priceKobo,

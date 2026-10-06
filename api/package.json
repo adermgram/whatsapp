@@ -24,7 +24,8 @@
     "seed": "tsx src/scripts/seed.ts",
     "db:migrate": "prisma migrate dev && prisma generate",
     "db:generate": "prisma generate",
-    "scenarios": "nest build && node dist/scripts/scenarios.js"
+    "scenarios": "nest build && node dist/scripts/scenarios.js",
+    "e2e:webhook": "nest build && node dist/scripts/webhook-e2e.js"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1146.0",

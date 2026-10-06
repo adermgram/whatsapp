@@ -23,6 +23,7 @@ declare const schema: z.ZodObject<{
         paystack: "paystack";
         fake: "fake";
     }>>;
+    STORAGE_DIR: z.ZodDefault<z.ZodString>;
     PUBLIC_BASE_URL: z.ZodDefault<z.ZodString>;
     PAYMENT_EMAIL_DOMAIN: z.ZodDefault<z.ZodString>;
 }, z.core.$strip>;

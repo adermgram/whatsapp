@@ -121,7 +121,7 @@ describe('expiry', () => {
     const { conversation } = await newBuyer(variant.id);
     const { order } = await orders.checkout(merchantId, conversation.id);
 
-    const expired = await orders.expireStale(new Date(Date.now() + 31 * 60_000));
+    const expired = await orders.expireStale(new Date(Date.now() + 31 * 60_000), merchantId);
     expect(expired).toBeGreaterThanOrEqual(1);
     expect(await stockOf(variant.id)).toMatchObject({ stock: 1, reserved: 0 });
 
@@ -135,7 +135,7 @@ describe('expiry', () => {
     const variant = await newVariant(1);
     const a = await newBuyer(variant.id);
     const { order: orderA } = await orders.checkout(merchantId, a.conversation.id);
-    await orders.expireStale(new Date(Date.now() + 31 * 60_000));
+    await orders.expireStale(new Date(Date.now() + 31 * 60_000), merchantId);
 
     const b = await newBuyer(variant.id);
     const { order: orderB } = await orders.checkout(merchantId, b.conversation.id);
@@ -184,5 +184,73 @@ describe('pricing is decided by the server', () => {
     // re-haggling afterwards cannot knock the deal back to list price
     await negotiation.submitOffer(merchantId, buyer.conversation.id, variant.id, naira(5000));
     expect(await negotiation.priceFor(buyer.conversation.id, variant.id, naira(20000))).toBe(naira(18000));
+  });
+});
+
+describe('repeating an offer', () => {
+  it('gives the same answer and does not advance the haggling rounds', async () => {
+    const variant = await newVariant(5, 20000, 15000);
+    const buyer = await newBuyer(variant.id);
+    const first = await negotiation.submitOffer(merchantId, buyer.conversation.id, variant.id, naira(13000));
+    expect(first).toMatchObject({ decision: 'counter', priceKobo: naira(18000) });
+
+    // the model re-submits the customer's old offer when they actually accepted our quote
+    const again = await negotiation.submitOffer(merchantId, buyer.conversation.id, variant.id, naira(13000));
+    const thrice = await negotiation.submitOffer(merchantId, buyer.conversation.id, variant.id, naira(13000));
+    expect(again).toEqual(first);
+    expect(thrice).toEqual(first);
+
+    const row = await prisma.negotiation.findFirstOrThrow({ where: { conversationId: buyer.conversation.id } });
+    expect(row.rounds).toBe(1);
+    expect(row.status).toBe('OPEN'); // nothing was agreed by repetition
+
+    // accepting the quote locks in OUR price, not the customer's old offer
+    expect(await negotiation.acceptQuoted(buyer.conversation.id, variant.id)).toBe(naira(18000));
+  });
+});
+
+describe('asking for the payment link again', () => {
+  it('returns the same order and reserves stock only once', async () => {
+    const variant = await newVariant(3);
+    const { conversation, customer } = await newBuyer(variant.id);
+    const first = await orders.checkout(merchantId, conversation.id);
+
+    const again = await orders.checkout(merchantId, conversation.id);
+    expect(again.reused).toBe(true);
+    expect(again.order.id).toBe(first.order.id);
+    expect(again.checkoutUrl).toBe(first.checkoutUrl);
+
+    // the customer says "add it" again, creating an identical draft cart: still no second order
+    await orders.setItem(merchantId, customer.id, conversation.id, variant.id, 1);
+    const third = await orders.checkout(merchantId, conversation.id);
+    expect(third.order.id).toBe(first.order.id);
+
+    expect((await stockOf(variant.id)).reserved).toBe(1);
+    expect(await prisma.order.count({ where: { conversationId: conversation.id, status: { not: 'DRAFT' } } })).toBe(1);
+  });
+
+  it('cancels the old order and frees its stock when the cart changed', async () => {
+    const variant = await newVariant(5);
+    const { conversation, customer } = await newBuyer(variant.id, 1);
+    const first = await orders.checkout(merchantId, conversation.id);
+
+    await orders.setItem(merchantId, customer.id, conversation.id, variant.id, 2); // now wants two
+    const second = await orders.checkout(merchantId, conversation.id);
+
+    expect(second.reused).toBe(false);
+    expect(second.order.id).not.toBe(first.order.id);
+    expect((await prisma.order.findUniqueOrThrow({ where: { id: first.order.id } })).status).toBe('CANCELLED');
+    expect((await stockOf(variant.id)).reserved).toBe(2); // only the new order holds stock
+  });
+
+  it('still honours a payment made on the cancelled order link', async () => {
+    const variant = await newVariant(5);
+    const { conversation, customer } = await newBuyer(variant.id, 1);
+    const first = await orders.checkout(merchantId, conversation.id);
+    await orders.setItem(merchantId, customer.id, conversation.id, variant.id, 2);
+    await orders.checkout(merchantId, conversation.id); // cancels `first`
+
+    const res = await orders.markPaid(first.order.id, first.order.totalKobo);
+    expect(res).toMatchObject({ status: 'paid', oversold: false });
   });
 });

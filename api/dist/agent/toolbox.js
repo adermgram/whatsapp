@@ -228,6 +228,7 @@ let Toolbox = class Toolbox {
             total_naira: koboToNaira(r.order.totalKobo),
             payment_link: '[LINK]',
             valid_minutes: 30,
+            ...(r.reused && { already_created: true }),
             note: 'Write [LINK] exactly where the payment link should go. Payment is confirmed automatically by the system; the customer does not need to send proof.',
         };
     }

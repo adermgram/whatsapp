@@ -163,6 +163,7 @@ export const ReceiptScalarFieldEnum = {
     orderId: 'orderId',
     number: 'number',
     fileKey: 'fileKey',
+    sentAt: 'sentAt',
     createdAt: 'createdAt'
 };
 export const ProcessedEventScalarFieldEnum = {

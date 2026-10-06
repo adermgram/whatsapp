@@ -134,10 +134,33 @@ export class OrdersService {
    * then creates the Paystack link. If the link cannot be created, the reservation is undone.
    */
   async checkout(merchantId: string, conversationId: string, opts: { deliveryFeeKobo?: number } = {}) {
+    // A customer who asks for "the link" again must get the SAME order, not a second one that
+    // reserves the stock twice. If they changed the cart since, the old order is cancelled first.
+    const pending = await this.prisma.order.findFirst({
+      where: { merchantId, conversationId, status: 'AWAITING_PAYMENT' },
+      include: { items: true, payment: true },
+      orderBy: { createdAt: 'desc' },
+    });
     const draft = await this.prisma.order.findFirst({
       where: { merchantId, conversationId, status: 'DRAFT' },
       include: { items: true, customer: true, merchant: true },
     });
+    if (pending?.payment?.checkoutUrl) {
+      const key = (items: { variantId: string; quantity: number; unitPriceKobo: number }[]) =>
+        items.map((i) => `${i.variantId}:${i.quantity}:${i.unitPriceKobo}`).sort().join('|');
+      if (!draft || draft.items.length === 0 || key(draft.items) === key(pending.items)) {
+        if (draft) await this.prisma.order.delete({ where: { id: draft.id } }); // identical duplicate cart
+        return {
+          order: (await this.summary(pending.id))!,
+          checkoutUrl: pending.payment.checkoutUrl,
+          expiresAt: pending.expiresAt,
+          reference: pending.payment.reference,
+          reused: true,
+        };
+      }
+      await this.cancelAwaiting(pending.id);
+    }
+
     if (!draft || draft.items.length === 0) throw new OrderError('EMPTY_CART', 'The cart is empty');
     if (!draft.customer.name || !draft.customer.address) {
       throw new OrderError('MISSING_DETAILS', 'Need the customer name and delivery address first');
@@ -187,11 +210,24 @@ export class OrdersService {
         data: { orderId: draft.id, reference, amountKobo: totalKobo, checkoutUrl },
       });
       const order = await this.summary(draft.id);
-      return { order: order!, checkoutUrl, expiresAt, reference };
+      return { order: order!, checkoutUrl, expiresAt, reference, reused: false };
     } catch (err) {
       await this.revertToDraft(draft.id);
       throw new OrderError('PAYMENT_INIT_FAILED', err instanceof Error ? err.message : 'payment failed');
     }
+  }
+
+  /** The customer changed their mind after getting a link: free the stock held for the old order. */
+  async cancelAwaiting(orderId: string): Promise<void> {
+    await this.prisma.$transaction(async (tx) => {
+      const won = await tx.order.updateMany({
+        where: { id: orderId, status: 'AWAITING_PAYMENT' },
+        data: { status: 'CANCELLED' },
+      });
+      if (won.count === 0) return;
+      const items = await tx.orderItem.findMany({ where: { orderId } });
+      for (const i of items) await this.inventory.release(tx, i.variantId, i.quantity);
+    });
   }
 
   private async revertToDraft(orderId: string) {
@@ -241,9 +277,9 @@ export class OrdersService {
   }
 
   /** Cron: free stock held by orders nobody paid for. Late payments are still honoured by markPaid. */
-  async expireStale(now = new Date()): Promise<number> {
+  async expireStale(now = new Date(), merchantId?: string): Promise<number> {
     const stale = await this.prisma.order.findMany({
-      where: { status: 'AWAITING_PAYMENT', expiresAt: { lt: now } },
+      where: { status: 'AWAITING_PAYMENT', expiresAt: { lt: now }, ...(merchantId ? { merchantId } : {}) },
       select: { id: true },
       take: 100,
     });

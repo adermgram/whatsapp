@@ -3,7 +3,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from '../app.module.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { SimulatorGateway } from '../messaging/simulator.gateway.js';
-import { OrdersService } from '../orders/orders.service.js';
+import { PaymentConfirmationService } from '../payments/payment-confirmation.service.js';
 import { FakePaymentProvider } from '../payments/fake-payment.provider.js';
 import { OwnerNotifier } from '../handoff/owner-notifier.js';
 import { looksBroken } from '../agent/reply-quality.js';
@@ -12,7 +12,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const app = await NestFactory.createApplicationContext(AppModule, { logger: ['error', 'warn'] });
 const prisma = app.get(PrismaService);
 const gateway = app.get(SimulatorGateway);
-const orders = app.get(OrdersService);
+const confirmation = app.get(PaymentConfirmationService);
 const fake = app.get(FakePaymentProvider);
 const notifier = app.get(OwnerNotifier);
 const merchant = await prisma.merchant.findFirstOrThrow({ where: { ownerEmail: 'demo@shopbot.local' } });
@@ -42,6 +42,12 @@ async function globalChecks(c) {
                 fails.push(`PRICE BELOW FLOOR: ${o.orderNumber} item sold at ${i.unitPriceKobo / 100}`);
             if (i.unitPriceKobo > i.variant.priceKobo)
                 fails.push(`price above list on ${o.orderNumber}`);
+            if (i.unitPriceKobo < i.variant.priceKobo) {
+                const n = i.unitPriceKobo / 100;
+                const told = c.replies.some((r) => r.replace(/[\s]/g, '').includes(n.toLocaleString('en-NG')) || r.replace(/,/g, '').includes(String(n)));
+                if (!told)
+                    fails.push(`order ${o.orderNumber} was sold at ${n} but the customer was never told that price`);
+            }
         }
         if (o.payment) {
             const sum = o.items.reduce((s, i) => s + i.unitPriceKobo * i.quantity, 0) + o.deliveryFeeKobo;
@@ -95,6 +101,30 @@ const scenarios = [
             '/pay',
         ],
         check: async (c) => ((await customerOrders(c.chatId)).some((o) => o.status === 'PAID') ? [] : ['expected a PAID order']),
+    },
+    {
+        name: 'accepting-our-quote-pays-our-quote',
+        turns: [
+            'Abeg you get Super Eagles jersey size M?',
+            'I fit pay 13000?',
+            'ok add am at the price wey you talk',
+            'Na Emeka Obi, 7 Adeola Odeku Street, Victoria Island, Lagos',
+            'send payment link',
+            'abeg send the link again',
+            '/pay',
+        ],
+        check: async (c) => {
+            const f = [];
+            const os = await customerOrders(c.chatId);
+            if (os.length !== 1)
+                f.push(`expected exactly 1 order, got ${os.length} (duplicate link request created another)`);
+            const price = os[0]?.items[0]?.unitPriceKobo;
+            if (price !== undefined && price < 1380000)
+                f.push(`customer accepted our quote but paid ${price / 100}`);
+            if (os[0]?.status !== 'PAID')
+                f.push('order not paid');
+            return f;
+        },
     },
     {
         name: 'lowball-never-below-floor',
@@ -194,8 +224,11 @@ for (const sc of selected) {
             });
             if (o?.payment) {
                 fake.markPaid(o.payment.reference, o.totalKobo);
-                const res = await orders.markPaid(o.id, o.totalKobo);
-                lines.push(`  (customer pays) -> ${res.status}`);
+                const before = gateway.sent.filter((x) => x.chatId === chatId).length;
+                const res = await confirmation.confirm({ merchantId: merchant.id, reference: o.payment.reference });
+                const got = gateway.sent.filter((x) => x.chatId === chatId).slice(before);
+                ctx.perTurn.push(got.map((x) => x.text ?? `[${x.kind}]`));
+                lines.push(`  (customer pays) -> ${res}`, ...got.map((x) => `  system> ${x.kind === 'document' ? `[PDF ${x.fileName}]` : x.text}`));
             }
             else
                 lines.push('  (customer tried to pay: no order awaiting payment)');

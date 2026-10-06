@@ -13,12 +13,20 @@ export function looksBroken(text) {
     return BROKEN_PATTERNS.some((re) => re.test(t));
 }
 export function cleanReply(text) {
-    return text
+    let t = text
         .replace(/\*\*(.+?)\*\*/g, '*$1*')
         .replace(/^#{1,6}\s+/gm, '')
         .replace(/[‐‑‒–]/g, '-')
         .replace(/[​-‍⁠﻿]/g, '')
+        .replace(/\*+(?=https?:\/\/)/g, '')
+        .replace(/(https?:\/\/[^\s*]+)\*+/g, '$1')
         .replace(/\n{3,}/g, '\n\n')
         .trim();
+    const stars = (t.match(/\*/g) ?? []).length;
+    if (stars % 2 === 1)
+        t = t.replace(/\*/g, '');
+    else if (/^\*[^*]+\*$/s.test(t))
+        t = t.slice(1, -1).trim();
+    return t;
 }
 //# sourceMappingURL=reply-quality.js.map

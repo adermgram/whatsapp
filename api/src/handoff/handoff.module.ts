@@ -1,10 +1,11 @@
 import { Global, Module } from '@nestjs/common';
+import { HandoffService } from './handoff.service.js';
 import { LogOwnerNotifier, OwnerNotifier } from './owner-notifier.js';
 
-// Replaced by the WhatsApp + email notifier in the handoff milestone.
+// OwnerNotifier is replaced by the WhatsApp + email notifier in the handoff milestone.
 @Global()
 @Module({
-  providers: [{ provide: OwnerNotifier, useClass: LogOwnerNotifier }],
-  exports: [OwnerNotifier],
+  providers: [HandoffService, { provide: OwnerNotifier, useClass: LogOwnerNotifier }],
+  exports: [HandoffService, OwnerNotifier],
 })
 export class HandoffModule {}

@@ -13,6 +13,7 @@ import { PrismaService } from '../prisma/prisma.service.js';
 import { AgentService } from '../agent/agent.service.js';
 import { MessagingGateway } from '../messaging/messaging.types.js';
 import { OwnerNotifier } from '../handoff/owner-notifier.js';
+import { HandoffService } from '../handoff/handoff.service.js';
 import { SpeechToText } from '../speech/speech-to-text.js';
 import { env } from '../config/env.js';
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -21,14 +22,16 @@ let ConversationService = ConversationService_1 = class ConversationService {
     gateway;
     agent;
     notifier;
+    handoffs;
     speech;
     log = new Logger(ConversationService_1.name);
     chains = new Map();
-    constructor(prisma, gateway, agent, notifier, speech) {
+    constructor(prisma, gateway, agent, notifier, handoffs, speech) {
         this.prisma = prisma;
         this.gateway = gateway;
         this.agent = agent;
         this.notifier = notifier;
+        this.handoffs = handoffs;
         this.speech = speech;
     }
     onModuleInit() {
@@ -123,33 +126,7 @@ let ConversationService = ConversationService_1 = class ConversationService {
         }
         await this.reply(msg, conversation.id, result.reply, result.meta);
         if (result.handoffReason)
-            await this.handoff(conversation.id, result.handoffReason);
-    }
-    async handoff(conversationId, reason) {
-        const conv = await this.prisma.conversation.update({
-            where: { id: conversationId },
-            data: { mode: 'HUMAN', humanSince: new Date(), handoffReason: reason },
-            include: { customer: true },
-        });
-        const recent = await this.prisma.message.findMany({
-            where: { conversationId, sender: 'CUSTOMER' },
-            orderBy: { createdAt: 'desc' },
-            take: 3,
-        });
-        await this.notifier.notifyHandoff({
-            merchantId: conv.merchantId,
-            conversationId,
-            customerName: conv.customer.name,
-            customerPhone: conv.customer.phone,
-            reason,
-            recent: recent.reverse().map((m) => m.text ?? ''),
-        });
-    }
-    async resumeAi(conversationId) {
-        await this.prisma.conversation.update({
-            where: { id: conversationId },
-            data: { mode: 'AI', humanSince: null, handoffReason: null },
-        });
+            await this.handoffs.handoff(conversation.id, result.handoffReason);
     }
     async reply(msg, conversationId, text, meta) {
         if (env.WHATSAPP_ADAPTER !== 'simulator') {
@@ -182,6 +159,7 @@ ConversationService = ConversationService_1 = __decorate([
         MessagingGateway,
         AgentService,
         OwnerNotifier,
+        HandoffService,
         SpeechToText])
 ], ConversationService);
 export { ConversationService };
