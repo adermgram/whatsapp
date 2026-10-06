@@ -9,18 +9,27 @@ import { MessagingGateway, } from './messaging.types.js';
 let SimulatorGateway = class SimulatorGateway extends MessagingGateway {
     handlers = [];
     sent = [];
+    listeners = [];
     media = new Map();
     onInbound(handler) {
         this.handlers.push(handler);
     }
+    onSend(listener) {
+        this.listeners.push(listener);
+    }
+    record(item) {
+        this.sent.push(item);
+        for (const l of this.listeners)
+            l(item);
+    }
     async sendText(merchantId, chatId, text) {
-        this.sent.push({ merchantId, chatId, kind: 'text', text });
+        this.record({ merchantId, chatId, kind: 'text', text });
     }
     async sendImage(merchantId, chatId, url, caption) {
-        this.sent.push({ merchantId, chatId, kind: 'image', url, text: caption });
+        this.record({ merchantId, chatId, kind: 'image', url, text: caption });
     }
     async sendDocument(merchantId, chatId, data, fileName, _mimeType, caption) {
-        this.sent.push({ merchantId, chatId, kind: 'document', fileName, size: data.length, text: caption });
+        this.record({ merchantId, chatId, kind: 'document', fileName, size: data.length, text: caption });
     }
     async downloadMedia(_merchantId, mediaRef) {
         const buf = this.media.get(mediaRef);

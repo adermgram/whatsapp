@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { buildReceiptDefinition, renderReceiptPdf, type ReceiptData } from './receipt.document.js';
 
 const sample: ReceiptData = {
-  businessName: 'Kemi Kicks & Kits',
+  businessName: 'Hafiz & Kits',
   receiptNumber: 'RCP-000012',
   orderNumber: 'ORD-000034',
   paidAt: new Date('2026-10-06T12:30:00Z'),
@@ -27,7 +27,7 @@ function allText(node: unknown): string[] {
 describe('receipt document', () => {
   it('contains the business name, receipt number, order number, items and total', () => {
     const text = allText(buildReceiptDefinition(sample).content).join(' ');
-    expect(text).toContain('Kemi Kicks & Kits');
+    expect(text).toContain('Hafiz & Kits');
     expect(text).toContain('RCP-000012');
     expect(text).toContain('ORD-000034');
     expect(text).toContain('Arsenal Home Jersey 24/25');

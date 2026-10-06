@@ -11,8 +11,11 @@ export interface SentItem {
 export declare class SimulatorGateway extends MessagingGateway {
     private handlers;
     readonly sent: SentItem[];
+    private listeners;
     private media;
     onInbound(handler: InboundHandler): void;
+    onSend(listener: (item: SentItem) => void): void;
+    private record;
     sendText(merchantId: string, chatId: string, text: string): Promise<void>;
     sendImage(merchantId: string, chatId: string, url: string, caption?: string): Promise<void>;
     sendDocument(merchantId: string, chatId: string, data: Buffer, fileName: string, _mimeType: string, caption?: string): Promise<void>;

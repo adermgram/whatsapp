@@ -33,15 +33,18 @@ const products: SeedProduct[] = [
 ];
 
 async function main() {
+  // Keep the stored Paystack key across reseeds so you do not have to re-enter it.
+  const previous = await prisma.merchant.findUnique({ where: { ownerEmail: DEMO_EMAIL }, select: { paystackSecretEnc: true } });
   await prisma.merchant.deleteMany({ where: { ownerEmail: DEMO_EMAIL } });
   const merchant = await prisma.merchant.create({
     data: {
-      businessName: 'Kemi Kicks & Kits',
-      ownerName: 'Kemi',
+      businessName: 'Hafiz & Kits',
+      ownerName: 'Hafiz',
       ownerPhone: '2348000000000',
       ownerEmail: DEMO_EMAIL,
       passwordHash: await bcrypt.hash('demo1234', 10),
       maxDiscountPercent: 25,
+      paystackSecretEnc: previous?.paystackSecretEnc ?? null,
     },
   });
   for (const p of products) {

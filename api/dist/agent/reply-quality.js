@@ -12,8 +12,18 @@ export function looksBroken(text) {
         return true;
     return BROKEN_PATTERNS.some((re) => re.test(t));
 }
+const LINK_PLACEHOLDER = '[LINK]';
+export function finalizeReply(reply, paymentLink) {
+    const withLink = paymentLink
+        ? reply.includes(LINK_PLACEHOLDER)
+            ? reply.split(LINK_PLACEHOLDER).join(paymentLink)
+            : `${reply}\n\n${paymentLink}`
+        : reply.split(LINK_PLACEHOLDER).join('');
+    return cleanReply(withLink);
+}
 export function cleanReply(text) {
     let t = text
+        .replace(/\s*[(\[]?\s*\bref\b[:=\s]*[0-9a-f]{8}\b[)\]]?/gi, '')
         .replace(/\*\*(.+?)\*\*/g, '*$1*')
         .replace(/^#{1,6}\s+/gm, '')
         .replace(/[‐‑‒–]/g, '-')

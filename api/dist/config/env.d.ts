@@ -15,6 +15,17 @@ declare const schema: z.ZodObject<{
         high: "high";
     }>>;
     GROQ_STT_MODEL: z.ZodDefault<z.ZodString>;
+    LLM_API_KEY: z.ZodOptional<z.ZodString>;
+    LLM_BASE_URL: z.ZodOptional<z.ZodString>;
+    LLM_MODEL: z.ZodOptional<z.ZodString>;
+    LLM_FALLBACK_MODEL: z.ZodOptional<z.ZodString>;
+    LLM_REASONING_EFFORT: z.ZodOptional<z.ZodEnum<{
+        low: "low";
+        medium: "medium";
+        high: "high";
+        off: "off";
+    }>>;
+    LLM_TEMPERATURE: z.ZodOptional<z.ZodString>;
     WHATSAPP_ADAPTER: z.ZodDefault<z.ZodEnum<{
         baileys: "baileys";
         simulator: "simulator";
@@ -29,4 +40,13 @@ declare const schema: z.ZodObject<{
 }, z.core.$strip>;
 export type Env = z.infer<typeof schema>;
 export declare const env: Env;
+export declare const llm: {
+    apiKey: string;
+    baseURL: string;
+    model: string;
+    fallbackModel: string | null;
+    reasoningEffort: "low" | "medium" | "high" | "off";
+    temperature: number | null;
+    provider: string;
+};
 export {};

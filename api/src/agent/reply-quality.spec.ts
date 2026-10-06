@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cleanReply, looksBroken } from './reply-quality.js';
+import { cleanReply, finalizeReply, looksBroken } from './reply-quality.js';
 
 describe('looksBroken', () => {
   it('flags empty replies', () => {
@@ -51,5 +51,40 @@ describe('cleanReply', () => {
     expect(cleanReply('*Yes, we get it. Price is ₦15,000. You wan add am?*')).toBe('Yes, we get it. Price is ₦15,000. You wan add am?');
     expect(cleanReply('*Your order number is *ORD-000003*. Total ₦13,800')).toBe('Your order number is ORD-000003. Total ₦13,800');
     expect(cleanReply('Small *bold* word stays')).toBe('Small *bold* word stays');
+  });
+});
+
+describe('internal refs never reach the customer', () => {
+  it('strips item refs in the forms the model uses', () => {
+    expect(cleanReply('Sure! *Nike Air Force 1 White* size 42 (ref d82bd519). Add am?')).toBe(
+      'Sure! *Nike Air Force 1 White* size 42. Add am?',
+    );
+    expect(cleanReply('Arsenal M [ref: aab58dba] is ₦18,000')).toBe('Arsenal M is ₦18,000');
+    expect(cleanReply('Item ref d82bd519 is in your cart')).toBe('Item is in your cart');
+  });
+
+  it('leaves ordinary words alone', () => {
+    expect(cleanReply('I prefer the black one. Reference your order number ORD-000001')).toBe(
+      'I prefer the black one. Reference your order number ORD-000001',
+    );
+  });
+});
+
+describe('finalizeReply', () => {
+  const url = 'https://checkout.paystack.com/abc123';
+
+  it('inserts the real link first, so asterisks around the placeholder cannot break it', () => {
+    expect(finalizeReply('Pay here: *[LINK]*', url)).toBe(`Pay here: ${url}`);
+    expect(finalizeReply('*Here is your link: [LINK]*', url)).toBe(`Here is your link: ${url}`);
+  });
+
+  it('appends the link when the model forgot the placeholder', () => {
+    expect(finalizeReply('Your order is ready.', url)).toBe(`Your order is ready.
+
+${url}`);
+  });
+
+  it('removes a stray placeholder when there is no link', () => {
+    expect(finalizeReply('Pay here: [LINK]', undefined)).toBe('Pay here:');
   });
 });

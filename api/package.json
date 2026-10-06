@@ -25,7 +25,10 @@
     "db:migrate": "prisma migrate dev && prisma generate",
     "db:generate": "prisma generate",
     "scenarios": "nest build && node dist/scripts/scenarios.js",
-    "e2e:webhook": "nest build && node dist/scripts/webhook-e2e.js"
+    "e2e:webhook": "nest build && node dist/scripts/webhook-e2e.js",
+    "paystack:set-key": "tsx src/scripts/set-paystack-key.ts",
+    "paystack:test": "nest build && node dist/scripts/paystack-test.js",
+    "chat:real": "nest build && node dist/scripts/chat.js --real"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1146.0",

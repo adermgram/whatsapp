@@ -14,6 +14,14 @@ const schema = z.object({
   GROQ_REASONING_EFFORT: z.enum(['low', 'medium', 'high']).default('medium'),
   GROQ_STT_MODEL: z.string().default('whisper-large-v3-turbo'),
 
+  // Chat model provider. Unset = Groq (above). To use OpenAI instead, set LLM_API_KEY, LLM_BASE_URL and LLM_MODEL.
+  LLM_API_KEY: z.string().optional(),
+  LLM_BASE_URL: z.string().optional(),
+  LLM_MODEL: z.string().optional(),
+  LLM_FALLBACK_MODEL: z.string().optional(), // used on rate limits; 'none' disables
+  LLM_REASONING_EFFORT: z.enum(['low', 'medium', 'high', 'off']).optional(), // 'off' = do not send the parameter
+  LLM_TEMPERATURE: z.string().optional(), // number, or 'off' for models that only accept the default (gpt-5 family)
+
   WHATSAPP_ADAPTER: z.enum(['baileys', 'simulator']).default('simulator'),
   PAYMENT_DRIVER: z.enum(['paystack', 'fake']).default('fake'),
   STORAGE_DIR: z.string().default('./storage'),
@@ -25,3 +33,18 @@ const schema = z.object({
 export type Env = z.infer<typeof schema>;
 
 export const env: Env = schema.parse(process.env);
+
+const usingGroq = (env.LLM_BASE_URL ?? env.GROQ_BASE_URL).includes('groq.com');
+
+/** Effective chat-model settings: Groq by default, any OpenAI-compatible provider via LLM_*. */
+export const llm = {
+  apiKey: env.LLM_API_KEY ?? env.GROQ_API_KEY,
+  baseURL: env.LLM_BASE_URL ?? env.GROQ_BASE_URL,
+  model: env.LLM_MODEL ?? env.GROQ_MODEL,
+  // Groq's free tier limits tokens per minute PER MODEL, so a second model doubles the headroom there.
+  fallbackModel:
+    env.LLM_FALLBACK_MODEL === 'none' ? null : (env.LLM_FALLBACK_MODEL ?? (usingGroq ? 'openai/gpt-oss-20b' : null)),
+  reasoningEffort: env.LLM_REASONING_EFFORT ?? (usingGroq ? env.GROQ_REASONING_EFFORT : 'off'),
+  temperature: env.LLM_TEMPERATURE === 'off' ? null : Number(env.LLM_TEMPERATURE ?? 0.3),
+  provider: usingGroq ? 'groq' : 'openai-compatible',
+};

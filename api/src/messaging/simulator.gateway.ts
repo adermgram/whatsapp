@@ -21,18 +21,29 @@ export interface SentItem {
 export class SimulatorGateway extends MessagingGateway {
   private handlers: InboundHandler[] = [];
   readonly sent: SentItem[] = [];
+  private listeners: ((item: SentItem) => void)[] = [];
   private media = new Map<string, Buffer>();
 
   onInbound(handler: InboundHandler) {
     this.handlers.push(handler);
   }
 
+  /** Lets the terminal chat print messages the system sends on its own (e.g. a receipt after a real payment). */
+  onSend(listener: (item: SentItem) => void) {
+    this.listeners.push(listener);
+  }
+
+  private record(item: SentItem) {
+    this.sent.push(item);
+    for (const l of this.listeners) l(item);
+  }
+
   async sendText(merchantId: string, chatId: string, text: string) {
-    this.sent.push({ merchantId, chatId, kind: 'text', text });
+    this.record({ merchantId, chatId, kind: 'text', text });
   }
 
   async sendImage(merchantId: string, chatId: string, url: string, caption?: string) {
-    this.sent.push({ merchantId, chatId, kind: 'image', url, text: caption });
+    this.record({ merchantId, chatId, kind: 'image', url, text: caption });
   }
 
   async sendDocument(
@@ -43,7 +54,7 @@ export class SimulatorGateway extends MessagingGateway {
     _mimeType: string,
     caption?: string,
   ) {
-    this.sent.push({ merchantId, chatId, kind: 'document', fileName, size: data.length, text: caption });
+    this.record({ merchantId, chatId, kind: 'document', fileName, size: data.length, text: caption });
   }
 
   async downloadMedia(_merchantId: string, mediaRef: string) {

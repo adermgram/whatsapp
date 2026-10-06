@@ -37,8 +37,16 @@ let PaystackProvider = class PaystackProvider extends PaymentProvider {
         return { checkoutUrl: data.authorization_url };
     }
     async verify(secretKey, reference) {
-        const data = await this.call(secretKey, `/transaction/verify/${encodeURIComponent(reference)}`);
-        return { paid: data.status === 'success', amountKobo: data.amount, currency: data.currency };
+        try {
+            const data = await this.call(secretKey, `/transaction/verify/${encodeURIComponent(reference)}`);
+            return { paid: data.status === 'success', amountKobo: data.amount, currency: data.currency };
+        }
+        catch (err) {
+            if (err instanceof Error && /reference not found/i.test(err.message)) {
+                return { paid: false, amountKobo: 0, currency: 'NGN' };
+            }
+            throw err;
+        }
     }
     isValidSignature(secretKey, rawBody, signature) {
         if (!secretKey || !signature)

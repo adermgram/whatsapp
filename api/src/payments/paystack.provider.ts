@@ -45,11 +45,19 @@ export class PaystackProvider extends PaymentProvider {
   }
 
   async verify(secretKey: string | null, reference: string): Promise<VerifiedPayment> {
-    const data = await this.call<{ status: string; amount: number; currency: string }>(
-      secretKey,
-      `/transaction/verify/${encodeURIComponent(reference)}`,
-    );
-    return { paid: data.status === 'success', amountKobo: data.amount, currency: data.currency };
+    try {
+      const data = await this.call<{ status: string; amount: number; currency: string }>(
+        secretKey,
+        `/transaction/verify/${encodeURIComponent(reference)}`,
+      );
+      return { paid: data.status === 'success', amountKobo: data.amount, currency: data.currency };
+    } catch (err) {
+      // Paystack answers "reference not found" for a link nobody has opened yet. That just means "not paid".
+      if (err instanceof Error && /reference not found/i.test(err.message)) {
+        return { paid: false, amountKobo: 0, currency: 'NGN' };
+      }
+      throw err;
+    }
   }
 
   /** HMAC-SHA512 of the RAW body with the merchant's secret key, hex, compared in constant time. */

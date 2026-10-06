@@ -11,6 +11,12 @@ const schema = z.object({
     GROQ_MODEL: z.string().default('openai/gpt-oss-120b'),
     GROQ_REASONING_EFFORT: z.enum(['low', 'medium', 'high']).default('medium'),
     GROQ_STT_MODEL: z.string().default('whisper-large-v3-turbo'),
+    LLM_API_KEY: z.string().optional(),
+    LLM_BASE_URL: z.string().optional(),
+    LLM_MODEL: z.string().optional(),
+    LLM_FALLBACK_MODEL: z.string().optional(),
+    LLM_REASONING_EFFORT: z.enum(['low', 'medium', 'high', 'off']).optional(),
+    LLM_TEMPERATURE: z.string().optional(),
     WHATSAPP_ADAPTER: z.enum(['baileys', 'simulator']).default('simulator'),
     PAYMENT_DRIVER: z.enum(['paystack', 'fake']).default('fake'),
     STORAGE_DIR: z.string().default('./storage'),
@@ -18,4 +24,14 @@ const schema = z.object({
     PAYMENT_EMAIL_DOMAIN: z.string().default('customers.shopbot.app'),
 });
 export const env = schema.parse(process.env);
+const usingGroq = (env.LLM_BASE_URL ?? env.GROQ_BASE_URL).includes('groq.com');
+export const llm = {
+    apiKey: env.LLM_API_KEY ?? env.GROQ_API_KEY,
+    baseURL: env.LLM_BASE_URL ?? env.GROQ_BASE_URL,
+    model: env.LLM_MODEL ?? env.GROQ_MODEL,
+    fallbackModel: env.LLM_FALLBACK_MODEL === 'none' ? null : (env.LLM_FALLBACK_MODEL ?? (usingGroq ? 'openai/gpt-oss-20b' : null)),
+    reasoningEffort: env.LLM_REASONING_EFFORT ?? (usingGroq ? env.GROQ_REASONING_EFFORT : 'off'),
+    temperature: env.LLM_TEMPERATURE === 'off' ? null : Number(env.LLM_TEMPERATURE ?? 0.3),
+    provider: usingGroq ? 'groq' : 'openai-compatible',
+};
 //# sourceMappingURL=env.js.map
