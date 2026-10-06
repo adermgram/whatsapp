@@ -52,7 +52,7 @@ export class WhatsAppOwnerNotifier extends OwnerNotifier {
       if (!m) return;
       const results = await Promise.allSettled([
         this.gateway.sendText(merchantId, normalizePhone(m.ownerPhone), text),
-        this.mailer.send(m.ownerEmail, `[${m.businessName}] ${subject}`, text.replace(/\*/g, '')),
+        this.mailer.send(m.alertEmail ?? m.ownerEmail, `[${m.businessName}] ${subject}`, text.replace(/\*/g, '')),
       ]);
       for (const r of results) if (r.status === 'rejected') this.log.warn(`Owner alert part failed: ${String(r.reason)}`);
     } catch (err) {

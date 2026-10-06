@@ -40,6 +40,7 @@ async function main() {
     businessName: 'Hafiz & Kits',
     ownerName: 'Hafiz',
     ownerPhone,
+    alertEmail: process.env.DEMO_ALERT_EMAIL?.trim() || null, // owner alerts are emailed here
     maxDiscountPercent: 25,
     receiptCounter: 0,
     orderCounter: 0,

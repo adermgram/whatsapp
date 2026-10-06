@@ -65,7 +65,8 @@ model Merchant {
   businessName        String
   ownerName           String
   ownerPhone          String // WhatsApp number that receives handoff alerts, digits only e.g. 2348012345678
-  ownerEmail          String   @unique
+  ownerEmail          String   @unique // login identity
+  alertEmail          String? // where owner alerts are emailed; falls back to ownerEmail
   passwordHash        String
   maxDiscountPercent  Int      @default(0) // merchant-wide cap, applied on top of per-variant minPrice
   aiEnabled           Boolean  @default(true)

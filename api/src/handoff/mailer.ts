@@ -18,7 +18,8 @@ export class NodemailerMailer extends Mailer {
           host: env.SMTP_HOST,
           port: env.SMTP_PORT,
           secure: env.SMTP_PORT === 465,
-          auth: { user: env.SMTP_USER, pass: env.SMTP_PASS },
+          // Google shows App Passwords as "abcd efgh ijkl mnop"; the spaces are not part of the password.
+          auth: { user: env.SMTP_USER, pass: env.SMTP_HOST.endsWith('gmail.com') ? env.SMTP_PASS.replace(/\s+/g, '') : env.SMTP_PASS },
         })
       : null;
 

@@ -29,7 +29,9 @@
     "paystack:set-key": "tsx src/scripts/set-paystack-key.ts",
     "paystack:test": "nest build && node dist/scripts/paystack-test.js",
     "chat:real": "nest build && node dist/scripts/chat.js --real",
-    "bot": "nest build && node dist/bot.js"
+    "bot": "nest build && node dist/bot.js",
+    "email:test": "tsx src/scripts/email-test.ts",
+    "alerts:preview": "tsx src/scripts/alert-preview.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1146.0",
