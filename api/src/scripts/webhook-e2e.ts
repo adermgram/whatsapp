@@ -55,8 +55,9 @@ try {
   }
   check(status === 'PAID', `order became PAID via the webhook (status ${status})`);
 
-  await sleep(1500);
   const docs = () => gateway.sent.filter((s) => s.chatId === customer.phone && s.kind === 'document');
+  // Marking paid is instant; generating and sending the receipt takes a few more (remote) database round trips.
+  for (let i = 0; i < 40 && docs().length === 0; i++) await sleep(500);
   check(docs().length === 1, `exactly one receipt PDF sent to the customer (${docs().length})`);
 
   const r2 = await post(merchant.id, event);

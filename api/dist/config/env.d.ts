@@ -30,6 +30,18 @@ declare const schema: z.ZodObject<{
         baileys: "baileys";
         simulator: "simulator";
     }>>;
+    WHATSAPP_ALLOWLIST: z.ZodDefault<z.ZodString>;
+    WHATSAPP_REPLY_TO_ALL: z.ZodDefault<z.ZodEnum<{
+        true: "true";
+        false: "false";
+    }>>;
+    WHATSAPP_CONNECT_EMAIL: z.ZodDefault<z.ZodString>;
+    WHATSAPP_PAIRING_PHONE: z.ZodOptional<z.ZodString>;
+    SMTP_HOST: z.ZodOptional<z.ZodString>;
+    SMTP_PORT: z.ZodDefault<z.ZodCoercedNumber<unknown>>;
+    SMTP_USER: z.ZodOptional<z.ZodString>;
+    SMTP_PASS: z.ZodOptional<z.ZodString>;
+    MAIL_FROM: z.ZodOptional<z.ZodString>;
     PAYMENT_DRIVER: z.ZodDefault<z.ZodEnum<{
         paystack: "paystack";
         fake: "fake";

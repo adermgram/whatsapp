@@ -23,6 +23,16 @@ const schema = z.object({
   LLM_TEMPERATURE: z.string().optional(), // number, or 'off' for models that only accept the default (gpt-5 family)
 
   WHATSAPP_ADAPTER: z.enum(['baileys', 'simulator']).default('simulator'),
+  // Real WhatsApp safety: the bot answers NOBODY unless the chat is on the allowlist or REPLY_TO_ALL is true.
+  WHATSAPP_ALLOWLIST: z.string().default(''), // comma-separated numbers, e.g. 2348012345678,08098765432
+  WHATSAPP_REPLY_TO_ALL: z.enum(['true', 'false']).default('false'),
+  WHATSAPP_CONNECT_EMAIL: z.string().default('demo@shopbot.local'), // merchant to link when no session exists yet
+  WHATSAPP_PAIRING_PHONE: z.string().optional(), // link with an 8-letter code instead of a QR (digits with country code)
+  SMTP_HOST: z.string().optional(),
+  SMTP_PORT: z.coerce.number().default(465),
+  SMTP_USER: z.string().optional(),
+  SMTP_PASS: z.string().optional(),
+  MAIL_FROM: z.string().optional(),
   PAYMENT_DRIVER: z.enum(['paystack', 'fake']).default('fake'),
   STORAGE_DIR: z.string().default('./storage'),
   PUBLIC_BASE_URL: z.string().default('http://localhost:3000'),

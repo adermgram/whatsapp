@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '../generated/prisma/client.js';
 import { env } from '../config/env.js';
+import { normalizePhone } from '../messaging/reply-policy.js';
 const DEMO_EMAIL = 'demo@shopbot.local';
 const naira = (n) => n * 100;
 const prisma = new PrismaClient({ adapter: new PrismaPg({ connectionString: env.DATABASE_URL }) });
@@ -16,19 +17,29 @@ const products = [
     { name: 'Corporate Trouser Black', category: 'CLOTHES', description: 'Slim fit black trouser', attributes: { gender: 'men' }, sizes: ['30', '32', '34', '36'], price: 14000, floor: 11000, stock: 3 },
 ];
 async function main() {
-    const previous = await prisma.merchant.findUnique({ where: { ownerEmail: DEMO_EMAIL }, select: { paystackSecretEnc: true } });
-    await prisma.merchant.deleteMany({ where: { ownerEmail: DEMO_EMAIL } });
-    const merchant = await prisma.merchant.create({
-        data: {
-            businessName: 'Hafiz & Kits',
-            ownerName: 'Hafiz',
-            ownerPhone: '2348000000000',
-            ownerEmail: DEMO_EMAIL,
-            passwordHash: await bcrypt.hash('demo1234', 10),
-            maxDiscountPercent: 25,
-            paystackSecretEnc: previous?.paystackSecretEnc ?? null,
-        },
-    });
+    const ownerPhone = normalizePhone(process.env.DEMO_OWNER_PHONE ?? '2348000000000');
+    const fields = {
+        businessName: 'Hafiz & Kits',
+        ownerName: 'Hafiz',
+        ownerPhone,
+        maxDiscountPercent: 25,
+        receiptCounter: 0,
+        orderCounter: 0,
+    };
+    const existing = await prisma.merchant.findUnique({ where: { ownerEmail: DEMO_EMAIL } });
+    let merchant;
+    if (existing) {
+        await prisma.order.deleteMany({ where: { merchantId: existing.id } });
+        await prisma.conversation.deleteMany({ where: { merchantId: existing.id } });
+        await prisma.customer.deleteMany({ where: { merchantId: existing.id } });
+        await prisma.product.deleteMany({ where: { merchantId: existing.id } });
+        merchant = await prisma.merchant.update({ where: { id: existing.id }, data: fields });
+    }
+    else {
+        merchant = await prisma.merchant.create({
+            data: { ...fields, ownerEmail: DEMO_EMAIL, passwordHash: await bcrypt.hash('demo1234', 10) },
+        });
+    }
     for (const p of products) {
         await prisma.product.create({
             data: {

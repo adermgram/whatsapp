@@ -174,7 +174,7 @@ let OrdersService = class OrdersService {
             const secret = draft.merchant.paystackSecretEnc ? decryptSecret(draft.merchant.paystackSecretEnc) : null;
             const { checkoutUrl } = await this.payments.initialize({
                 secretKey: secret,
-                email: `${draft.customer.phone}@${env.PAYMENT_EMAIL_DOMAIN}`,
+                email: `${draft.customer.phone.replace(/\D/g, '')}@${env.PAYMENT_EMAIL_DOMAIN}`,
                 amountKobo: totalKobo,
                 reference,
                 callbackUrl: undefined,

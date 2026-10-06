@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient, ProductCategory } from '../generated/prisma/client.js';
 import { env } from '../config/env.js';
+import { normalizePhone } from '../messaging/reply-policy.js';
 
 // Dev seed: recreates ONE demo merchant (cascade-deletes its data). Never touches other merchants.
 const DEMO_EMAIL = 'demo@shopbot.local';
@@ -33,20 +34,32 @@ const products: SeedProduct[] = [
 ];
 
 async function main() {
-  // Keep the stored Paystack key across reseeds so you do not have to re-enter it.
-  const previous = await prisma.merchant.findUnique({ where: { ownerEmail: DEMO_EMAIL }, select: { paystackSecretEnc: true } });
-  await prisma.merchant.deleteMany({ where: { ownerEmail: DEMO_EMAIL } });
-  const merchant = await prisma.merchant.create({
-    data: {
-      businessName: 'Hafiz & Kits',
-      ownerName: 'Hafiz',
-      ownerPhone: '2348000000000',
-      ownerEmail: DEMO_EMAIL,
-      passwordHash: await bcrypt.hash('demo1234', 10),
-      maxDiscountPercent: 25,
-      paystackSecretEnc: previous?.paystackSecretEnc ?? null,
-    },
-  });
+  // Owner alerts (handoffs, payments) go to this WhatsApp number. Set DEMO_OWNER_PHONE in .env to receive them.
+  const ownerPhone = normalizePhone(process.env.DEMO_OWNER_PHONE ?? '2348000000000');
+  const fields = {
+    businessName: 'Hafiz & Kits',
+    ownerName: 'Hafiz',
+    ownerPhone,
+    maxDiscountPercent: 25,
+    receiptCounter: 0,
+    orderCounter: 0,
+  };
+
+  // Reseeding must NOT recreate the merchant row: its id is inside the Paystack webhook URL, and its
+  // WhatsApp login and Paystack key hang off it. So wipe the shop data and keep the merchant.
+  const existing = await prisma.merchant.findUnique({ where: { ownerEmail: DEMO_EMAIL } });
+  let merchant;
+  if (existing) {
+    await prisma.order.deleteMany({ where: { merchantId: existing.id } }); // items, payments, receipts cascade
+    await prisma.conversation.deleteMany({ where: { merchantId: existing.id } }); // messages, negotiations cascade
+    await prisma.customer.deleteMany({ where: { merchantId: existing.id } });
+    await prisma.product.deleteMany({ where: { merchantId: existing.id } }); // variants cascade
+    merchant = await prisma.merchant.update({ where: { id: existing.id }, data: fields });
+  } else {
+    merchant = await prisma.merchant.create({
+      data: { ...fields, ownerEmail: DEMO_EMAIL, passwordHash: await bcrypt.hash('demo1234', 10) },
+    });
+  }
   for (const p of products) {
     await prisma.product.create({
       data: {

@@ -200,7 +200,8 @@ export class OrdersService {
       const secret = draft.merchant.paystackSecretEnc ? decryptSecret(draft.merchant.paystackSecretEnc) : null;
       const { checkoutUrl } = await this.payments.initialize({
         secretKey: secret,
-        email: `${draft.customer.phone}@${env.PAYMENT_EMAIL_DOMAIN}`,
+        // digits only: a WhatsApp privacy id looks like "lid:123", which is not a valid email local part
+        email: `${draft.customer.phone.replace(/\D/g, '')}@${env.PAYMENT_EMAIL_DOMAIN}`,
         amountKobo: totalKobo,
         reference,
         callbackUrl: undefined,
