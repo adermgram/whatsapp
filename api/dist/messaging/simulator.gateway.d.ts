@@ -18,8 +18,9 @@ export declare class SimulatorGateway extends MessagingGateway {
     private record;
     sendText(merchantId: string, chatId: string, text: string): Promise<void>;
     sendImage(merchantId: string, chatId: string, url: string, caption?: string): Promise<void>;
+    sendImageBuffer(merchantId: string, chatId: string, data: Buffer, _mimeType: string, caption?: string): Promise<void>;
     sendDocument(merchantId: string, chatId: string, data: Buffer, fileName: string, _mimeType: string, caption?: string): Promise<void>;
-    downloadMedia(_merchantId: string, mediaRef: string): Promise<Buffer<ArrayBufferLike>>;
+    downloadMedia(_merchantId: string, mediaRef: string, maxBytes?: number): Promise<Buffer<ArrayBufferLike>>;
     setTyping(): Promise<void>;
     sessionState(): SessionState;
     simulateInbound(msg: Omit<InboundMessage, 'timestamp' | 'fromMe'> & Partial<InboundMessage>): Promise<void>;

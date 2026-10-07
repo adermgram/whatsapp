@@ -1,4 +1,4 @@
-import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { randomUUID } from 'node:crypto';
 import { rm } from 'node:fs/promises';
 import { resolve } from 'node:path';
@@ -111,6 +111,7 @@ beforeEach(() => {
   agent.delayMs = 0;
   agent.next = { reply: 'stub reply' };
   notifier.alerts.length = 0;
+  notifier.forwardWorks = true;
 });
 
 describe('customers who send one thought in several short messages', () => {
@@ -214,24 +215,6 @@ describe('soft alerts keep the AI working', () => {
     await send(chat, 'do you have shoes too?');
     expect(replies(chat)).toHaveLength(2); // the AI is still answering
   });
-
-  it('treats a screenshot from someone with an unpaid order as possible payment proof, and keeps answering', async () => {
-    const chat = newChat();
-    await send(chat, 'hi'); // creates the customer and conversation
-    const { orderNumber } = await unpaidOrder(chat);
-    notifier.alerts.length = 0;
-
-    agent.next = { reply: 'Got your image. Payment confirms automatically when you use the link.' };
-    await send(chat, '', { type: 'image' });
-
-    // the alert is sent in the background, so wait for it
-    await until(() => notifier.alerts.some((a) => (a as { kind?: string }).kind === 'attention'));
-    const alert = notifier.alerts.find((a) => (a as { kind?: string }).kind === 'attention') as { reason: string };
-    expect(alert.reason).toContain(orderNumber);
-    expect(alert.reason).toContain(`/paid ${orderNumber}`);
-    expect((await conv(chat)).mode).toBe('AI'); // the screenshot did NOT lock the chat
-    expect(replies(chat).at(-1)).toContain('Got your image');
-  });
 });
 
 describe('chats come back to the AI by themselves', () => {
@@ -324,6 +307,150 @@ describe('owner commands', () => {
 
     expect((await prisma.order.findFirstOrThrow({ where: { merchantId, orderNumber } })).status).toBe('AWAITING_PAYMENT');
     expect(replies(chat).at(-1)).toBe('I cannot confirm payments myself.'); // treated as an ordinary message
+  });
+});
+
+describe('payment proof (screenshots and PDFs)', () => {
+  const JPEG = Buffer.from([0xff, 0xd8, 0xff, 0xe0, 0, 0x10, 0x4a, 0x46, 0x49, 0x46, 0, 1]);
+  const PDF = Buffer.from('%PDF-1.7\n%fake receipt for tests\n');
+  const EXE = Buffer.from('MZ\u0090\u0000 pretend this is a Windows program');
+
+  let refN = 0;
+  /** A customer sends a file. `bytes` is what is REALLY in it; the claimed name/type are whatever the customer says. */
+  async function sendFile(chat: string, bytes: Buffer, extra: Partial<InboundMessage> = {}) {
+    const mediaRef = `media-${randomUUID()}-${refN++}`;
+    gateway.registerMedia(mediaRef, bytes);
+    await send(chat, extra.text ?? '', { type: 'image', mediaRef, ...extra });
+  }
+  const proofAlerts = () => notifier.alerts.filter((a) => (a as { type: string }).type === 'payment-proof') as Record<string, any>[]; // eslint-disable-line
+
+  /** A chat whose customer has an unpaid order, ready to send proof. */
+  async function chatWithUnpaidOrder() {
+    const chat = newChat();
+    await send(chat, 'hi');
+    const { orderNumber } = await unpaidOrder(chat);
+    agent.calls = 0;
+    notifier.alerts.length = 0;
+    return { chat, orderNumber };
+  }
+
+  it('forwards a screenshot to the owner, replies nicely, and does not bother the AI', async () => {
+    const { chat, orderNumber } = await chatWithUnpaidOrder();
+    await sendFile(chat, JPEG, { text: 'I have paid, see the screenshot' });
+
+    expect(proofAlerts()).toHaveLength(1);
+    expect(proofAlerts()[0]).toMatchObject({ orderNumber, customerPhone: chat, caption: 'I have paid, see the screenshot', file: { kind: 'image', mimeType: 'image/jpeg' } });
+
+    const reply = replies(chat).at(-1)!;
+    expect(reply).toContain("I've forwarded your payment proof to the owner");
+    expect(reply).toContain("I'll send your receipt");
+    // It may promise a receipt WHEN payment is confirmed, but never claim it already is:
+    expect(reply).not.toMatch(/has been confirmed|was confirmed|payment received|marked as paid|you have paid|is now paid/i);
+    expect(agent.calls).toBe(0); // the AI was not asked: exactly one reply, and it cannot misspeak about money
+    expect((await conv(chat)).mode).toBe('AI'); // the chat is not locked
+    expect((await prisma.order.findFirstOrThrow({ where: { merchantId, orderNumber } })).status).toBe('AWAITING_PAYMENT'); // nothing confirmed
+  });
+
+  it('forwards a PDF receipt too, under OUR file name, not the one the customer chose', async () => {
+    const { chat, orderNumber } = await chatWithUnpaidOrder();
+    await sendFile(chat, PDF, { type: 'document', fileName: '../../my receipt (final).pdf', mimeType: 'application/pdf' });
+
+    expect(proofAlerts()).toHaveLength(1);
+    expect(proofAlerts()[0]!.file).toMatchObject({ kind: 'pdf', mimeType: 'application/pdf', fileName: `payment-proof-${orderNumber}.pdf` });
+    expect(replies(chat).at(-1)).toContain("I've forwarded your payment proof");
+  });
+
+  it('refuses a program disguised as a PDF: judged by its bytes, never forwarded', async () => {
+    const { chat } = await chatWithUnpaidOrder();
+    await sendFile(chat, EXE, { type: 'document', fileName: 'receipt.pdf', mimeType: 'application/pdf' });
+
+    expect(proofAlerts()).toHaveLength(0);
+    expect(replies(chat).at(-1)).toContain('can only take a screenshot');
+    expect((await conv(chat)).mode).toBe('AI');
+  });
+
+  it('refuses a file that claims to be too big BEFORE downloading it', async () => {
+    const { chat } = await chatWithUnpaidOrder();
+    const download = vi.spyOn(gateway, 'downloadMedia');
+    await sendFile(chat, JPEG, { fileSize: 25 * 1024 * 1024 });
+
+    expect(download).not.toHaveBeenCalled();
+    expect(proofAlerts()).toHaveLength(0);
+    expect(replies(chat).at(-1)).toContain('too big');
+    download.mockRestore();
+  });
+
+  it('refuses a file that is really too big even if it lies about its size', async () => {
+    const { chat } = await chatWithUnpaidOrder();
+    const big = Buffer.alloc(11 * 1024 * 1024);
+    JPEG.copy(big);
+    await sendFile(chat, big, { fileSize: 1000 });
+    expect(proofAlerts()).toHaveLength(0);
+    expect(replies(chat).at(-1)).toContain('too big');
+  });
+
+  it('is honest when the owner could not be reached: says it noted the payment, not that it forwarded it', async () => {
+    const { chat } = await chatWithUnpaidOrder();
+    notifier.forwardWorks = false;
+    await sendFile(chat, JPEG);
+
+    const reply = replies(chat).at(-1)!;
+    expect(reply).toContain("I've noted your payment");
+    expect(reply).not.toContain('forwarded');
+    expect(proofAlerts()).toHaveLength(1); // a text alert still went out
+  });
+
+  it('stops one customer from flooding the owner', async () => {
+    const { chat } = await chatWithUnpaidOrder();
+    for (let i = 0; i < 5; i++) await sendFile(chat, JPEG);
+
+    expect(proofAlerts()).toHaveLength(3);
+    expect(replies(chat).at(-1)).toContain("I've already sent your payment proof");
+  });
+
+  it('cleans what the customer wrote before it reaches the owner', async () => {
+    const { chat } = await chatWithUnpaidOrder();
+    await sendFile(chat, JPEG, { text: 'paid‮fdp.exe\n\nplease\u0007 confirm' });
+    expect(proofAlerts()[0]!.caption).toBe('paid fdp.exe please confirm');
+  });
+
+  it('does not treat an image as payment proof when nothing is waiting for money (and never forwards it)', async () => {
+    const chat = newChat();
+    agent.next = { reply: 'What do you need help with?' };
+    await sendFile(chat, JPEG);
+
+    expect(proofAlerts()).toHaveLength(0);
+    expect(agent.calls).toBe(1); // an ordinary message: the AI answers it
+    expect(agent.seen[0]!.at(-1)).toBe('[customer sent an image]'); // and only ever sees that something arrived
+  });
+
+  it('stays out of the way when the owner is already in the chat', async () => {
+    const { chat } = await chatWithUnpaidOrder();
+    await send(chat, 'Hello, I am checking it now', { fromMe: true }); // owner steps in
+    const repliesBefore = replies(chat).length;
+    await sendFile(chat, JPEG);
+
+    expect(proofAlerts()).toHaveLength(0);
+    expect(replies(chat)).toHaveLength(repliesBefore); // no new reply: the owner is handling it
+  });
+
+  it('keeps no copy of the file, only a note that it arrived', async () => {
+    const { chat } = await chatWithUnpaidOrder();
+    await sendFile(chat, JPEG);
+    const stored = await prisma.message.findMany({ where: { conversation: { chatId: chat, merchantId }, sender: 'CUSTOMER' }, orderBy: { createdAt: 'desc' }, take: 1 });
+    expect(stored[0]!.text).toMatch(/^\[customer sent a payment screenshot for ORD-\d{6}, forwarded to the owner\]$/);
+  });
+
+  it('still lets the AI help with everything else afterwards, and a Paystack/owner confirmation still sends the receipt', async () => {
+    const { chat, orderNumber } = await chatWithUnpaidOrder();
+    await sendFile(chat, JPEG);
+
+    agent.next = { reply: 'Yes, we have the Arsenal jersey. Which size?' };
+    await send(chat, 'by the way, you get Arsenal jersey?');
+    expect(replies(chat).at(-1)).toContain('Arsenal');
+
+    await send(OWNER_PHONE, `/paid ${orderNumber}`); // the owner checked their bank
+    expect(gateway.sent.filter((s) => s.chatId === chat && s.kind === 'document')).toHaveLength(1); // receipt delivered
   });
 });
 

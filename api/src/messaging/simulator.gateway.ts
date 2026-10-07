@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import {
+  MediaTooLargeError,
   InboundHandler,
   InboundMessage,
   MessagingGateway,
@@ -46,6 +47,10 @@ export class SimulatorGateway extends MessagingGateway {
     this.record({ merchantId, chatId, kind: 'image', url, text: caption });
   }
 
+  async sendImageBuffer(merchantId: string, chatId: string, data: Buffer, _mimeType: string, caption?: string) {
+    this.record({ merchantId, chatId, kind: 'image', size: data.length, text: caption });
+  }
+
   async sendDocument(
     merchantId: string,
     chatId: string,
@@ -57,9 +62,10 @@ export class SimulatorGateway extends MessagingGateway {
     this.record({ merchantId, chatId, kind: 'document', fileName, size: data.length, text: caption });
   }
 
-  async downloadMedia(_merchantId: string, mediaRef: string) {
+  async downloadMedia(_merchantId: string, mediaRef: string, maxBytes?: number) {
     const buf = this.media.get(mediaRef);
     if (!buf) throw new Error(`No media for ref ${mediaRef}`);
+    if (maxBytes !== undefined && buf.length > maxBytes) throw new MediaTooLargeError(maxBytes);
     return buf;
   }
 

@@ -11,16 +11,15 @@ var ConversationService_1;
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { AgentService } from '../agent/agent.service.js';
-import { MessagingGateway } from '../messaging/messaging.types.js';
+import { MediaTooLargeError, MessagingGateway } from '../messaging/messaging.types.js';
 import { OwnerNotifier } from '../handoff/owner-notifier.js';
 import { HandoffService } from '../handoff/handoff.service.js';
 import { SpeechToText } from '../speech/speech-to-text.js';
 import { OwnerCommands } from './owner-commands.js';
 import { TurnBatcher } from './turn-batcher.js';
+import { MAX_PROOF_BYTES, ProofRateLimiter, checkProof, cleanCaption, proofFileName } from './proof-files.js';
 import { debounceMs, env } from '../config/env.js';
-import { formatNaira } from '../common/money.js';
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-const IMAGE_ALERT_GAP_MS = 5 * 60_000;
 let ConversationService = ConversationService_1 = class ConversationService {
     prisma;
     gateway;
@@ -33,7 +32,7 @@ let ConversationService = ConversationService_1 = class ConversationService {
     debounceMs = debounceMs;
     batcherInstance;
     ingestChains = new Map();
-    lastImageAlert = new Map();
+    proofLimiter = new ProofRateLimiter(3, 10 * 60_000);
     constructor(prisma, gateway, agent, notifier, handoffs, speech, commands) {
         this.prisma = prisma;
         this.gateway = gateway;
@@ -117,10 +116,14 @@ let ConversationService = ConversationService_1 = class ConversationService {
             }
             return null;
         }
+        if (msg.type === 'image' || msg.type === 'document') {
+            if (await this.handlePaymentProof(msg, merchant, conversation, customer))
+                return null;
+        }
         let text = msg.text ?? '';
         if (msg.type === 'audio' && msg.mediaRef) {
             try {
-                const audio = await this.gateway.downloadMedia(msg.merchantId, msg.mediaRef);
+                const audio = await this.gateway.downloadMedia(msg.merchantId, msg.mediaRef, 15 * 1024 * 1024);
                 text = await this.speech.transcribe(audio);
             }
             catch (err) {
@@ -133,14 +136,13 @@ let ConversationService = ConversationService_1 = class ConversationService {
                 return null;
             }
         }
-        else if (msg.type === 'image') {
-            text = `[customer sent an image${text ? `: ${text}` : ''}]`;
+        else if (msg.type === 'image' || msg.type === 'document') {
+            const caption = cleanCaption(text);
+            text = `[customer sent ${msg.type === 'image' ? 'an image' : 'a file'}${caption ? `: ${caption}` : ''}]`;
         }
         if (!text)
             return null;
         await this.store(msg, conversation.id, 'INBOUND', 'CUSTOMER', text, msg.type === 'audio' ? 'audio' : 'text');
-        if (msg.type === 'image')
-            void this.flagPossiblePaymentProof(conversation.id).catch((e) => this.log.error(`proof alert failed: ${String(e)}`));
         if (conversation.mode === 'HUMAN') {
             await this.notifier.notifyMessageWhileHuman(msg.merchantId, msg.chatId, text);
             await this.holdingReply(msg, conversation);
@@ -150,18 +152,72 @@ let ConversationService = ConversationService_1 = class ConversationService {
             return null;
         return { merchantId: msg.merchantId, chatId: msg.chatId, conversationId: conversation.id, customerId: customer.id };
     }
-    async flagPossiblePaymentProof(conversationId) {
+    async handlePaymentProof(msg, merchant, conversation, customer) {
         const unpaid = await this.prisma.order.findFirst({
-            where: { conversationId, status: { in: ['AWAITING_PAYMENT', 'EXPIRED'] } },
+            where: { conversationId: conversation.id, status: { in: ['AWAITING_PAYMENT', 'EXPIRED'] } },
             orderBy: { createdAt: 'desc' },
         });
         if (!unpaid)
-            return;
-        const last = this.lastImageAlert.get(conversationId) ?? 0;
-        if (Date.now() - last < IMAGE_ALERT_GAP_MS)
-            return;
-        this.lastImageAlert.set(conversationId, Date.now());
-        await this.handoffs.notify(conversationId, `Sent an image, probably proof of payment for ${unpaid.orderNumber} (${formatNaira(unpaid.totalKobo)}). If the money reached your account, reply /paid ${unpaid.orderNumber}`);
+            return false;
+        if ((conversation.mode === 'HUMAN' && conversation.handoffBy === 'OWNER') || !merchant.aiEnabled) {
+            await this.store(msg, conversation.id, 'INBOUND', 'CUSTOMER', '[customer sent a payment file; the owner is handling this chat]');
+            return true;
+        }
+        let file;
+        let rejected;
+        if (msg.fileSize !== undefined && msg.fileSize > MAX_PROOF_BYTES) {
+            rejected = 'too_large';
+        }
+        else if (msg.mediaRef) {
+            try {
+                const data = await this.gateway.downloadMedia(msg.merchantId, msg.mediaRef, MAX_PROOF_BYTES);
+                const check = checkProof(data);
+                if (!check.ok)
+                    rejected = check.reason;
+                else
+                    file = { data, mimeType: check.mimeType, kind: check.kind, fileName: proofFileName(unpaid.orderNumber, check.extension) };
+            }
+            catch (err) {
+                if (err instanceof MediaTooLargeError)
+                    rejected = 'too_large';
+                else
+                    this.log.warn(`Could not fetch a payment file for ${unpaid.orderNumber}: ${err instanceof Error ? err.message : String(err)}`);
+            }
+        }
+        if (rejected) {
+            await this.store(msg, conversation.id, 'INBOUND', 'CUSTOMER', '[customer sent a file that was not accepted]');
+            await this.reply(msg, conversation.id, rejected === 'too_large'
+                ? 'Sorry, that file is too big 🙏 Please send a screenshot or a PDF of the payment, under 10 MB.'
+                : 'Sorry, I can only take a screenshot (image) or a PDF of your payment 🙏 Please send it again that way.');
+            return true;
+        }
+        if (!this.proofLimiter.allow(conversation.id)) {
+            await this.store(msg, conversation.id, 'INBOUND', 'CUSTOMER', '[customer sent another payment file; already forwarded]');
+            await this.reply(msg, conversation.id, `I've already sent your payment proof to the owner 🙏 Once it's confirmed, I'll send your receipt right here.`);
+            return true;
+        }
+        let forwarded = false;
+        try {
+            forwarded = await this.notifier.notifyPaymentProof(msg.merchantId, {
+                orderNumber: unpaid.orderNumber,
+                totalKobo: unpaid.totalKobo,
+                customerName: customer.name,
+                customerPhone: customer.phone,
+                caption: cleanCaption(msg.text),
+                file,
+            });
+        }
+        catch (err) {
+            this.log.error(`Payment proof alert failed for ${unpaid.orderNumber}: ${err instanceof Error ? err.message : String(err)}`);
+        }
+        const kind = file?.kind === 'pdf' ? 'PDF' : 'screenshot';
+        await this.store(msg, conversation.id, 'INBOUND', 'CUSTOMER', `[customer sent a payment ${kind} for ${unpaid.orderNumber}${forwarded ? ', forwarded to the owner' : ''}]`);
+        const first = customer.name?.split(/\s+/)[0];
+        const thanks = first ? `Thank you, ${first}!` : 'Thank you!';
+        await this.reply(msg, conversation.id, forwarded
+            ? `${thanks} 🙏 I've forwarded your payment proof to the owner. Once the payment is confirmed, I'll send your receipt right here.`
+            : `${thanks} 🙏 I've noted your payment. The owner will confirm it, and I'll send your receipt right here once it's done.`);
+        return true;
     }
     async holdingReply(msg, conversation) {
         if (conversation.handoffBy === 'OWNER')

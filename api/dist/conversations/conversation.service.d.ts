@@ -18,14 +18,14 @@ export declare class ConversationService implements OnModuleInit {
     debounceMs: number;
     private batcherInstance?;
     private readonly ingestChains;
-    private readonly lastImageAlert;
+    private readonly proofLimiter;
     constructor(prisma: PrismaService, gateway: MessagingGateway, agent: AgentService, notifier: OwnerNotifier, handoffs: HandoffService, speech: SpeechToText, commands: OwnerCommands);
     private get batcher();
     onModuleInit(): void;
     enqueue(msg: InboundMessage): Promise<void>;
     catchUp(conversationId: string): Promise<void>;
     private ingest;
-    private flagPossiblePaymentProof;
+    private handlePaymentProof;
     private holdingReply;
     private runTurn;
     private awaitingAnswer;

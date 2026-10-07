@@ -14,7 +14,7 @@ import { mkdir } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import { env } from '../../config/env.js';
-import { InboundHandler, MessagingGateway, SessionState } from '../messaging.types.js';
+import { InboundHandler, MediaTooLargeError, MessagingGateway, SessionState } from '../messaging.types.js';
 import { isChatAllowed, normalizePhone, parseAllowlist } from '../reply-policy.js';
 import { chatIdFromKey, extractContent, jidFromChatId } from './wa-messages.js';
 import { hasStoredLogin, useDbAuthState } from './db-auth-state.js';
@@ -226,7 +226,9 @@ export class BaileysGateway extends MessagingGateway implements OnApplicationBoo
       return;
     }
 
-    if (content.type === 'audio') this.remember(this.mediaCache, msg.key.id, msg, MEDIA_MEMORY);
+    // Keep the message so the attachment can be downloaded when (and only if) the pipeline decides it needs it.
+    const hasMedia = content.type === 'audio' || content.type === 'image' || content.type === 'document';
+    if (hasMedia) this.remember(this.mediaCache, msg.key.id, msg, MEDIA_MEMORY);
     if (!fromMe) void session.sock.readMessages([msg.key]).catch(() => undefined); // blue ticks, like a person
 
     const inbound = {
@@ -235,7 +237,10 @@ export class BaileysGateway extends MessagingGateway implements OnApplicationBoo
       messageId: msg.key.id,
       type: content.type,
       text: content.text,
-      mediaRef: content.type === 'audio' ? msg.key.id : undefined,
+      mediaRef: hasMedia ? msg.key.id : undefined,
+      fileName: content.fileName,
+      mimeType: content.mimeType,
+      fileSize: content.fileSize,
       fromMe,
       pushName: msg.pushName ?? undefined,
       timestamp: new Date(tsSeconds(msg.messageTimestamp) * 1000),
@@ -257,6 +262,10 @@ export class BaileysGateway extends MessagingGateway implements OnApplicationBoo
     await this.send(merchantId, chatId, { image: { url }, caption });
   }
 
+  async sendImageBuffer(merchantId: string, chatId: string, data: Buffer, mimeType: string, caption?: string) {
+    await this.send(merchantId, chatId, { image: data, mimetype: mimeType, caption });
+  }
+
   async sendDocument(merchantId: string, chatId: string, data: Buffer, fileName: string, mimeType: string, caption?: string) {
     await this.send(merchantId, chatId, { document: data, fileName, mimetype: mimeType, caption });
   }
@@ -272,11 +281,24 @@ export class BaileysGateway extends MessagingGateway implements OnApplicationBoo
     }
   }
 
-  async downloadMedia(merchantId: string, mediaRef: string): Promise<Buffer> {
+  async downloadMedia(merchantId: string, mediaRef: string, maxBytes = 15 * 1024 * 1024): Promise<Buffer> {
     const s = this.connected(merchantId);
     const msg = this.mediaCache.get(mediaRef);
     if (!msg) throw new Error(`Media ${mediaRef} is no longer available`);
-    return (await downloadMediaMessage(msg, 'buffer', {}, { logger: this.baileysLog, reuploadRequest: s.sock.updateMediaMessage })) as Buffer;
+    // Stream it and stop at the cap: the size a sender declares is not trustworthy, and buffering a huge file
+    // in memory would let one customer crash the bot.
+    const stream = (await downloadMediaMessage(msg, 'stream', {}, { logger: this.baileysLog, reuploadRequest: s.sock.updateMediaMessage })) as AsyncIterable<Buffer> & { destroy?: () => void };
+    const chunks: Buffer[] = [];
+    let total = 0;
+    for await (const chunk of stream) {
+      total += chunk.length;
+      if (total > maxBytes) {
+        stream.destroy?.();
+        throw new MediaTooLargeError(maxBytes);
+      }
+      chunks.push(chunk);
+    }
+    return Buffer.concat(chunks);
   }
 
   sessionState(merchantId: string): SessionState {

@@ -19,8 +19,15 @@ class BrokenMailer extends Mailer {
   }
 }
 
+/** A WhatsApp connection that is down: every kind of send fails. */
 class BrokenGateway extends SimulatorGateway {
   override async sendText(): Promise<void> {
+    throw new Error('whatsapp not connected');
+  }
+  override async sendImageBuffer(): Promise<void> {
+    throw new Error('whatsapp not connected');
+  }
+  override async sendDocument(): Promise<void> {
     throw new Error('whatsapp not connected');
   }
 }
@@ -116,6 +123,84 @@ describe('owner alerts', () => {
       new WhatsAppOwnerNotifier(prisma, gateway, new BrokenMailer()).notifyHandoff(handoff(withAlert)),
     ).resolves.toBeUndefined();
     expect(gateway.sent).toHaveLength(1); // WhatsApp still went out although email failed
+  });
+
+  describe('payment proof', () => {
+    const proof = (file?: { kind: 'image' | 'pdf'; mime: string; name: string }, caption?: string) => ({
+      orderNumber: 'ORD-000042',
+      totalKobo: 3980000,
+      customerName: 'Tunde Bakare',
+      customerPhone: '2348011112222',
+      caption,
+      file: file ? { data: Buffer.from('bytes'), mimeType: file.mime, fileName: file.name, kind: file.kind } : undefined,
+    });
+
+    it('sends a screenshot to the OWNER (number from the database), captioned with how to confirm it', async () => {
+      const gateway = new SimulatorGateway();
+      const mailer = new RecordingMailer();
+      const forwarded = await new WhatsAppOwnerNotifier(prisma, gateway, mailer).notifyPaymentProof(
+        withAlert,
+        proof({ kind: 'image', mime: 'image/jpeg', name: 'x.jpg' }, 'I have paid'),
+      );
+
+      expect(forwarded).toBe(true);
+      expect(gateway.sent).toHaveLength(1);
+      expect(gateway.sent[0]).toMatchObject({ chatId: '2348012345678', kind: 'image' }); // the owner's number, normalised
+      const caption = gateway.sent[0]!.text!;
+      expect(caption).toContain('ORD-000042');
+      expect(caption).toContain('₦39,800');
+      expect(caption).toContain('/paid ORD-000042');
+      expect(caption).toContain('I have paid');
+      expect(caption).toContain('nothing is confirmed until you reply'); // never presents it as a confirmation
+    });
+
+    it('sends a PDF as a document under the given name', async () => {
+      const gateway = new SimulatorGateway();
+      await new WhatsAppOwnerNotifier(prisma, gateway, new RecordingMailer()).notifyPaymentProof(
+        withAlert,
+        proof({ kind: 'pdf', mime: 'application/pdf', name: 'payment-proof-ORD-000042.pdf' }),
+      );
+      expect(gateway.sent[0]).toMatchObject({ kind: 'document', fileName: 'payment-proof-ORD-000042.pdf' });
+    });
+
+    it('emails TEXT ONLY: the screenshot, with its bank details, never leaves WhatsApp', async () => {
+      const mailer = new RecordingMailer();
+      await new WhatsAppOwnerNotifier(prisma, new SimulatorGateway(), mailer).notifyPaymentProof(
+        withAlert,
+        proof({ kind: 'image', mime: 'image/png', name: 'x.png' }),
+      );
+      expect(mailer.sent).toHaveLength(1);
+      expect(mailer.sent[0]!.to).toBe('alerts@example.com');
+      expect(mailer.sent[0]!.text).toContain('The file was sent to your WhatsApp');
+      expect(mailer.sent[0]!.text).not.toContain('bytes'); // the file content is not in the email
+    });
+
+    it('cleans the customer\'s words again, whoever calls', async () => {
+      const gateway = new SimulatorGateway();
+      await new WhatsAppOwnerNotifier(prisma, gateway, new RecordingMailer()).notifyPaymentProof(
+        withAlert,
+        proof({ kind: 'image', mime: 'image/png', name: 'x.png' }, 'paid‮fdp.exe\u0007'),
+      );
+      expect(gateway.sent[0]!.text).toContain('"paid fdp.exe"');
+    });
+
+    it('reports false (and still emails, saying so) when the owner\'s WhatsApp cannot be reached', async () => {
+      const mailer = new RecordingMailer();
+      const forwarded = await new WhatsAppOwnerNotifier(prisma, new BrokenGateway(), mailer).notifyPaymentProof(
+        withAlert,
+        proof({ kind: 'image', mime: 'image/png', name: 'x.png' }),
+      );
+      expect(forwarded).toBe(false);
+      expect(mailer.sent[0]!.text).toContain('could NOT be forwarded');
+    });
+
+    it('with no file (it could not be fetched) sends a text alert and reports false', async () => {
+      const gateway = new SimulatorGateway();
+      const forwarded = await new WhatsAppOwnerNotifier(prisma, gateway, new RecordingMailer()).notifyPaymentProof(withAlert, proof());
+      expect(forwarded).toBe(false);
+      expect(gateway.sent[0]).toMatchObject({ kind: 'text' });
+      expect(gateway.sent[0]!.text).toContain('/paid ORD-000042');
+    });
   });
 
   it('does not message the owner for every customer message while a chat is with a human', async () => {

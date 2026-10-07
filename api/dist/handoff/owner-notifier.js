@@ -15,6 +15,17 @@ let LogOwnerNotifier = class LogOwnerNotifier extends OwnerNotifier {
     async notifyMessageWhileHuman(merchantId, customerPhone, text) {
         this.alerts.push({ type: 'human-message', merchantId, customerPhone, text });
     }
+    forwardWorks = true;
+    async notifyPaymentProof(merchantId, alert) {
+        const { file, ...rest } = alert;
+        this.alerts.push({
+            type: 'payment-proof',
+            merchantId,
+            ...rest,
+            file: file ? { kind: file.kind, mimeType: file.mimeType, fileName: file.fileName, size: file.data.length } : undefined,
+        });
+        return this.forwardWorks && !!file;
+    }
     async notifyPayment(merchantId, info) {
         this.alerts.push({ type: 'payment', merchantId, ...info });
     }

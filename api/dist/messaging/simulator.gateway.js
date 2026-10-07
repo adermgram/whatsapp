@@ -5,7 +5,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 import { Injectable } from '@nestjs/common';
-import { MessagingGateway, } from './messaging.types.js';
+import { MediaTooLargeError, MessagingGateway, } from './messaging.types.js';
 let SimulatorGateway = class SimulatorGateway extends MessagingGateway {
     handlers = [];
     sent = [];
@@ -28,13 +28,18 @@ let SimulatorGateway = class SimulatorGateway extends MessagingGateway {
     async sendImage(merchantId, chatId, url, caption) {
         this.record({ merchantId, chatId, kind: 'image', url, text: caption });
     }
+    async sendImageBuffer(merchantId, chatId, data, _mimeType, caption) {
+        this.record({ merchantId, chatId, kind: 'image', size: data.length, text: caption });
+    }
     async sendDocument(merchantId, chatId, data, fileName, _mimeType, caption) {
         this.record({ merchantId, chatId, kind: 'document', fileName, size: data.length, text: caption });
     }
-    async downloadMedia(_merchantId, mediaRef) {
+    async downloadMedia(_merchantId, mediaRef, maxBytes) {
         const buf = this.media.get(mediaRef);
         if (!buf)
             throw new Error(`No media for ref ${mediaRef}`);
+        if (maxBytes !== undefined && buf.length > maxBytes)
+            throw new MediaTooLargeError(maxBytes);
         return buf;
     }
     async setTyping() { }

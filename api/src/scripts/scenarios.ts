@@ -239,8 +239,9 @@ const scenarios: Scenario[] = [
       const f: string[] = [];
       const conv = await prisma.conversation.findFirst({ where: { merchantId: merchant.id, chatId: c.chatId } });
       if (conv?.mode !== 'AI') f.push('the chat got locked in human mode after a payment screenshot');
-      if (!notifier.alerts.some((a) => (a as { kind?: string; customerPhone?: string }).kind === 'attention' && (a as { customerPhone?: string }).customerPhone === c.chatId))
-        f.push('the owner was never told about the payment screenshot');
+      if (!notifier.alerts.some((a) => (a as { type?: string; customerPhone?: string }).type === 'payment-proof' && (a as { customerPhone?: string }).customerPhone === c.chatId))
+        f.push('the owner was never given the payment screenshot');
+      if (!c.perTurn[4]!.some((r) => /owner/i.test(r) && /receipt/i.test(r))) f.push('the customer was not told the owner will confirm and the receipt will follow');
       if (!/arsenal/i.test((c.perTurn.at(-1) ?? []).join(' '))) f.push('the AI stopped helping after the screenshot (no answer about the Arsenal jersey)');
       if ((await customerOrders(c.chatId)).some((o) => o.status === 'PAID')) f.push('order marked PAID from a screenshot');
       return f;

@@ -30,8 +30,19 @@ export function jidFromChatId(chatId: string): string {
 }
 
 export interface Content {
-  type: 'text' | 'audio' | 'image';
+  type: 'text' | 'audio' | 'image' | 'document';
   text?: string;
+  /** Attachment details as CLAIMED by the sender. Never trusted: the real bytes are inspected later. */
+  fileName?: string;
+  mimeType?: string;
+  fileSize?: number;
+}
+
+/** WhatsApp sizes arrive as numbers, strings or Long objects. */
+function toNumber(v: unknown): number | undefined {
+  if (v == null) return undefined;
+  const n = typeof v === 'number' ? v : typeof (v as { toNumber?: () => number }).toNumber === 'function' ? (v as { toNumber: () => number }).toNumber() : Number(v);
+  return Number.isFinite(n) ? n : undefined;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -64,7 +75,13 @@ export function extractContent(message: Msg | null | undefined): Content | null 
   if (!m) return null;
   if (typeof m.conversation === 'string' && m.conversation) return { type: 'text', text: m.conversation };
   if (m.extendedTextMessage?.text) return { type: 'text', text: m.extendedTextMessage.text };
-  if (m.imageMessage) return { type: 'image', text: m.imageMessage.caption || undefined };
+  if (m.imageMessage) {
+    return { type: 'image', text: m.imageMessage.caption || undefined, mimeType: m.imageMessage.mimetype, fileSize: toNumber(m.imageMessage.fileLength) };
+  }
+  if (m.documentMessage) {
+    const d = m.documentMessage;
+    return { type: 'document', text: d.caption || undefined, fileName: d.fileName, mimeType: d.mimetype, fileSize: toNumber(d.fileLength) };
+  }
   if (m.audioMessage) return { type: 'audio' };
   return null;
 }

@@ -8,6 +8,24 @@ export interface PaymentAlert {
   problem?: string;
 }
 
+export interface ProofFile {
+  data: Buffer;
+  mimeType: string;
+  fileName: string;
+  kind: 'image' | 'pdf';
+}
+
+export interface PaymentProofAlert {
+  orderNumber: string;
+  totalKobo: number;
+  customerName: string | null;
+  customerPhone: string;
+  /** The customer's own words with the file, already cleaned. */
+  caption?: string;
+  /** The file itself. Absent when it could not be fetched, in which case only a text alert goes out. */
+  file?: ProofFile;
+}
+
 export interface HandoffAlert {
   merchantId: string;
   conversationId: string;
@@ -28,6 +46,11 @@ export abstract class OwnerNotifier {
     customerPhone: string,
     text: string,
   ): Promise<void>;
+  /**
+   * A customer sent what looks like proof of payment. Passes the file to the owner so they can check their bank
+   * and reply /paid. Returns true only if the FILE itself reached the owner. Never confirms anything by itself.
+   */
+  abstract notifyPaymentProof(merchantId: string, alert: PaymentProofAlert): Promise<boolean>;
   abstract notifyPayment(
     merchantId: string,
     info: PaymentAlert,
@@ -44,6 +67,20 @@ export class LogOwnerNotifier extends OwnerNotifier {
   async notifyMessageWhileHuman(merchantId: string, customerPhone: string, text: string) {
     this.alerts.push({ type: 'human-message', merchantId, customerPhone, text });
   }
+  /** Tests can set this to false to simulate the owner's WhatsApp being unreachable. */
+  forwardWorks = true;
+
+  async notifyPaymentProof(merchantId: string, alert: PaymentProofAlert) {
+    const { file, ...rest } = alert;
+    this.alerts.push({
+      type: 'payment-proof',
+      merchantId,
+      ...rest,
+      file: file ? { kind: file.kind, mimeType: file.mimeType, fileName: file.fileName, size: file.data.length } : undefined,
+    });
+    return this.forwardWorks && !!file;
+  }
+
   async notifyPayment(
     merchantId: string,
     info: PaymentAlert,

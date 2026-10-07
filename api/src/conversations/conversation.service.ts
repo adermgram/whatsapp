@@ -1,17 +1,17 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { AgentService } from '../agent/agent.service.js';
-import { InboundMessage, MessagingGateway } from '../messaging/messaging.types.js';
+import { InboundMessage, MediaTooLargeError, MessagingGateway } from '../messaging/messaging.types.js';
 import { OwnerNotifier } from '../handoff/owner-notifier.js';
+import type { ProofFile } from '../handoff/owner-notifier.js';
 import { HandoffService } from '../handoff/handoff.service.js';
 import { SpeechToText } from '../speech/speech-to-text.js';
 import { OwnerCommands } from './owner-commands.js';
 import { TurnBatcher, TurnControl } from './turn-batcher.js';
+import { MAX_PROOF_BYTES, ProofRateLimiter, checkProof, cleanCaption, proofFileName } from './proof-files.js';
 import { debounceMs, env } from '../config/env.js';
-import { formatNaira } from '../common/money.js';
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
-const IMAGE_ALERT_GAP_MS = 5 * 60_000;
 
 interface Turn {
   merchantId: string;
@@ -36,7 +36,8 @@ export class ConversationService implements OnModuleInit {
   debounceMs = debounceMs;
   private batcherInstance?: TurnBatcher;
   private readonly ingestChains = new Map<string, Promise<unknown>>();
-  private readonly lastImageAlert = new Map<string, number>();
+  /** At most a few payment files per customer per 10 minutes get forwarded, so nobody can flood the owner. */
+  private readonly proofLimiter = new ProofRateLimiter(3, 10 * 60_000);
 
   constructor(
     private readonly prisma: PrismaService,
@@ -136,10 +137,15 @@ export class ConversationService implements OnModuleInit {
       return null;
     }
 
+    // A screenshot or PDF from someone with an unpaid order is payment proof: pass it to the owner, reply nicely.
+    if (msg.type === 'image' || msg.type === 'document') {
+      if (await this.handlePaymentProof(msg, merchant, conversation, customer)) return null;
+    }
+
     let text = msg.text ?? '';
     if (msg.type === 'audio' && msg.mediaRef) {
       try {
-        const audio = await this.gateway.downloadMedia(msg.merchantId, msg.mediaRef);
+        const audio = await this.gateway.downloadMedia(msg.merchantId, msg.mediaRef, 15 * 1024 * 1024);
         text = await this.speech.transcribe(audio);
       } catch (err) {
         this.log.warn(`Voice note transcription failed: ${err instanceof Error ? err.message : String(err)}`);
@@ -150,13 +156,14 @@ export class ConversationService implements OnModuleInit {
         await this.reply(msg, conversation.id, "Sorry, I couldn't hear that voice note clearly. Abeg type your message for me?");
         return null;
       }
-    } else if (msg.type === 'image') {
-      text = `[customer sent an image${text ? `: ${text}` : ''}]`;
+    } else if (msg.type === 'image' || msg.type === 'document') {
+      // No unpaid order, so not payment proof. The AI only learns that something arrived; it never sees the file.
+      const caption = cleanCaption(text);
+      text = `[customer sent ${msg.type === 'image' ? 'an image' : 'a file'}${caption ? `: ${caption}` : ''}]`;
     }
     if (!text) return null;
 
     await this.store(msg, conversation.id, 'INBOUND', 'CUSTOMER', text, msg.type === 'audio' ? 'audio' : 'text');
-    if (msg.type === 'image') void this.flagPossiblePaymentProof(conversation.id).catch((e) => this.log.error(`proof alert failed: ${String(e)}`));
 
     if (conversation.mode === 'HUMAN') {
       await this.notifier.notifyMessageWhileHuman(msg.merchantId, msg.chatId, text);
@@ -169,23 +176,108 @@ export class ConversationService implements OnModuleInit {
   }
 
   /**
-   * The AI cannot read pictures, and the most common picture a customer sends is a payment screenshot.
-   * So an image from someone with an unpaid order always tells the owner (code, not the AI's judgement),
-   * and the AI carries on helping instead of giving up on the chat.
+   * Payment proof: a screenshot or PDF from a customer who has an unpaid order.
+   *
+   * Returns true when the message was dealt with here (the AI is NOT asked to answer it, so the customer gets exactly
+   * one reply and the AI can never promise anything about the money). Returns false when it is not payment proof.
+   *
+   * Security: the file is only ever passed along in memory. Its real type is read from its bytes (never from the
+   * name or type the customer claims), size is capped, only images and PDFs get through, the owner's number comes from
+   * our database, the filename is ours, the caption is cleaned, and forwards are rate-limited.
+   * Nothing here can mark an order paid: only Paystack or the owner (/paid) can.
    */
-  private async flagPossiblePaymentProof(conversationId: string) {
+  private async handlePaymentProof(
+    msg: InboundMessage,
+    merchant: { aiEnabled: boolean },
+    conversation: { id: string; mode: string; handoffBy: string | null },
+    customer: { name: string | null; phone: string },
+  ): Promise<boolean> {
     const unpaid = await this.prisma.order.findFirst({
-      where: { conversationId, status: { in: ['AWAITING_PAYMENT', 'EXPIRED'] } },
+      where: { conversationId: conversation.id, status: { in: ['AWAITING_PAYMENT', 'EXPIRED'] } },
       orderBy: { createdAt: 'desc' },
     });
-    if (!unpaid) return;
-    const last = this.lastImageAlert.get(conversationId) ?? 0;
-    if (Date.now() - last < IMAGE_ALERT_GAP_MS) return; // one alert per burst of screenshots
-    this.lastImageAlert.set(conversationId, Date.now());
-    await this.handoffs.notify(
-      conversationId,
-      `Sent an image, probably proof of payment for ${unpaid.orderNumber} (${formatNaira(unpaid.totalKobo)}). If the money reached your account, reply /paid ${unpaid.orderNumber}`,
+    if (!unpaid) return false; // nothing is waiting for money: an ordinary attachment, handled as before
+
+    // The owner is already in this chat (or the shop has the AI off): keep the record and stay out of it.
+    if ((conversation.mode === 'HUMAN' && conversation.handoffBy === 'OWNER') || !merchant.aiEnabled) {
+      await this.store(msg, conversation.id, 'INBOUND', 'CUSTOMER', '[customer sent a payment file; the owner is handling this chat]');
+      return true;
+    }
+
+    // 1. Look at the file. Refuse anything oversized or not a real image/PDF, without forwarding it.
+    let file: ProofFile | undefined;
+    let rejected: 'too_large' | 'unsupported' | 'empty' | undefined;
+    if (msg.fileSize !== undefined && msg.fileSize > MAX_PROOF_BYTES) {
+      rejected = 'too_large'; // refused before downloading a single byte
+    } else if (msg.mediaRef) {
+      try {
+        const data = await this.gateway.downloadMedia(msg.merchantId, msg.mediaRef, MAX_PROOF_BYTES);
+        const check = checkProof(data);
+        if (!check.ok) rejected = check.reason;
+        else file = { data, mimeType: check.mimeType, kind: check.kind, fileName: proofFileName(unpaid.orderNumber, check.extension) };
+      } catch (err) {
+        if (err instanceof MediaTooLargeError) rejected = 'too_large'; // the sender lied about the size
+        else this.log.warn(`Could not fetch a payment file for ${unpaid.orderNumber}: ${err instanceof Error ? err.message : String(err)}`);
+      }
+    }
+
+    if (rejected) {
+      await this.store(msg, conversation.id, 'INBOUND', 'CUSTOMER', '[customer sent a file that was not accepted]');
+      await this.reply(
+        msg,
+        conversation.id,
+        rejected === 'too_large'
+          ? 'Sorry, that file is too big 🙏 Please send a screenshot or a PDF of the payment, under 10 MB.'
+          : 'Sorry, I can only take a screenshot (image) or a PDF of your payment 🙏 Please send it again that way.',
+      );
+      return true;
+    }
+
+    // 2. Do not let one customer flood the owner.
+    if (!this.proofLimiter.allow(conversation.id)) {
+      await this.store(msg, conversation.id, 'INBOUND', 'CUSTOMER', '[customer sent another payment file; already forwarded]');
+      await this.reply(
+        msg,
+        conversation.id,
+        `I've already sent your payment proof to the owner 🙏 Once it's confirmed, I'll send your receipt right here.`,
+      );
+      return true;
+    }
+
+    // 3. Pass it to the owner.
+    let forwarded = false;
+    try {
+      forwarded = await this.notifier.notifyPaymentProof(msg.merchantId, {
+        orderNumber: unpaid.orderNumber,
+        totalKobo: unpaid.totalKobo,
+        customerName: customer.name,
+        customerPhone: customer.phone,
+        caption: cleanCaption(msg.text),
+        file,
+      });
+    } catch (err) {
+      this.log.error(`Payment proof alert failed for ${unpaid.orderNumber}: ${err instanceof Error ? err.message : String(err)}`);
+    }
+
+    // 4. Tell the customer, honestly: "forwarded" only if the file really reached the owner.
+    const kind = file?.kind === 'pdf' ? 'PDF' : 'screenshot';
+    await this.store(
+      msg,
+      conversation.id,
+      'INBOUND',
+      'CUSTOMER',
+      `[customer sent a payment ${kind} for ${unpaid.orderNumber}${forwarded ? ', forwarded to the owner' : ''}]`,
     );
+    const first = customer.name?.split(/\s+/)[0];
+    const thanks = first ? `Thank you, ${first}!` : 'Thank you!';
+    await this.reply(
+      msg,
+      conversation.id,
+      forwarded
+        ? `${thanks} 🙏 I've forwarded your payment proof to the owner. Once the payment is confirmed, I'll send your receipt right here.`
+        : `${thanks} 🙏 I've noted your payment. The owner will confirm it, and I'll send your receipt right here once it's done.`,
+    );
+    return true;
   }
 
   /** A chat that is with a human is never ignored in silence: say the owner has been told, at most once per while. */

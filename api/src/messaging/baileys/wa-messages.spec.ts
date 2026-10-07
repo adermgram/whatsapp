@@ -53,6 +53,27 @@ describe('extractContent', () => {
     expect(extractContent({ imageMessage: {} })).toEqual({ type: 'image', text: undefined });
   });
 
+  it('reads a PDF/document with its caption, and what the sender CLAIMS about it', () => {
+    const longLike = { toNumber: () => 48213 }; // WhatsApp sends sizes as Long objects
+    expect(
+      extractContent({ documentMessage: { fileName: 'receipt.pdf', mimetype: 'application/pdf', fileLength: longLike, caption: 'paid' } }),
+    ).toEqual({ type: 'document', text: 'paid', fileName: 'receipt.pdf', mimeType: 'application/pdf', fileSize: 48213 });
+    // a document sent with a caption arrives wrapped, and is still seen
+    expect(
+      extractContent({ documentWithCaptionMessage: { message: { documentMessage: { fileName: 'a.pdf', fileLength: 10 } } } }),
+    ).toMatchObject({ type: 'document', fileName: 'a.pdf', fileSize: 10 });
+  });
+
+  it('reads image size and type, tolerating odd values', () => {
+    expect(extractContent({ imageMessage: { mimetype: 'image/jpeg', fileLength: '2048', caption: 'see' } })).toEqual({
+      type: 'image',
+      text: 'see',
+      mimeType: 'image/jpeg',
+      fileSize: 2048,
+    });
+    expect(extractContent({ imageMessage: { fileLength: 'not a number' } })).toMatchObject({ type: 'image', fileSize: undefined });
+  });
+
   it('ignores reactions, protocol messages and empty input', () => {
     expect(extractContent({ reactionMessage: { text: '👍' } })).toBeNull();
     expect(extractContent({ protocolMessage: { type: 0 } })).toBeNull();
