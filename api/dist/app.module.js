@@ -13,6 +13,8 @@ import { HandoffModule } from './handoff/handoff.module.js';
 import { CommerceModule } from './commerce/commerce.module.js';
 import { PaymentsModule } from './payments/payments.module.js';
 import { ConversationsModule } from './conversations/conversations.module.js';
+import { AuthModule } from './auth/auth.module.js';
+import { AdminModule } from './admin/admin.module.js';
 let AppModule = class AppModule {
 };
 AppModule = __decorate([
@@ -26,6 +28,8 @@ AppModule = __decorate([
             CommerceModule,
             PaymentsModule,
             ConversationsModule,
+            AuthModule,
+            AdminModule,
         ],
     })
 ], AppModule);

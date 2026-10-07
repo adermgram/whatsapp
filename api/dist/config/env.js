@@ -4,6 +4,8 @@ const schema = z.object({
     DATABASE_URL: z.string().min(1),
     DIRECT_URL: z.string().optional(),
     PORT: z.coerce.number().default(3000),
+    DASHBOARD_ORIGIN: z.string().default('http://localhost:3001'),
+    SESSION_DAYS: z.coerce.number().min(1).max(90).default(7),
     JWT_SECRET: z.string().default('dev-only-change-me'),
     ENCRYPTION_KEY: z.string().optional(),
     GROQ_API_KEY: z.string().min(1),
@@ -31,12 +33,16 @@ const schema = z.object({
     AI_HANDOFF_RESUME_MINUTES: z.coerce.number().min(1).default(30),
     OWNER_TAKEOVER_RESUME_HOURS: z.coerce.number().min(0.1).default(6),
     HOLDING_REPLY_GAP_MINUTES: z.coerce.number().min(1).default(10),
+    DISABLE_JOBS: z.enum(['true', 'false']).default('false'),
     PAYMENT_DRIVER: z.enum(['paystack', 'fake']).default('fake'),
     STORAGE_DIR: z.string().default('./storage'),
     PUBLIC_BASE_URL: z.string().default('http://localhost:3000'),
     PAYMENT_EMAIL_DOMAIN: z.string().default('customers.shopbot.app'),
 });
 export const env = schema.parse(process.env);
+if (process.env.NODE_ENV === 'production' && (env.JWT_SECRET === 'dev-only-change-me' || env.JWT_SECRET.length < 32)) {
+    throw new Error('JWT_SECRET must be set to a long random value (32+ characters) in production');
+}
 const usingGroq = (env.LLM_BASE_URL ?? env.GROQ_BASE_URL).includes('groq.com');
 export const llm = {
     apiKey: env.LLM_API_KEY ?? env.GROQ_API_KEY,

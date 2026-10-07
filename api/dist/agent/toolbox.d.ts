@@ -12,6 +12,11 @@ export interface ToolContext {
         notifyReason?: string;
         paymentLink?: string;
         shown?: string[];
+        photos?: {
+            productName: string;
+            caption: string;
+            imageIds: string[];
+        };
     };
 }
 export declare const TOOL_DEFINITIONS: ChatCompletionTool[];
@@ -21,9 +26,11 @@ export declare class Toolbox {
     private readonly catalog;
     private readonly negotiation;
     private readonly orders;
+    private readonly photoLimiter;
     constructor(prisma: PrismaService, catalog: CatalogService, negotiation: NegotiationService, orders: OrdersService);
     execute(name: string, rawArgs: string, ctx: ToolContext): Promise<unknown>;
     private resolveVariant;
+    private sendPhotos;
     private search;
     private negotiate;
     private acceptPrice;

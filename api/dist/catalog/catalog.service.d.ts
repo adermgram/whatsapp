@@ -6,7 +6,7 @@ export interface CatalogHit {
     category: ProductCategory;
     description: string | null;
     attributes: Record<string, unknown>;
-    imageKeys: string[];
+    photoCount: number;
     variants: {
         variantId: string;
         size: string | null;
@@ -37,16 +37,15 @@ export declare class CatalogService {
             description: string | null;
             category: ProductCategory;
             attributes: import("@prisma/client/runtime/client").JsonValue;
-            imageKeys: string[];
             active: boolean;
         };
         id: string;
         createdAt: Date;
         merchantId: string;
         productId: string;
+        color: string | null;
         sku: string | null;
         size: string | null;
-        color: string | null;
         priceKobo: number;
         minPriceKobo: number;
         stock: number;

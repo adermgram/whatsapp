@@ -2,6 +2,7 @@ export type * from './models/Merchant.js';
 export type * from './models/WhatsAppSession.js';
 export type * from './models/WaAuthItem.js';
 export type * from './models/Product.js';
+export type * from './models/ProductImage.js';
 export type * from './models/Variant.js';
 export type * from './models/Customer.js';
 export type * from './models/Conversation.js';

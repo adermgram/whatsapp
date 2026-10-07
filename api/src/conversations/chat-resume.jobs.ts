@@ -24,7 +24,7 @@ export class ChatResumeJobs {
 
   @Cron('* * * * *')
   async tick() {
-    if (this.running) return;
+    if (env.DISABLE_JOBS === 'true' || this.running) return;
     this.running = true;
     try {
       const n = await this.resumeDue();

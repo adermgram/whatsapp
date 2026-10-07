@@ -22,35 +22,37 @@ let LlmClient = LlmClient_1 = class LlmClient {
     constructor() {
         this.log.log(`Chat model: ${llm.model} via ${llm.provider}${llm.fallbackModel ? ` (fallback ${llm.fallbackModel})` : ''}`);
     }
-    async chat(messages, tools) {
+    async chat(messages, tools, forceTool) {
         try {
-            return await this.callWithToolRetry(llm.model, messages, tools);
+            return await this.callWithToolRetry(llm.model, messages, tools, forceTool);
         }
         catch (err) {
             if (err instanceof OpenAI.RateLimitError && llm.fallbackModel && llm.fallbackModel !== llm.model) {
                 this.log.warn(`Rate limited on ${llm.model}, falling back to ${llm.fallbackModel}`);
-                return this.callWithToolRetry(llm.fallbackModel, messages, tools);
+                return this.callWithToolRetry(llm.fallbackModel, messages, tools, forceTool);
             }
             throw err;
         }
     }
-    async callWithToolRetry(model, messages, tools) {
+    async callWithToolRetry(model, messages, tools, forceTool) {
         try {
-            return await this.call(model, messages, tools);
+            return await this.call(model, messages, tools, forceTool);
         }
         catch (err) {
             if (err instanceof OpenAI.BadRequestError && /tool/i.test(err.message)) {
                 this.log.warn(`Tool call rejected, retrying once: ${err.message.slice(0, 160)}`);
-                return this.call(model, messages, tools);
+                return this.call(model, messages, tools, forceTool);
             }
             throw err;
         }
     }
-    async call(model, messages, tools) {
+    async call(model, messages, tools, forceTool) {
         const res = await this.client.chat.completions.create({
             model,
             messages,
-            ...(tools.length ? { tools, tool_choice: 'auto' } : {}),
+            ...(tools.length
+                ? { tools, tool_choice: forceTool ? { type: 'function', function: { name: forceTool } } : 'auto' }
+                : {}),
             ...(llm.temperature !== null ? { temperature: llm.temperature } : {}),
             max_completion_tokens: 700,
             ...(llm.reasoningEffort !== 'off' ? { reasoning_effort: llm.reasoningEffort } : {}),

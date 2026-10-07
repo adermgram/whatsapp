@@ -31,7 +31,8 @@
     "chat:real": "nest build && node dist/scripts/chat.js --real",
     "bot": "nest build && node dist/bot.js",
     "email:test": "tsx src/scripts/email-test.ts",
-    "alerts:preview": "tsx src/scripts/alert-preview.ts"
+    "alerts:preview": "tsx src/scripts/alert-preview.ts",
+    "e2e:dashboard": "nest build && node dist/scripts/dashboard-e2e.js"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1146.0",
@@ -41,11 +42,14 @@
     "@nestjs/jwt": "^12.0.2",
     "@nestjs/platform-express": "^12.0.1",
     "@nestjs/schedule": "^12.0.2",
+    "@nestjs/throttler": "^6.7.1",
     "@prisma/adapter-pg": "^7.10.0",
     "@prisma/client": "^7.10.0",
     "@whiskeysockets/baileys": "^7.0.0-rc14",
     "bcryptjs": "^3.0.3",
+    "cookie-parser": "^1.4.7",
     "dotenv": "^18.0.5",
+    "helmet": "^8.3.0",
     "nodemailer": "^10.0.15",
     "openai": "^7.28.0",
     "pdfmake": "^0.3.11",
@@ -55,6 +59,7 @@
     "qrcode": "^1.5.4",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
+    "sharp": "^0.35.5",
     "zod": "^4.6.5"
   },
   "devDependencies": {
@@ -62,7 +67,9 @@
     "@nestjs/mau": "^0.2.6",
     "@nestjs/schematics": "^12.0.0",
     "@nestjs/testing": "^12.0.1",
+    "@types/cookie-parser": "^1.4.10",
     "@types/express": "^5.0.0",
+    "@types/multer": "^2.3.0",
     "@types/node": "^24.0.0",
     "@types/nodemailer": "^8.0.2",
     "@types/pdfmake": "^0.3.3",

@@ -15,6 +15,7 @@ import { MediaTooLargeError, MessagingGateway } from '../messaging/messaging.typ
 import { OwnerNotifier } from '../handoff/owner-notifier.js';
 import { HandoffService } from '../handoff/handoff.service.js';
 import { SpeechToText } from '../speech/speech-to-text.js';
+import { StoragePort } from '../storage/storage.port.js';
 import { OwnerCommands } from './owner-commands.js';
 import { TurnBatcher } from './turn-batcher.js';
 import { MAX_PROOF_BYTES, ProofRateLimiter, checkProof, cleanCaption, proofFileName } from './proof-files.js';
@@ -28,12 +29,13 @@ let ConversationService = ConversationService_1 = class ConversationService {
     handoffs;
     speech;
     commands;
+    storage;
     log = new Logger(ConversationService_1.name);
     debounceMs = debounceMs;
     batcherInstance;
     ingestChains = new Map();
     proofLimiter = new ProofRateLimiter(3, 10 * 60_000);
-    constructor(prisma, gateway, agent, notifier, handoffs, speech, commands) {
+    constructor(prisma, gateway, agent, notifier, handoffs, speech, commands, storage) {
         this.prisma = prisma;
         this.gateway = gateway;
         this.agent = agent;
@@ -41,6 +43,7 @@ let ConversationService = ConversationService_1 = class ConversationService {
         this.handoffs = handoffs;
         this.speech = speech;
         this.commands = commands;
+        this.storage = storage;
     }
     get batcher() {
         return (this.batcherInstance ??= new TurnBatcher(this.debounceMs));
@@ -252,11 +255,36 @@ let ConversationService = ConversationService_1 = class ConversationService {
             return;
         if (!(await this.awaitingAnswer(turn.conversationId)))
             return;
+        if (result.photos)
+            await this.sendPhotos(turn, result.photos).catch((e) => this.log.error(`Sending photos failed: ${e instanceof Error ? e.message : String(e)}`));
         await this.reply(turn, turn.conversationId, result.reply, result.meta);
         if (result.handoffReason)
             await this.handoffs.handoff(turn.conversationId, result.handoffReason, 'AI');
         else if (result.notifyReason)
             await this.handoffs.notify(turn.conversationId, result.notifyReason);
+    }
+    async sendPhotos(turn, photos) {
+        let sent = 0;
+        for (const id of photos.imageIds) {
+            const image = await this.prisma.productImage.findFirst({ where: { id, merchantId: turn.merchantId } });
+            const bytes = image ? await this.storage.get(image.key) : null;
+            if (!bytes)
+                continue;
+            await this.gateway.sendImageBuffer(turn.merchantId, turn.chatId, bytes, 'image/jpeg', sent === 0 ? photos.caption : undefined);
+            sent++;
+        }
+        if (sent > 0) {
+            await this.prisma.message.create({
+                data: {
+                    merchantId: turn.merchantId,
+                    conversationId: turn.conversationId,
+                    direction: 'OUTBOUND',
+                    sender: 'AI',
+                    type: 'text',
+                    text: `[sent ${sent} photo${sent === 1 ? '' : 's'} of ${photos.productName}]`,
+                },
+            });
+        }
     }
     async awaitingAnswer(conversationId) {
         const c = await this.prisma.conversation.findUnique({
@@ -298,7 +326,8 @@ ConversationService = ConversationService_1 = __decorate([
         OwnerNotifier,
         HandoffService,
         SpeechToText,
-        OwnerCommands])
+        OwnerCommands,
+        StoragePort])
 ], ConversationService);
 export { ConversationService };
 //# sourceMappingURL=conversation.service.js.map

@@ -5,6 +5,9 @@ const schema = z.object({
   DATABASE_URL: z.string().min(1),
   DIRECT_URL: z.string().optional(),
   PORT: z.coerce.number().default(3000),
+  // The dashboard's address. State-changing requests from any other website are refused.
+  DASHBOARD_ORIGIN: z.string().default('http://localhost:3001'),
+  SESSION_DAYS: z.coerce.number().min(1).max(90).default(7),
   JWT_SECRET: z.string().default('dev-only-change-me'),
   ENCRYPTION_KEY: z.string().optional(),
 
@@ -40,6 +43,8 @@ const schema = z.object({
   AI_HANDOFF_RESUME_MINUTES: z.coerce.number().min(1).default(30), // the AI asked for the owner and nobody replied
   OWNER_TAKEOVER_RESUME_HOURS: z.coerce.number().min(0.1).default(6), // the owner replied, then went quiet for this long
   HOLDING_REPLY_GAP_MINUTES: z.coerce.number().min(1).default(10), // at most one "owner will reply soon" per this window
+  // Test tools set this so a throwaway server never runs the background jobs (resume chats, check payments) on real data.
+  DISABLE_JOBS: z.enum(['true', 'false']).default('false'),
   PAYMENT_DRIVER: z.enum(['paystack', 'fake']).default('fake'),
   STORAGE_DIR: z.string().default('./storage'),
   PUBLIC_BASE_URL: z.string().default('http://localhost:3000'),
@@ -50,6 +55,11 @@ const schema = z.object({
 export type Env = z.infer<typeof schema>;
 
 export const env: Env = schema.parse(process.env);
+
+// A guessable signing secret would let anyone forge a login. Refuse to run like that in production.
+if (process.env.NODE_ENV === 'production' && (env.JWT_SECRET === 'dev-only-change-me' || env.JWT_SECRET.length < 32)) {
+  throw new Error('JWT_SECRET must be set to a long random value (32+ characters) in production');
+}
 
 const usingGroq = (env.LLM_BASE_URL ?? env.GROQ_BASE_URL).includes('groq.com');
 

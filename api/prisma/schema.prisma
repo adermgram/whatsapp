@@ -117,14 +117,31 @@ model Product {
   description String?
   category    ProductCategory
   attributes  Json            @default("{}") // e.g. jersey: {club, season, version}; shoes: {brand}
-  imageKeys   String[] // storage keys, resolved to URLs by StoragePort
   active      Boolean         @default(true)
   createdAt   DateTime        @default(now())
 
   merchant Merchant  @relation(fields: [merchantId], references: [id], onDelete: Cascade)
   variants Variant[]
+  images   ProductImage[]
 
   @@index([merchantId, category])
+}
+
+// Product photos. The files live in object storage (StoragePort); the database keeps only the reference.
+model ProductImage {
+  id         String   @id @default(uuid())
+  productId  String
+  merchantId String
+  key        String // storage key, e.g. products/<merchantId>/<id>.jpg
+  color      String? // optional: which colour this photo shows
+  position   Int      @default(0) // 0 = the main photo
+  bytes      Int
+  createdAt  DateTime @default(now())
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId, position])
+  @@index([merchantId])
 }
 
 model Variant {

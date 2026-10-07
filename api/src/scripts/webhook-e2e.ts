@@ -33,7 +33,7 @@ const merchant = await prisma.merchant.create({
 });
 try {
   const product = await prisma.product.create({
-    data: { merchantId: merchant.id, name: 'E2E Jersey', category: 'JERSEY', imageKeys: [], variants: { create: [{ merchantId: merchant.id, size: 'L', priceKobo: 1500000, minPriceKobo: 1200000, stock: 5 }] } },
+    data: { merchantId: merchant.id, name: 'E2E Jersey', category: 'JERSEY', variants: { create: [{ merchantId: merchant.id, size: 'L', priceKobo: 1500000, minPriceKobo: 1200000, stock: 5 }] } },
     include: { variants: true },
   });
   const customer = await prisma.customer.create({ data: { merchantId: merchant.id, phone: '2348099887766', name: 'Ife Ade', address: '9 Test Road, Surulere, Lagos' } });

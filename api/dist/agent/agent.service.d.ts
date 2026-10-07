@@ -6,6 +6,11 @@ export interface AgentResult {
     reply: string;
     handoffReason?: string;
     notifyReason?: string;
+    photos?: {
+        productName: string;
+        caption: string;
+        imageIds: string[];
+    };
     meta?: {
         shown: string[];
     };

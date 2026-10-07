@@ -15,6 +15,7 @@ export declare const ModelName: {
     readonly WhatsAppSession: "WhatsAppSession";
     readonly WaAuthItem: "WaAuthItem";
     readonly Product: "Product";
+    readonly ProductImage: "ProductImage";
     readonly Variant: "Variant";
     readonly Customer: "Customer";
     readonly Conversation: "Conversation";
@@ -72,11 +73,21 @@ export declare const ProductScalarFieldEnum: {
     readonly description: "description";
     readonly category: "category";
     readonly attributes: "attributes";
-    readonly imageKeys: "imageKeys";
     readonly active: "active";
     readonly createdAt: "createdAt";
 };
 export type ProductScalarFieldEnum = (typeof ProductScalarFieldEnum)[keyof typeof ProductScalarFieldEnum];
+export declare const ProductImageScalarFieldEnum: {
+    readonly id: "id";
+    readonly productId: "productId";
+    readonly merchantId: "merchantId";
+    readonly key: "key";
+    readonly color: "color";
+    readonly position: "position";
+    readonly bytes: "bytes";
+    readonly createdAt: "createdAt";
+};
+export type ProductImageScalarFieldEnum = (typeof ProductImageScalarFieldEnum)[keyof typeof ProductImageScalarFieldEnum];
 export declare const VariantScalarFieldEnum: {
     readonly id: "id";
     readonly productId: "productId";

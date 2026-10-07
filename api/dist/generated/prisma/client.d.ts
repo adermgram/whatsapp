@@ -10,6 +10,7 @@ export type Merchant = Prisma.MerchantModel;
 export type WhatsAppSession = Prisma.WhatsAppSessionModel;
 export type WaAuthItem = Prisma.WaAuthItemModel;
 export type Product = Prisma.ProductModel;
+export type ProductImage = Prisma.ProductImageModel;
 export type Variant = Prisma.VariantModel;
 export type Customer = Prisma.CustomerModel;
 export type Conversation = Prisma.ConversationModel;

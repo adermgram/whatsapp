@@ -22,13 +22,14 @@ export class LlmClient {
     this.log.log(`Chat model: ${llm.model} via ${llm.provider}${llm.fallbackModel ? ` (fallback ${llm.fallbackModel})` : ''}`);
   }
 
-  async chat(messages: ChatCompletionMessageParam[], tools: ChatCompletionTool[]) {
+  /** `forceTool` makes the model call that tool this round (used when the customer's intent is unmistakable). */
+  async chat(messages: ChatCompletionMessageParam[], tools: ChatCompletionTool[], forceTool?: string) {
     try {
-      return await this.callWithToolRetry(llm.model, messages, tools);
+      return await this.callWithToolRetry(llm.model, messages, tools, forceTool);
     } catch (err) {
       if (err instanceof OpenAI.RateLimitError && llm.fallbackModel && llm.fallbackModel !== llm.model) {
         this.log.warn(`Rate limited on ${llm.model}, falling back to ${llm.fallbackModel}`);
-        return this.callWithToolRetry(llm.fallbackModel, messages, tools);
+        return this.callWithToolRetry(llm.fallbackModel, messages, tools, forceTool);
       }
       throw err;
     }
@@ -39,13 +40,14 @@ export class LlmClient {
     model: string,
     messages: ChatCompletionMessageParam[],
     tools: ChatCompletionTool[],
+    forceTool?: string,
   ) {
     try {
-      return await this.call(model, messages, tools);
+      return await this.call(model, messages, tools, forceTool);
     } catch (err) {
       if (err instanceof OpenAI.BadRequestError && /tool/i.test(err.message)) {
         this.log.warn(`Tool call rejected, retrying once: ${err.message.slice(0, 160)}`);
-        return this.call(model, messages, tools);
+        return this.call(model, messages, tools, forceTool);
       }
       throw err;
     }
@@ -55,12 +57,15 @@ export class LlmClient {
     model: string,
     messages: ChatCompletionMessageParam[],
     tools: ChatCompletionTool[],
+    forceTool?: string,
   ) {
     const res = await this.client.chat.completions.create({
       model,
       messages,
       // Some providers reject an empty tools array, so only send it when there are tools.
-      ...(tools.length ? { tools, tool_choice: 'auto' as const } : {}),
+      ...(tools.length
+        ? { tools, tool_choice: forceTool ? { type: 'function' as const, function: { name: forceTool } } : ('auto' as const) }
+        : {}),
       ...(llm.temperature !== null ? { temperature: llm.temperature } : {}),
       max_completion_tokens: 700,
       ...(llm.reasoningEffort !== 'off' ? { reasoning_effort: llm.reasoningEffort } : {}),

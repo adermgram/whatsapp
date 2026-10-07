@@ -42,6 +42,9 @@ export interface PrismaClient<in LogOpts extends Prisma.LogLevel = never, in out
     get product(): Prisma.ProductDelegate<ExtArgs, {
         omit: OmitOpts;
     }>;
+    get productImage(): Prisma.ProductImageDelegate<ExtArgs, {
+        omit: OmitOpts;
+    }>;
     get variant(): Prisma.VariantDelegate<ExtArgs, {
         omit: OmitOpts;
     }>;

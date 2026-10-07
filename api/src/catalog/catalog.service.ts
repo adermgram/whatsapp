@@ -8,7 +8,7 @@ export interface CatalogHit {
   category: ProductCategory;
   description: string | null;
   attributes: Record<string, unknown>;
-  imageKeys: string[];
+  photoCount: number;
   variants: {
     variantId: string;
     size: string | null;
@@ -42,7 +42,7 @@ export class CatalogService {
         active: true,
         ...(params.category ? { category: params.category } : {}),
       },
-      include: { variants: true },
+      include: { variants: true, _count: { select: { images: true } } },
       take: 300,
     });
 
@@ -77,7 +77,7 @@ export class CatalogService {
           category: p.category,
           description: p.description,
           attributes: p.attributes as Record<string, unknown>,
-          imageKeys: p.imageKeys,
+          photoCount: p._count.images,
           variants,
         },
       });

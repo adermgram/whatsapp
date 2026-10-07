@@ -6,6 +6,7 @@ import { OwnerNotifier } from '../handoff/owner-notifier.js';
 import type { ProofFile } from '../handoff/owner-notifier.js';
 import { HandoffService } from '../handoff/handoff.service.js';
 import { SpeechToText } from '../speech/speech-to-text.js';
+import { StoragePort } from '../storage/storage.port.js';
 import { OwnerCommands } from './owner-commands.js';
 import { TurnBatcher, TurnControl } from './turn-batcher.js';
 import { MAX_PROOF_BYTES, ProofRateLimiter, checkProof, cleanCaption, proofFileName } from './proof-files.js';
@@ -47,6 +48,7 @@ export class ConversationService implements OnModuleInit {
     private readonly handoffs: HandoffService,
     private readonly speech: SpeechToText,
     private readonly commands: OwnerCommands,
+    private readonly storage: StoragePort,
   ) {}
 
   private get batcher(): TurnBatcher {
@@ -322,10 +324,40 @@ export class ConversationService implements OnModuleInit {
     if (control.isStale()) return;
     if (!(await this.awaitingAnswer(turn.conversationId))) return;
 
+    // Pictures first, then the words: the reply usually ends with a question ("which size?"), which belongs last.
+    if (result.photos) await this.sendPhotos(turn, result.photos).catch((e) => this.log.error(`Sending photos failed: ${e instanceof Error ? e.message : String(e)}`));
     await this.reply(turn, turn.conversationId, result.reply, result.meta);
 
     if (result.handoffReason) await this.handoffs.handoff(turn.conversationId, result.handoffReason, 'AI');
     else if (result.notifyReason) await this.handoffs.notify(turn.conversationId, result.notifyReason);
+  }
+
+  /**
+   * Sends the catalog pictures the AI asked for. Each one is looked up by id AND shop, so only this shop's own photos
+   * can ever go out. A photo that has gone missing from storage is skipped rather than failing the whole reply.
+   */
+  private async sendPhotos(turn: Turn, photos: { productName: string; caption: string; imageIds: string[] }) {
+    let sent = 0;
+    for (const id of photos.imageIds) {
+      const image = await this.prisma.productImage.findFirst({ where: { id, merchantId: turn.merchantId } });
+      const bytes = image ? await this.storage.get(image.key) : null;
+      if (!bytes) continue;
+      await this.gateway.sendImageBuffer(turn.merchantId, turn.chatId, bytes, 'image/jpeg', sent === 0 ? photos.caption : undefined);
+      sent++;
+    }
+    if (sent > 0) {
+      // Recorded so the AI knows next turn that the customer has already been shown pictures.
+      await this.prisma.message.create({
+        data: {
+          merchantId: turn.merchantId,
+          conversationId: turn.conversationId,
+          direction: 'OUTBOUND',
+          sender: 'AI',
+          type: 'text',
+          text: `[sent ${sent} photo${sent === 1 ? '' : 's'} of ${photos.productName}]`,
+        },
+      });
+    }
   }
 
   /**

@@ -13,6 +13,7 @@ export const ModelName = {
     WhatsAppSession: 'WhatsAppSession',
     WaAuthItem: 'WaAuthItem',
     Product: 'Product',
+    ProductImage: 'ProductImage',
     Variant: 'Variant',
     Customer: 'Customer',
     Conversation: 'Conversation',
@@ -65,8 +66,17 @@ export const ProductScalarFieldEnum = {
     description: 'description',
     category: 'category',
     attributes: 'attributes',
-    imageKeys: 'imageKeys',
     active: 'active',
+    createdAt: 'createdAt'
+};
+export const ProductImageScalarFieldEnum = {
+    id: 'id',
+    productId: 'productId',
+    merchantId: 'merchantId',
+    key: 'key',
+    color: 'color',
+    position: 'position',
+    bytes: 'bytes',
     createdAt: 'createdAt'
 };
 export const VariantScalarFieldEnum = {

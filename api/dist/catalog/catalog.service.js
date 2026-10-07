@@ -21,7 +21,7 @@ let CatalogService = class CatalogService {
                 active: true,
                 ...(params.category ? { category: params.category } : {}),
             },
-            include: { variants: true },
+            include: { variants: true, _count: { select: { images: true } } },
             take: 300,
         });
         const tokens = (params.query ?? '')
@@ -54,7 +54,7 @@ let CatalogService = class CatalogService {
                     category: p.category,
                     description: p.description,
                     attributes: p.attributes,
-                    imageKeys: p.imageKeys,
+                    photoCount: p._count.images,
                     variants,
                 },
             });

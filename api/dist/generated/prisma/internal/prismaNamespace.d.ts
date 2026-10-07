@@ -164,6 +164,7 @@ export declare const ModelName: {
     readonly WhatsAppSession: "WhatsAppSession";
     readonly WaAuthItem: "WaAuthItem";
     readonly Product: "Product";
+    readonly ProductImage: "ProductImage";
     readonly Variant: "Variant";
     readonly Customer: "Customer";
     readonly Conversation: "Conversation";
@@ -186,7 +187,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         omit: GlobalOmitOptions;
     };
     meta: {
-        modelProps: "merchant" | "whatsAppSession" | "waAuthItem" | "product" | "variant" | "customer" | "conversation" | "message" | "negotiation" | "order" | "orderItem" | "payment" | "receipt" | "processedEvent";
+        modelProps: "merchant" | "whatsAppSession" | "waAuthItem" | "product" | "productImage" | "variant" | "customer" | "conversation" | "message" | "negotiation" | "order" | "orderItem" | "payment" | "receipt" | "processedEvent";
         txIsolationLevel: TransactionIsolationLevel;
     };
     model: {
@@ -483,6 +484,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
                 count: {
                     args: Prisma.ProductCountArgs<ExtArgs>;
                     result: runtime.Types.Utils.Optional<Prisma.ProductCountAggregateOutputType> | number;
+                };
+            };
+        };
+        ProductImage: {
+            payload: Prisma.$ProductImagePayload<ExtArgs>;
+            fields: Prisma.ProductImageFieldRefs;
+            operations: {
+                findUnique: {
+                    args: Prisma.ProductImageFindUniqueArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductImagePayload> | null;
+                };
+                findUniqueOrThrow: {
+                    args: Prisma.ProductImageFindUniqueOrThrowArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductImagePayload>;
+                };
+                findFirst: {
+                    args: Prisma.ProductImageFindFirstArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductImagePayload> | null;
+                };
+                findFirstOrThrow: {
+                    args: Prisma.ProductImageFindFirstOrThrowArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductImagePayload>;
+                };
+                findMany: {
+                    args: Prisma.ProductImageFindManyArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductImagePayload>[];
+                };
+                create: {
+                    args: Prisma.ProductImageCreateArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductImagePayload>;
+                };
+                createMany: {
+                    args: Prisma.ProductImageCreateManyArgs<ExtArgs>;
+                    result: BatchPayload;
+                };
+                createManyAndReturn: {
+                    args: Prisma.ProductImageCreateManyAndReturnArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductImagePayload>[];
+                };
+                delete: {
+                    args: Prisma.ProductImageDeleteArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductImagePayload>;
+                };
+                update: {
+                    args: Prisma.ProductImageUpdateArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductImagePayload>;
+                };
+                deleteMany: {
+                    args: Prisma.ProductImageDeleteManyArgs<ExtArgs>;
+                    result: BatchPayload;
+                };
+                updateMany: {
+                    args: Prisma.ProductImageUpdateManyArgs<ExtArgs>;
+                    result: BatchPayload;
+                };
+                updateManyAndReturn: {
+                    args: Prisma.ProductImageUpdateManyAndReturnArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductImagePayload>[];
+                };
+                upsert: {
+                    args: Prisma.ProductImageUpsertArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductImagePayload>;
+                };
+                aggregate: {
+                    args: Prisma.ProductImageAggregateArgs<ExtArgs>;
+                    result: runtime.Types.Utils.Optional<Prisma.AggregateProductImage>;
+                };
+                groupBy: {
+                    args: Prisma.ProductImageGroupByArgs<ExtArgs>;
+                    result: runtime.Types.Utils.Optional<Prisma.ProductImageGroupByOutputType>[];
+                };
+                count: {
+                    args: Prisma.ProductImageCountArgs<ExtArgs>;
+                    result: runtime.Types.Utils.Optional<Prisma.ProductImageCountAggregateOutputType> | number;
                 };
             };
         };
@@ -1295,11 +1370,21 @@ export declare const ProductScalarFieldEnum: {
     readonly description: "description";
     readonly category: "category";
     readonly attributes: "attributes";
-    readonly imageKeys: "imageKeys";
     readonly active: "active";
     readonly createdAt: "createdAt";
 };
 export type ProductScalarFieldEnum = (typeof ProductScalarFieldEnum)[keyof typeof ProductScalarFieldEnum];
+export declare const ProductImageScalarFieldEnum: {
+    readonly id: "id";
+    readonly productId: "productId";
+    readonly merchantId: "merchantId";
+    readonly key: "key";
+    readonly color: "color";
+    readonly position: "position";
+    readonly bytes: "bytes";
+    readonly createdAt: "createdAt";
+};
+export type ProductImageScalarFieldEnum = (typeof ProductImageScalarFieldEnum)[keyof typeof ProductImageScalarFieldEnum];
 export declare const VariantScalarFieldEnum: {
     readonly id: "id";
     readonly productId: "productId";
@@ -1504,6 +1589,7 @@ export type GlobalOmitConfig = {
     whatsAppSession?: Prisma.WhatsAppSessionOmit;
     waAuthItem?: Prisma.WaAuthItemOmit;
     product?: Prisma.ProductOmit;
+    productImage?: Prisma.ProductImageOmit;
     variant?: Prisma.VariantOmit;
     customer?: Prisma.CustomerOmit;
     conversation?: Prisma.ConversationOmit;

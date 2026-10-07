@@ -5,6 +5,7 @@ import { InboundMessage, MessagingGateway } from '../messaging/messaging.types.j
 import { OwnerNotifier } from '../handoff/owner-notifier.js';
 import { HandoffService } from '../handoff/handoff.service.js';
 import { SpeechToText } from '../speech/speech-to-text.js';
+import { StoragePort } from '../storage/storage.port.js';
 import { OwnerCommands } from './owner-commands.js';
 export declare class ConversationService implements OnModuleInit {
     private readonly prisma;
@@ -14,12 +15,13 @@ export declare class ConversationService implements OnModuleInit {
     private readonly handoffs;
     private readonly speech;
     private readonly commands;
+    private readonly storage;
     private readonly log;
     debounceMs: number;
     private batcherInstance?;
     private readonly ingestChains;
     private readonly proofLimiter;
-    constructor(prisma: PrismaService, gateway: MessagingGateway, agent: AgentService, notifier: OwnerNotifier, handoffs: HandoffService, speech: SpeechToText, commands: OwnerCommands);
+    constructor(prisma: PrismaService, gateway: MessagingGateway, agent: AgentService, notifier: OwnerNotifier, handoffs: HandoffService, speech: SpeechToText, commands: OwnerCommands, storage: StoragePort);
     private get batcher();
     onModuleInit(): void;
     enqueue(msg: InboundMessage): Promise<void>;
@@ -28,6 +30,7 @@ export declare class ConversationService implements OnModuleInit {
     private handlePaymentProof;
     private holdingReply;
     private runTurn;
+    private sendPhotos;
     private awaitingAnswer;
     private reply;
     private store;

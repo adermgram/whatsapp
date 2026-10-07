@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { env } from '../config/env.js';
 import { OrdersService } from '../orders/orders.service.js';
 import { PaymentConfirmationService } from './payment-confirmation.service.js';
 
@@ -22,7 +23,7 @@ export class PaymentJobs {
    */
   @Cron('*/2 * * * *')
   async reconcileAndExpire() {
-    if (this.running) return; // never overlap with a slow run
+    if (env.DISABLE_JOBS === 'true' || this.running) return; // never overlap with a slow run
     this.running = true;
     try {
       await this.reconcile();

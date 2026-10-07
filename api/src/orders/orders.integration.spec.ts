@@ -32,7 +32,6 @@ async function newVariant(stock: number, price = 20000, floor = 15000) {
       merchantId,
       name: `Test Jersey ${randomUUID().slice(0, 4)}`,
       category: 'JERSEY',
-      imageKeys: [],
       variants: { create: [{ merchantId, size: 'M', priceKobo: naira(price), minPriceKobo: naira(floor), stock }] },
     },
     include: { variants: true },

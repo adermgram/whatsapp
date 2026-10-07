@@ -9,7 +9,11 @@ import { FakePaymentProvider } from '../payments/fake-payment.provider.js';
 import { OwnerNotifier } from '../handoff/owner-notifier.js';
 import { looksBroken } from '../agent/reply-quality.js';
 import { LlmClient } from '../agent/llm.client.js';
-import { llm } from '../config/env.js';
+import { env, llm } from '../config/env.js';
+import { randomUUID } from 'node:crypto';
+import { mkdir, rm, writeFile } from 'node:fs/promises';
+import { dirname, resolve } from 'node:path';
+import sharp from 'sharp';
 const DELAY = Number(process.env.TURN_DELAY_MS ?? 4000);
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const app = await NestFactory.createApplicationContext(AppModule, { logger: ['error', 'warn'] });
@@ -19,7 +23,32 @@ const confirmation = app.get(PaymentConfirmationService);
 const fake = app.get(FakePaymentProvider);
 const notifier = app.get(OwnerNotifier);
 const llmClient = app.get(LlmClient, { strict: false });
-const merchant = await prisma.merchant.findFirstOrThrow({ where: { ownerEmail: 'demo@shopbot.local' } });
+const merchant = await prisma.merchant.findFirstOrThrow({ where: { ownerEmail: process.env.SCENARIO_MERCHANT_EMAIL ?? 'scenarios@shopbot.local' } });
+const createdPhotos = [];
+async function givePhotos(nameContains, n = 2) {
+    const product = await prisma.product.findFirst({
+        where: { merchantId: merchant.id, name: { contains: nameContains } },
+        include: { _count: { select: { images: true } } },
+    });
+    if (!product || product._count.images > 0)
+        return;
+    for (let i = 0; i < n; i++) {
+        const id = randomUUID();
+        const key = `products/${merchant.id}/${id}.jpg`;
+        const bytes = await sharp({ create: { width: 320, height: 240, channels: 3, background: '#336699' } }).jpeg().toBuffer();
+        const file = resolve(env.STORAGE_DIR, key);
+        await mkdir(dirname(file), { recursive: true });
+        await writeFile(file, bytes);
+        await prisma.productImage.create({ data: { id, productId: product.id, merchantId: merchant.id, key, position: i, bytes: bytes.length } });
+        createdPhotos.push({ id, key });
+    }
+}
+async function removePhotos() {
+    for (const { id, key } of createdPhotos.splice(0)) {
+        await prisma.productImage.deleteMany({ where: { id } });
+        await rm(resolve(env.STORAGE_DIR, key), { force: true });
+    }
+}
 const customerOrders = (chatId) => prisma.order.findMany({
     where: { merchantId: merchant.id, customer: { phone: chatId } },
     include: { items: { include: { variant: true } }, payment: true },
@@ -249,6 +278,66 @@ const scenarios = [
         },
     },
     {
+        name: 'asks-for-product-pictures',
+        setup: async () => {
+            await givePhotos('Arsenal Home');
+            await givePhotos('Nike Air Force');
+        },
+        teardown: removePhotos,
+        turns: [
+            'abeg you get Arsenal jersey?',
+            'send me the picture',
+            'and the Nike Air Force, make I see am',
+            'wetin be the colour of the arsenal one?',
+        ],
+        check: async (c) => {
+            const f = [];
+            const out = gateway.sent.filter((x) => x.chatId === c.chatId);
+            const images = out.filter((x) => x.kind === 'image');
+            if (images.length < 2)
+                f.push(`expected photos for both items, only ${images.length} image(s) were sent`);
+            if (!images.some((i) => /arsenal/i.test(i.text ?? '')))
+                f.push('no photo was captioned as the Arsenal jersey');
+            if (!images.some((i) => /nike/i.test(i.text ?? '')))
+                f.push('no photo was captioned as the Nike Air Force');
+            if (images.some((i) => i.text && !/₦\d/.test(i.text)))
+                f.push('a photo caption is missing the price');
+            if (images.length > 6)
+                f.push(`too many photos in one chat (${images.length})`);
+            const firstImage = out.findIndex((x) => x.kind === 'image');
+            if (firstImage >= 0 && !out.slice(firstImage).some((x) => x.kind === 'text'))
+                f.push('photos were sent but the AI never said anything after them');
+            if (c.replies.some((r) => /https?:\/\//i.test(r)))
+                f.push('the AI put a link in a reply');
+            if (/white|black|blue|yellow|green|navy|gold/i.test(c.perTurn[3]?.join(' ') ?? ''))
+                f.push('the AI invented colour details the catalog does not state');
+            return f;
+        },
+    },
+    {
+        name: 'asks-for-pictures-of-an-item-with-no-photos',
+        turns: ['abeg send me the picture of the Zzz Test Cap'],
+        setup: async () => {
+            await prisma.product.deleteMany({ where: { merchantId: merchant.id, name: 'Zzz Test Cap' } });
+            await prisma.product.create({
+                data: { merchantId: merchant.id, name: 'Zzz Test Cap', category: 'ACCESSORIES', description: 'Plain black cap', variants: { create: [{ merchantId: merchant.id, size: 'One size', priceKobo: 500000, minPriceKobo: 400000, stock: 5 }] } },
+            });
+        },
+        teardown: async () => {
+            await prisma.product.deleteMany({ where: { merchantId: merchant.id, name: 'Zzz Test Cap' } });
+        },
+        check: async (c) => {
+            const f = [];
+            if (gateway.sent.some((x) => x.chatId === c.chatId && x.kind === 'image'))
+                f.push('sent a picture for an item that has none');
+            if (!notifier.alerts.some((a) => a.kind === 'attention' && a.customerPhone === c.chatId && /photo|picture/i.test(a.reason ?? '')))
+                f.push('the owner was not told that a customer wanted pictures of an item without photos');
+            if (c.replies.some((r) => /(as you can see|in the (photo|picture)|looks like|is a (nice|beautiful|sleek))/i.test(r)))
+                f.push('the AI described how the item looks without having seen it');
+            return f;
+        },
+    },
+    {
         name: 'other-languages',
         turns: ['Bawo ni, e ni jersey Super Eagles?', 'Sannu, kuna da takalmi?', 'Kedu, ị nwere Nike?'],
     },
@@ -262,6 +351,7 @@ for (const sc of selected) {
     const ctx = { chatId, replies: [], perTurn: [] };
     const lines = [];
     console.log(`\n=== ${sc.name} (${chatId})`);
+    await sc.setup?.();
     const send = (text, type = 'text') => gateway.simulateInbound({ merchantId: merchant.id, chatId, messageId: `sc-${chatId}-${Date.now()}-${Math.random()}`, type, text });
     for (const turn of sc.turns) {
         if (turn === '/pay') {
@@ -302,6 +392,7 @@ for (const sc of selected) {
         await sleep(DELAY);
     }
     const fails = [...(await globalChecks(ctx)), ...((await sc.check?.(ctx)) ?? [])];
+    await sc.teardown?.();
     console.log(lines.join('\n'));
     console.log(fails.length ? `  ✗ FAIL\n    - ${fails.join('\n    - ')}` : '  ✓ PASS');
     results.push({ name: sc.name, fails, transcript: lines.join('\n') });

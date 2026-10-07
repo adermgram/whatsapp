@@ -5,14 +5,23 @@ import { PrismaService } from '../prisma/prisma.service.js';
 import { CatalogService } from '../catalog/catalog.service.js';
 import { NegotiationService } from '../negotiation/negotiation.service.js';
 import { OrderError, OrdersService } from '../orders/orders.service.js';
-import { koboToNaira, nairaToKobo } from '../common/money.js';
+import { formatNaira, koboToNaira, nairaToKobo } from '../common/money.js';
+import { PhotoRateLimiter, choosePhotos } from './photo-selection.js';
+import { customerStatedAmount } from './amounts.js';
 
 export interface ToolContext {
   merchantId: string;
   conversationId: string;
   customerId: string;
   /** Tools can request side effects the conversation pipeline performs afterwards. */
-  effects: { handoffReason?: string; notifyReason?: string; paymentLink?: string; shown?: string[] };
+  effects: {
+    handoffReason?: string;
+    notifyReason?: string;
+    paymentLink?: string;
+    shown?: string[];
+    /** Pictures to send BEFORE the reply: the pipeline sends them, the AI only chooses the item. */
+    photos?: { productName: string; caption: string; imageIds: string[] };
+  };
 }
 
 /** Models often send null for omitted optional fields, and Groq validates tool calls server-side. Allow it. */
@@ -78,6 +87,12 @@ export const TOOL_DEFINITIONS: ChatCompletionTool[] = [
   fn('remove_cart_item', 'Remove an item from the cart.', { ref: { type: 'string' } }, ['ref']),
   fn('view_cart', 'Show the current cart and saved customer details.'),
   fn(
+    'send_product_photos',
+    'Send the customer pictures of an item from the catalog. Use it whenever they ask to see an item (picture, photo, "how e look"). Any ref of that item works, no need to ask for a size. Sends 1 to 3 photos with the name and price. You cannot see the pictures yourself.',
+    { ref: { type: 'string' }, colour: { type: 'string' }, count: { type: 'integer' } },
+    ['ref'],
+  ),
+  fn(
     'save_customer_details',
     'Save the name and/or delivery address the customer gave.',
     { name: { type: 'string' }, address: { type: 'string' } },
@@ -112,12 +127,16 @@ const cartArgs = z.object({ ref: z.string().min(4), quantity: z.number().int().m
 const refArgs = z.object({ ref: z.string().min(4) });
 const detailsArgs = z.object({ name: z.string().min(1).optional(), address: z.string().min(3).optional() });
 const reasonArgs = z.object({ reason: z.string().min(1) });
+const photosArgs = z.object({ ref: z.string().min(4), colour: z.string().max(30).optional(), count: z.number().int().min(1).max(3).optional() });
 
 /** Variant refs shown to the model are the first 8 chars of the UUID: far fewer tokens. */
 export const shortRef = (id: string) => id.slice(0, 8);
 
 @Injectable()
 export class Toolbox {
+  /** Shared across all chats: how many photos each customer may be sent in a short while. */
+  private readonly photoLimiter = new PhotoRateLimiter();
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly catalog: CatalogService,
@@ -153,6 +172,8 @@ export class Toolbox {
           return await this.createPaymentLink(ctx);
         case 'check_order_status':
           return await this.orderStatus(ctx);
+        case 'send_product_photos':
+          return await this.sendPhotos(photosArgs.parse(args), ctx);
         case 'notify_owner':
           ctx.effects.notifyReason = reasonArgs.parse(args).reason;
           return { ok: true, note: 'The owner has been told. Keep helping the customer yourself.' };
@@ -183,6 +204,46 @@ export class Toolbox {
     return matches.length === 1 ? matches[0]! : null;
   }
 
+  /**
+   * Chooses which of THIS shop's photos to send for an item and queues them. The AI never supplies a file or a
+   * link: it names an item, and everything sent comes from the catalog, only ever list prices (never the floor).
+   */
+  private async sendPhotos(a: z.infer<typeof photosArgs>, ctx: ToolContext) {
+    const variant = await this.resolveVariant(ctx.merchantId, a.ref);
+    if (!variant) return { error: 'Unknown item ref. Search again.' };
+
+    const images = await this.prisma.productImage.findMany({
+      where: { productId: variant.productId, merchantId: ctx.merchantId },
+      orderBy: { position: 'asc' },
+      select: { id: true, color: true, position: true },
+    });
+    if (images.length === 0) {
+      ctx.effects.notifyReason ??= `A customer asked for pictures of ${variant.product.name} but it has no photos yet`;
+      return { sent: 0, error: 'This item has no photos yet. Say the owner will send pictures soon. Do not describe how it looks.' };
+    }
+
+    const chosen = choosePhotos(images, { wantedColor: a.colour ?? variant.color, count: a.count });
+    const allowed = this.photoLimiter.take(ctx.conversationId, chosen.ids.length);
+    if (allowed === 0) {
+      return { sent: 0, error: 'Photo limit reached for this chat for now (to avoid spamming). Describe the item in words and offer to send more in a few minutes.' };
+    }
+
+    const ids = chosen.ids.slice(0, allowed);
+    ctx.effects.photos = {
+      productName: variant.product.name,
+      caption: `${variant.product.name} · ${formatNaira(variant.priceKobo)}`,
+      imageIds: [...(ctx.effects.photos?.imageIds ?? []), ...ids].slice(0, 3),
+    };
+    return {
+      sent: ids.length,
+      colour_matched: a.colour ? chosen.colorMatched : undefined,
+      note:
+        'The photos are sent automatically just before your reply. Do not include links. In one short line, ask what they think or which size they want. ' +
+        (a.colour && !chosen.colorMatched ? `There is no photo specifically in ${a.colour}: say so honestly. ` : '') +
+        'You cannot see the pictures, so do not describe them.',
+    };
+  }
+
   private async search(a: z.infer<typeof searchArgs>, ctx: ToolContext) {
     const hits = await this.catalog.search({
       merchantId: ctx.merchantId,
@@ -201,6 +262,7 @@ export class Toolbox {
       results: hits.map((h) => ({
         name: h.name,
         about: [h.description, ...Object.values(h.attributes).map(String)].filter(Boolean).join(', ').slice(0, 120),
+        photos: h.photoCount,
         options: h.variants.slice(0, 8).map((v) => ({
           ref: shortRef(v.variantId),
           size: v.size,
@@ -215,6 +277,26 @@ export class Toolbox {
   private async negotiate(a: z.infer<typeof negotiateArgs>, ctx: ToolContext) {
     const variant = await this.resolveVariant(ctx.merchantId, a.ref);
     if (!variant) return { error: 'Unknown item ref. Search again.' };
+
+    // Only the CUSTOMER can make an offer. A question like "how much be am" is not one, and the AI must not
+    // invent an amount (that would hand out a discount nobody asked for). So the amount has to be in their own
+    // recent messages.
+    const recent = await this.prisma.message.findMany({
+      where: { conversationId: ctx.conversationId, sender: 'CUSTOMER' },
+      orderBy: { createdAt: 'desc' },
+      take: 5,
+      select: { text: true },
+    });
+    if (!customerStatedAmount(a.offer_naira, recent.map((m) => m.text ?? ''))) {
+      return {
+        error: 'NO_OFFER: the customer did not write that amount, so there is nothing to negotiate.',
+        // The public price, so the AI can answer the question the customer really asked.
+        list_price_naira: koboToNaira(variant.priceKobo),
+        instruction:
+          'Tell the customer this list price (state the number). Do not offer a discount they did not ask for. If they want a lower price they will say how much they want to pay.',
+      };
+    }
+
     const out = await this.negotiation.submitOffer(
       ctx.merchantId,
       ctx.conversationId,

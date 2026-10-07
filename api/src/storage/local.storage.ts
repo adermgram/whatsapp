@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { dirname, resolve, sep } from 'node:path';
 import { env } from '../config/env.js';
 import { StoragePort } from './storage.port.js';
@@ -27,6 +27,10 @@ export class LocalStorage extends StoragePort {
     } catch {
       return null;
     }
+  }
+
+  async delete(key: string): Promise<void> {
+    await rm(this.pathFor(key), { force: true });
   }
 
   publicUrl(): string | null {

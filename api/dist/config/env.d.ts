@@ -4,6 +4,8 @@ declare const schema: z.ZodObject<{
     DATABASE_URL: z.ZodString;
     DIRECT_URL: z.ZodOptional<z.ZodString>;
     PORT: z.ZodDefault<z.ZodCoercedNumber<unknown>>;
+    DASHBOARD_ORIGIN: z.ZodDefault<z.ZodString>;
+    SESSION_DAYS: z.ZodDefault<z.ZodCoercedNumber<unknown>>;
     JWT_SECRET: z.ZodDefault<z.ZodString>;
     ENCRYPTION_KEY: z.ZodOptional<z.ZodString>;
     GROQ_API_KEY: z.ZodString;
@@ -46,6 +48,10 @@ declare const schema: z.ZodObject<{
     AI_HANDOFF_RESUME_MINUTES: z.ZodDefault<z.ZodCoercedNumber<unknown>>;
     OWNER_TAKEOVER_RESUME_HOURS: z.ZodDefault<z.ZodCoercedNumber<unknown>>;
     HOLDING_REPLY_GAP_MINUTES: z.ZodDefault<z.ZodCoercedNumber<unknown>>;
+    DISABLE_JOBS: z.ZodDefault<z.ZodEnum<{
+        true: "true";
+        false: "false";
+    }>>;
     PAYMENT_DRIVER: z.ZodDefault<z.ZodEnum<{
         paystack: "paystack";
         fake: "fake";

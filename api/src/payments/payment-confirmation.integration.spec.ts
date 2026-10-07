@@ -56,7 +56,6 @@ async function awaitingOrder(mid = merchantId, stock = 3, qty = 1) {
       merchantId: mid,
       name: 'Test Jersey',
       category: 'JERSEY',
-      imageKeys: [],
       variants: { create: [{ merchantId: mid, size: 'M', priceKobo: naira(20000), minPriceKobo: naira(15000), stock }] },
     },
     include: { variants: true },

@@ -1,10 +1,12 @@
 import 'dotenv/config';
 import bcrypt from 'bcryptjs';
+import { rm } from 'node:fs/promises';
+import { resolve } from 'node:path';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '../generated/prisma/client.js';
 import { env } from '../config/env.js';
 import { normalizePhone } from '../messaging/reply-policy.js';
-const DEMO_EMAIL = 'demo@shopbot.local';
+const DEMO_EMAIL = process.env.SEED_EMAIL ?? 'demo@shopbot.local';
 const naira = (n) => n * 100;
 const prisma = new PrismaClient({ adapter: new PrismaPg({ connectionString: env.DATABASE_URL }) });
 const products = [
@@ -30,6 +32,14 @@ async function main() {
     const existing = await prisma.merchant.findUnique({ where: { ownerEmail: DEMO_EMAIL } });
     let merchant;
     if (existing) {
+        const photos = await prisma.productImage.findMany({ where: { merchantId: existing.id }, select: { key: true } });
+        if (photos.length > 0 && process.env.SEED_FORCE !== 'true') {
+            console.error(`Refusing to reseed: this shop has ${photos.length} uploaded product photo(s) that reseeding would delete.\n` +
+                'If you really want to wipe the shop back to the demo products, run:  SEED_FORCE=true npm run seed');
+            process.exit(1);
+        }
+        for (const { key } of photos)
+            await rm(resolve(env.STORAGE_DIR, key), { force: true });
         await prisma.order.deleteMany({ where: { merchantId: existing.id } });
         await prisma.conversation.deleteMany({ where: { merchantId: existing.id } });
         await prisma.customer.deleteMany({ where: { merchantId: existing.id } });
@@ -49,7 +59,6 @@ async function main() {
                 category: p.category,
                 description: p.description,
                 attributes: p.attributes,
-                imageKeys: [],
                 variants: {
                     create: p.sizes.map((size) => ({
                         merchantId: merchant.id,

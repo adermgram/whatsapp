@@ -9,7 +9,7 @@ export declare class LlmClient {
         completionTokens: number;
     };
     constructor();
-    chat(messages: ChatCompletionMessageParam[], tools: ChatCompletionTool[]): Promise<OpenAI.Chat.Completions.ChatCompletionMessage>;
+    chat(messages: ChatCompletionMessageParam[], tools: ChatCompletionTool[], forceTool?: string): Promise<OpenAI.Chat.Completions.ChatCompletionMessage>;
     private callWithToolRetry;
     private call;
 }

@@ -1,5 +1,6 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { randomUUID } from 'node:crypto';
+import sharp from 'sharp';
 import { rm } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { PrismaService } from '../prisma/prisma.service.js';
@@ -50,13 +51,14 @@ class SilentSpeech extends SpeechToText {
 
 const prisma = new PrismaService();
 const gateway = new SimulatorGateway();
+const storage = new LocalStorage();
 const notifier = new LogOwnerNotifier();
 const fake = new FakePaymentProvider();
 const orders = new OrdersService(prisma, new InventoryService(), new NegotiationService(prisma), fake);
 const handoffs = new HandoffService(prisma, notifier);
 const confirmation = new PaymentConfirmationService(prisma, orders, fake, new ReceiptService(prisma, new LocalStorage()), gateway, notifier, handoffs);
 const agent = new StubAgent(prisma);
-const service = new ConversationService(prisma, gateway, agent as unknown as AgentService, notifier, handoffs, new SilentSpeech(), new OwnerCommands(prisma, handoffs, confirmation));
+const service = new ConversationService(prisma, gateway, agent as unknown as AgentService, notifier, handoffs, new SilentSpeech(), new OwnerCommands(prisma, handoffs, confirmation), storage);
 // Short on purpose: arrival holds make the result independent of how slow storing a message is.
 service.debounceMs = 300;
 const jobs = new ChatResumeJobs(prisma, handoffs, service);
@@ -454,10 +456,84 @@ describe('payment proof (screenshots and PDFs)', () => {
   });
 });
 
+describe('sending product photos', () => {
+  const sentTo = (chat: string) => gateway.sent.filter((s) => s.chatId === chat);
+
+  /** A product with real picture files in storage. Returns the image ids, and optionally another shop's image. */
+  async function photoProduct(n: number, owner = merchantId) {
+    const bytes = await sharp({ create: { width: 64, height: 48, channels: 3, background: '#aa3333' } }).jpeg().toBuffer();
+    const product = await prisma.product.create({ data: { merchantId: owner, name: `Photo Jersey ${randomUUID().slice(0, 4)}`, category: 'JERSEY' } });
+    const ids: string[] = [];
+    for (let i = 0; i < n; i++) {
+      const id = randomUUID();
+      const key = `products/${owner}/${id}.jpg`;
+      await storage.put(key, bytes);
+      await prisma.productImage.create({ data: { id, productId: product.id, merchantId: owner, key, position: i, bytes: bytes.length } });
+      ids.push(id);
+    }
+    return { name: product.name, ids };
+  }
+
+  it('sends the pictures first (caption on the first), then the AI\'s words, and remembers it sent them', async () => {
+    const chat = newChat();
+    const { name, ids } = await photoProduct(3);
+    agent.next = { reply: 'Here you go! Which size do you want?', photos: { productName: name, caption: `${name} · ₦18,000`, imageIds: ids.slice(0, 2) } };
+    await send(chat, 'abeg send me the picture');
+
+    const out = sentTo(chat);
+    expect(out.map((s) => s.kind)).toEqual(['image', 'image', 'text']); // pictures, then the question
+    expect(out[0]!.text).toBe(`${name} · ₦18,000`);
+    expect(out[1]!.text).toBeUndefined(); // only the first carries the caption
+    expect(out[0]!.size).toBeGreaterThan(100); // real bytes
+    expect(out[2]!.text).toBe('Here you go! Which size do you want?');
+
+    const note = await prisma.message.findFirst({ where: { conversation: { chatId: chat, merchantId }, text: { startsWith: '[sent 2 photos' } } });
+    expect(note?.text).toBe(`[sent 2 photos of ${name}]`);
+  });
+
+  it('skips a picture whose file has gone missing instead of failing the reply', async () => {
+    const chat = newChat();
+    const { name, ids } = await photoProduct(2);
+    const gone = await prisma.productImage.findUniqueOrThrow({ where: { id: ids[0]! } });
+    await storage.delete(gone.key);
+    agent.next = { reply: 'Here it is!', photos: { productName: name, caption: name, imageIds: ids } };
+    await send(chat, 'picture please');
+
+    expect(sentTo(chat).map((s) => s.kind)).toEqual(['image', 'text']); // one picture survived, the reply still went
+  });
+
+  it('can never send another shop\'s picture, even if asked for its id', async () => {
+    const other = (await prisma.merchant.create({ data: { businessName: 'Other', ownerName: 'T', ownerPhone: '2340000000000', ownerEmail: `o-${randomUUID()}@shopbot.local`, passwordHash: 'x' } })).id;
+    try {
+      const theirs = await photoProduct(1, other);
+      const chat = newChat();
+      agent.next = { reply: 'Here!', photos: { productName: 'x', caption: 'x', imageIds: theirs.ids } };
+      await send(chat, 'show me');
+      expect(sentTo(chat).map((s) => s.kind)).toEqual(['text']); // no picture left this shop
+    } finally {
+      await prisma.merchant.delete({ where: { id: other } });
+      await rm(resolve('storage', 'products', other), { recursive: true, force: true });
+    }
+  });
+
+  it('sends no pictures if the owner stepped in while the AI was thinking', async () => {
+    const chat = newChat();
+    const { name, ids } = await photoProduct(1);
+    agent.delayMs = 1500;
+    agent.next = { reply: 'Here!', photos: { productName: name, caption: name, imageIds: ids } };
+    const customer = send(chat, 'send picture');
+    await until(() => agent.calls === 1); // the AI is mid-thought
+    const owner = send(chat, 'I will send it myself', { fromMe: true });
+    await Promise.all([customer, owner]);
+
+    expect(sentTo(chat)).toHaveLength(0); // neither pictures nor words talked over the owner
+  });
+});
+
 /** An order sitting at AWAITING_PAYMENT for this chat's customer. */
 async function unpaidOrder(chatId: string) {
   const product = await prisma.product.create({
-    data: { merchantId, name: 'Test Jersey', category: 'JERSEY', imageKeys: [], variants: { create: [{ merchantId, size: 'M', priceKobo: 1_500_000, minPriceKobo: 1_200_000, stock: 5 }] } },
+    data: { merchantId, name: 'Test Jersey', category: 'JERSEY', variants: { create: [{ merchantId, size: 'M', priceKobo: 1_500_000, minPriceKobo: 1_200_000, stock: 5 }] } },
     include: { variants: true },
   });
   const c = await conv(chatId);
