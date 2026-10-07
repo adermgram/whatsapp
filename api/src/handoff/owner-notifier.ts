@@ -14,6 +14,8 @@ export interface HandoffAlert {
   customerName: string | null;
   customerPhone: string;
   reason: string;
+  /** 'handoff' = the AI stopped replying; 'attention' = the owner should know, but the AI is still chatting. */
+  kind?: 'handoff' | 'attention';
   /** Last few customer messages so the owner has context without opening the chat. */
   recent: string[];
 }

@@ -23,16 +23,19 @@ export class WhatsAppOwnerNotifier extends OwnerNotifier {
   }
 
   async notifyHandoff(alert: HandoffAlert) {
+    const soft = alert.kind === 'attention';
     const text = [
-      '🔔 *A customer needs you*',
+      soft ? '👀 *Heads up about a customer*' : '🔔 *A customer needs you*',
       `${alert.customerName ?? 'A customer'} (+${alert.customerPhone.replace(/\D/g, '')})`,
-      `Why: ${alert.reason}`,
+      `${soft ? 'About' : 'Why'}: ${alert.reason}`,
       ...(alert.recent.length ? ['', 'Their last messages:', ...alert.recent.map((m) => `• ${m.slice(0, 160)}`)] : []),
       '',
-      'The AI has stopped replying in this chat. Reply to them yourself.',
+      soft
+        ? 'The AI is still chatting with them. You do not need to reply unless you want to.'
+        : 'The AI has stopped replying in this chat. Reply to them yourself, or send /resume to give the chat back to the AI.',
       ...(alert.customerPhone.startsWith('lid:') ? [] : [`Open the chat: https://wa.me/${alert.customerPhone}`]),
     ].join('\n');
-    await this.tell(alert.merchantId, `Customer needs you: ${alert.reason}`.slice(0, 120), text);
+    await this.tell(alert.merchantId, `${soft ? 'Heads up' : 'Customer needs you'}: ${alert.reason}`.slice(0, 120), text);
   }
 
   /** The owner's own phone already shows the customer's messages, so there is nothing to add. */

@@ -1,4 +1,5 @@
 import 'dotenv/config';
+import './scenario-env.js'; // fake payments + simulator WhatsApp, whatever .env says
 import { randomUUID } from 'node:crypto';
 import { rm } from 'node:fs/promises';
 import { resolve } from 'node:path';

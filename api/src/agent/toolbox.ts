@@ -12,7 +12,7 @@ export interface ToolContext {
   conversationId: string;
   customerId: string;
   /** Tools can request side effects the conversation pipeline performs afterwards. */
-  effects: { handoffReason?: string; paymentLink?: string; shown?: string[] };
+  effects: { handoffReason?: string; notifyReason?: string; paymentLink?: string; shown?: string[] };
 }
 
 /** Models often send null for omitted optional fields, and Groq validates tool calls server-side. Allow it. */
@@ -88,8 +88,14 @@ export const TOOL_DEFINITIONS: ChatCompletionTool[] = [
   ),
   fn('check_order_status', "Look up the customer's latest orders and whether payment was received."),
   fn(
+    'notify_owner',
+    'Tell the owner something WITHOUT stopping yourself: e.g. the customer says they paid by bank transfer or sent a payment screenshot you cannot verify. You keep chatting normally.',
+    { reason: { type: 'string' } },
+    ['reason'],
+  ),
+  fn(
     'handoff_to_owner',
-    'Pass the chat to the human owner (complaints, refunds, custom requests, anger, or when unsure).',
+    'Stop answering and pass the chat to the human owner. ONLY for complaints, refund demands, anger, a request to speak to a person, or a custom order you cannot price. Not for payment questions.',
     { reason: { type: 'string' } },
     ['reason'],
   ),
@@ -147,6 +153,9 @@ export class Toolbox {
           return await this.createPaymentLink(ctx);
         case 'check_order_status':
           return await this.orderStatus(ctx);
+        case 'notify_owner':
+          ctx.effects.notifyReason = reasonArgs.parse(args).reason;
+          return { ok: true, note: 'The owner has been told. Keep helping the customer yourself.' };
         case 'handoff_to_owner':
           ctx.effects.handoffReason = reasonArgs.parse(args).reason;
           return { ok: true, note: 'Owner has been alerted. Tell the customer the owner will reply shortly.' };

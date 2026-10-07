@@ -1,4 +1,5 @@
 import 'dotenv/config';
+import './scenario-env.js';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from '../app.module.js';
 import { PrismaService } from '../prisma/prisma.service.js';
@@ -205,6 +206,47 @@ const scenarios = [
         },
     },
     {
+        name: 'burst-of-short-messages-gets-one-answer',
+        turns: [['hi', 'i want man united jersey', 'Away one'], ['size L', 'how much be am']],
+        check: async (c) => {
+            const f = [];
+            if (c.perTurn[0].length !== 1)
+                f.push(`first burst got ${c.perTurn[0].length} replies instead of one`);
+            else if (!/united|man u/i.test(c.perTurn[0][0]))
+                f.push('the single reply did not address the Manchester United jersey');
+            if (c.perTurn[1].length !== 1)
+                f.push(`second burst got ${c.perTurn[1].length} replies instead of one`);
+            else if (!/22,?000/.test(c.perTurn[1][0]))
+                f.push('the second reply did not give the price of the Man United Away jersey (22,000)');
+            return f;
+        },
+    },
+    {
+        name: 'payment-screenshot-does-not-lock-the-chat',
+        turns: [
+            'Abeg you get Super Eagles jersey size M?',
+            'add am at the normal price',
+            'Na Seun Adebayo, 4 Bode Thomas Street, Surulere, Lagos',
+            'send me the payment link',
+            '/image',
+            'I don send the money give your account, na the screenshot be that',
+            'by the way, you get Arsenal jersey?',
+        ],
+        check: async (c) => {
+            const f = [];
+            const conv = await prisma.conversation.findFirst({ where: { merchantId: merchant.id, chatId: c.chatId } });
+            if (conv?.mode !== 'AI')
+                f.push('the chat got locked in human mode after a payment screenshot');
+            if (!notifier.alerts.some((a) => a.kind === 'attention' && a.customerPhone === c.chatId))
+                f.push('the owner was never told about the payment screenshot');
+            if (!/arsenal/i.test((c.perTurn.at(-1) ?? []).join(' ')))
+                f.push('the AI stopped helping after the screenshot (no answer about the Arsenal jersey)');
+            if ((await customerOrders(c.chatId)).some((o) => o.status === 'PAID'))
+                f.push('order marked PAID from a screenshot');
+            return f;
+        },
+    },
+    {
         name: 'other-languages',
         turns: ['Bawo ni, e ni jersey Super Eagles?', 'Sannu, kuna da takalmi?', 'Kedu, ị nwere Nike?'],
     },
@@ -218,6 +260,7 @@ for (const sc of selected) {
     const ctx = { chatId, replies: [], perTurn: [] };
     const lines = [];
     console.log(`\n=== ${sc.name} (${chatId})`);
+    const send = (text, type = 'text') => gateway.simulateInbound({ merchantId: merchant.id, chatId, messageId: `sc-${chatId}-${Date.now()}-${Math.random()}`, type, text });
     for (const turn of sc.turns) {
         if (turn === '/pay') {
             const o = await prisma.order.findFirst({
@@ -238,11 +281,22 @@ for (const sc of selected) {
             continue;
         }
         const before = gateway.sent.filter((s) => s.chatId === chatId).length;
-        await gateway.simulateInbound({ merchantId: merchant.id, chatId, messageId: `sc-${chatId}-${Date.now()}-${Math.random()}`, type: 'text', text: turn });
+        if (Array.isArray(turn)) {
+            await Promise.all(turn.map((t, i) => sleep(i * 250).then(() => send(t))));
+            lines.push(...turn.map((t) => `  you> ${t}`));
+        }
+        else if (turn === '/image') {
+            await send('', 'image');
+            lines.push('  you> [sends a screenshot]');
+        }
+        else {
+            await send(turn);
+            lines.push(`  you> ${turn}`);
+        }
         const got = gateway.sent.filter((s) => s.chatId === chatId).slice(before).map((s) => s.text ?? `[${s.kind}]`);
         ctx.perTurn.push(got);
         ctx.replies.push(...got);
-        lines.push(`  you> ${turn}`, ...got.map((g) => `  bot> ${g.replace(/\n/g, '\n       ')}`));
+        lines.push(...got.map((g) => `  bot> ${g.replace(/\n/g, '\n       ')}`));
         await sleep(DELAY);
     }
     const fails = [...(await globalChecks(ctx)), ...((await sc.check?.(ctx)) ?? [])];

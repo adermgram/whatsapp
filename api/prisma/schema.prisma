@@ -54,6 +54,11 @@ enum NegotiationStatus {
   DECLINED
 }
 
+enum HandoffSource {
+  AI // the AI asked for the owner (complaint, refund...): resumes by itself after a timeout
+  OWNER // the owner typed in the chat from their phone: resumes after the owner goes quiet
+}
+
 enum SessionStatus {
   DISCONNECTED
   QR_PENDING
@@ -164,6 +169,7 @@ model Conversation {
   chatId         String // gateway chat id
   mode           ConversationMode @default(AI)
   handoffReason  String?
+  handoffBy      HandoffSource?
   humanSince     DateTime?
   lastMessageAt  DateTime         @default(now())
   createdAt      DateTime         @default(now())

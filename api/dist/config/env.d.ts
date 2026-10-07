@@ -42,6 +42,10 @@ declare const schema: z.ZodObject<{
     SMTP_USER: z.ZodOptional<z.ZodString>;
     SMTP_PASS: z.ZodOptional<z.ZodString>;
     MAIL_FROM: z.ZodOptional<z.ZodString>;
+    MESSAGE_DEBOUNCE_MS: z.ZodOptional<z.ZodCoercedNumber<unknown>>;
+    AI_HANDOFF_RESUME_MINUTES: z.ZodDefault<z.ZodCoercedNumber<unknown>>;
+    OWNER_TAKEOVER_RESUME_HOURS: z.ZodDefault<z.ZodCoercedNumber<unknown>>;
+    HOLDING_REPLY_GAP_MINUTES: z.ZodDefault<z.ZodCoercedNumber<unknown>>;
     PAYMENT_DRIVER: z.ZodDefault<z.ZodEnum<{
         paystack: "paystack";
         fake: "fake";
@@ -61,4 +65,5 @@ export declare const llm: {
     temperature: number | null;
     provider: string;
 };
+export declare const debounceMs: number;
 export {};

@@ -5,6 +5,7 @@ import { OrdersService } from '../orders/orders.service.js';
 export interface AgentResult {
     reply: string;
     handoffReason?: string;
+    notifyReason?: string;
     meta?: {
         shown: string[];
     };

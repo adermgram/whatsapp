@@ -39,7 +39,7 @@ export class ReceiptService {
     let receipt = order.receipt;
     if (!receipt) {
       try {
-        receipt = await this.prisma.$transaction(async (tx) => {
+        receipt = await this.prisma.tx(async (tx) => {
           const m = await tx.merchant.update({
             where: { id: order.merchantId },
             data: { receiptCounter: { increment: 1 } },

@@ -27,6 +27,10 @@ const schema = z.object({
     SMTP_USER: z.string().optional(),
     SMTP_PASS: z.string().optional(),
     MAIL_FROM: z.string().optional(),
+    MESSAGE_DEBOUNCE_MS: z.coerce.number().min(0).optional(),
+    AI_HANDOFF_RESUME_MINUTES: z.coerce.number().min(1).default(30),
+    OWNER_TAKEOVER_RESUME_HOURS: z.coerce.number().min(0.1).default(6),
+    HOLDING_REPLY_GAP_MINUTES: z.coerce.number().min(1).default(10),
     PAYMENT_DRIVER: z.enum(['paystack', 'fake']).default('fake'),
     STORAGE_DIR: z.string().default('./storage'),
     PUBLIC_BASE_URL: z.string().default('http://localhost:3000'),
@@ -43,4 +47,5 @@ export const llm = {
     temperature: env.LLM_TEMPERATURE === 'off' ? null : Number(env.LLM_TEMPERATURE ?? 0.3),
     provider: usingGroq ? 'groq' : 'openai-compatible',
 };
+export const debounceMs = env.MESSAGE_DEBOUNCE_MS ?? (env.WHATSAPP_ADAPTER === 'baileys' ? 3500 : 0);
 //# sourceMappingURL=env.js.map

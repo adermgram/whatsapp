@@ -60,7 +60,7 @@ let OrdersService = class OrdersService {
         }
         const unitPriceKobo = await this.negotiation.priceFor(conversationId, variantId, variant.priceKobo);
         const draft = await this.getOrCreateDraft(merchantId, customerId, conversationId);
-        await this.prisma.$transaction(async (tx) => {
+        await this.prisma.tx(async (tx) => {
             await tx.orderItem.deleteMany({ where: { orderId: draft.id, variantId } });
             await tx.orderItem.create({
                 data: { orderId: draft.id, variantId, quantity, listPriceKobo: variant.priceKobo, unitPriceKobo },
@@ -145,7 +145,7 @@ let OrdersService = class OrdersService {
         const subtotalKobo = draft.items.reduce((s, i) => s + i.unitPriceKobo * i.quantity, 0);
         const totalKobo = subtotalKobo + deliveryFeeKobo;
         const expiresAt = new Date(Date.now() + RESERVATION_MINUTES * 60_000);
-        await this.prisma.$transaction(async (tx) => {
+        await this.prisma.tx(async (tx) => {
             for (const item of draft.items) {
                 const ok = await this.inventory.reserve(tx, item.variantId, item.quantity);
                 if (!ok)
@@ -192,7 +192,7 @@ let OrdersService = class OrdersService {
         }
     }
     async cancelAwaiting(orderId) {
-        await this.prisma.$transaction(async (tx) => {
+        await this.prisma.tx(async (tx) => {
             const won = await tx.order.updateMany({
                 where: { id: orderId, status: 'AWAITING_PAYMENT' },
                 data: { status: 'CANCELLED' },
@@ -205,7 +205,7 @@ let OrdersService = class OrdersService {
         });
     }
     async revertToDraft(orderId) {
-        await this.prisma.$transaction(async (tx) => {
+        await this.prisma.tx(async (tx) => {
             const order = await tx.order.findUnique({ where: { id: orderId }, include: { items: true } });
             if (!order || order.status !== 'AWAITING_PAYMENT')
                 return;
@@ -215,7 +215,7 @@ let OrdersService = class OrdersService {
         });
     }
     async markPaid(orderId, paidAmountKobo, rawEvent) {
-        return this.prisma.$transaction(async (tx) => {
+        return this.prisma.tx(async (tx) => {
             const order = await tx.order.findUnique({ where: { id: orderId }, include: { items: true } });
             if (!order)
                 return { status: 'not_found' };
@@ -255,7 +255,7 @@ let OrdersService = class OrdersService {
         });
         let expired = 0;
         for (const { id } of stale) {
-            await this.prisma.$transaction(async (tx) => {
+            await this.prisma.tx(async (tx) => {
                 const won = await tx.order.updateMany({
                     where: { id, status: 'AWAITING_PAYMENT' },
                     data: { status: 'EXPIRED' },

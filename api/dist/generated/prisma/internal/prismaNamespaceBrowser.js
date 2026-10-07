@@ -36,6 +36,7 @@ export const MerchantScalarFieldEnum = {
     ownerName: 'ownerName',
     ownerPhone: 'ownerPhone',
     ownerEmail: 'ownerEmail',
+    alertEmail: 'alertEmail',
     passwordHash: 'passwordHash',
     maxDiscountPercent: 'maxDiscountPercent',
     aiEnabled: 'aiEnabled',
@@ -96,6 +97,7 @@ export const ConversationScalarFieldEnum = {
     chatId: 'chatId',
     mode: 'mode',
     handoffReason: 'handoffReason',
+    handoffBy: 'handoffBy',
     humanSince: 'humanSince',
     lastMessageAt: 'lastMessageAt',
     createdAt: 'createdAt'

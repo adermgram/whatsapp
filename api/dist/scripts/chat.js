@@ -2,8 +2,8 @@ import 'dotenv/config';
 import { createInterface } from 'node:readline';
 import { resolve } from 'node:path';
 const real = process.argv.includes('--real');
-if (real)
-    process.env.PAYMENT_DRIVER = 'paystack';
+process.env.PAYMENT_DRIVER = real ? 'paystack' : 'fake';
+process.env.WHATSAPP_ADAPTER = 'simulator';
 const { NestFactory } = await import('@nestjs/core');
 const { AppModule } = await import('../app.module.js');
 const { PrismaService } = await import('../prisma/prisma.service.js');

@@ -35,6 +35,10 @@ export const NegotiationStatus = {
     AGREED: 'AGREED',
     DECLINED: 'DECLINED'
 };
+export const HandoffSource = {
+    AI: 'AI',
+    OWNER: 'OWNER'
+};
 export const SessionStatus = {
     DISCONNECTED: 'DISCONNECTED',
     QR_PENDING: 'QR_PENDING',

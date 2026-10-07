@@ -35,12 +35,16 @@ export class PaymentJobs {
     }
   }
 
-  async reconcile(): Promise<number> {
+  /** `merchantId` limits the scan to one store (tests); the scheduled job scans everyone. */
+  async reconcile(merchantId?: string): Promise<number> {
     const pending = await this.prisma.payment.findMany({
       where: {
         status: 'PENDING',
         createdAt: { gt: new Date(Date.now() - 24 * 3600_000) },
-        order: { status: { in: ['AWAITING_PAYMENT', 'EXPIRED', 'CANCELLED'] } }, // a link can still be paid after expiry/cancel
+        order: {
+          status: { in: ['AWAITING_PAYMENT', 'EXPIRED', 'CANCELLED'] }, // a link can still be paid after expiry/cancel
+          ...(merchantId ? { merchantId } : {}),
+        },
       },
       include: { order: { select: { merchantId: true } } },
       take: 50,

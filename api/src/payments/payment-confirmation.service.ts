@@ -92,6 +92,36 @@ export class PaymentConfirmationService {
     return res.status === 'paid' ? 'paid' : 'already_paid';
   }
 
+  /**
+   * The OWNER confirms a payment that never went through Paystack (the customer sent money to the owner's
+   * bank account and showed a screenshot). The owner is attesting that the money arrived, so no provider
+   * check is made. Everything after that is the normal path: stock committed, receipt sent exactly once.
+   */
+  async markPaidManually(
+    merchantId: string,
+    orderNumber: string,
+  ): Promise<'paid' | 'already_paid' | 'not_found' | 'not_awaiting' | 'oversold'> {
+    const order = await this.prisma.order.findUnique({
+      where: { merchantId_orderNumber: { merchantId, orderNumber } },
+      include: { customer: true, merchant: true, conversation: true },
+    });
+    if (!order) return 'not_found';
+    if (order.status === 'DRAFT') return 'not_awaiting'; // never reached checkout, so it has no number worth confirming
+
+    const res = await this.orders.markPaid(order.id, order.totalKobo, { manual: true });
+    if (res.status === 'not_found') return 'not_found';
+
+    if (res.status === 'paid' && res.oversold) {
+      await this.say(
+        order,
+        `Your payment of ${formatNaira(order.totalKobo)} for order ${order.orderNumber} has been received. The item just sold out, so ${order.merchant.businessName} will contact you shortly to sort this out with you.`,
+      );
+      return 'oversold';
+    }
+    await this.deliverReceipt(order.id); // idempotent: also completes a receipt that failed earlier
+    return res.status === 'paid' ? 'paid' : 'already_paid';
+  }
+
   /** Sends the receipt at most once, even if the webhook and the reconciler race. */
   private async deliverReceipt(orderId: string) {
     const existing = await this.prisma.receipt.findUnique({ where: { orderId } });

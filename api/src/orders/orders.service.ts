@@ -73,7 +73,7 @@ export class OrdersService {
     const unitPriceKobo = await this.negotiation.priceFor(conversationId, variantId, variant.priceKobo);
     const draft = await this.getOrCreateDraft(merchantId, customerId, conversationId);
 
-    await this.prisma.$transaction(async (tx) => {
+    await this.prisma.tx(async (tx) => {
       await tx.orderItem.deleteMany({ where: { orderId: draft.id, variantId } });
       await tx.orderItem.create({
         data: { orderId: draft.id, variantId, quantity, listPriceKobo: variant.priceKobo, unitPriceKobo },
@@ -171,7 +171,7 @@ export class OrdersService {
     const totalKobo = subtotalKobo + deliveryFeeKobo;
     const expiresAt = new Date(Date.now() + RESERVATION_MINUTES * 60_000);
 
-    await this.prisma.$transaction(async (tx) => {
+    await this.prisma.tx(async (tx) => {
       for (const item of draft.items) {
         const ok = await this.inventory.reserve(tx, item.variantId, item.quantity);
         if (!ok) throw new OrderError('OUT_OF_STOCK', 'One of the items just sold out');
@@ -220,7 +220,7 @@ export class OrdersService {
 
   /** The customer changed their mind after getting a link: free the stock held for the old order. */
   async cancelAwaiting(orderId: string): Promise<void> {
-    await this.prisma.$transaction(async (tx) => {
+    await this.prisma.tx(async (tx) => {
       const won = await tx.order.updateMany({
         where: { id: orderId, status: 'AWAITING_PAYMENT' },
         data: { status: 'CANCELLED' },
@@ -232,7 +232,7 @@ export class OrdersService {
   }
 
   private async revertToDraft(orderId: string) {
-    await this.prisma.$transaction(async (tx) => {
+    await this.prisma.tx(async (tx) => {
       const order = await tx.order.findUnique({ where: { id: orderId }, include: { items: true } });
       if (!order || order.status !== 'AWAITING_PAYMENT') return;
       for (const i of order.items) await this.inventory.release(tx, i.variantId, i.quantity);
@@ -245,7 +245,7 @@ export class OrdersService {
    * Idempotent: a repeated call returns 'already_paid' and changes nothing.
    */
   async markPaid(orderId: string, paidAmountKobo: number, rawEvent?: unknown): Promise<MarkPaidResult> {
-    return this.prisma.$transaction(async (tx) => {
+    return this.prisma.tx(async (tx) => {
       const order = await tx.order.findUnique({ where: { id: orderId }, include: { items: true } });
       if (!order) return { status: 'not_found' as const };
       if (order.status === 'PAID' || order.status === 'FULFILLED') {
@@ -286,7 +286,7 @@ export class OrdersService {
     });
     let expired = 0;
     for (const { id } of stale) {
-      await this.prisma.$transaction(async (tx) => {
+      await this.prisma.tx(async (tx) => {
         const won = await tx.order.updateMany({
           where: { id, status: 'AWAITING_PAYMENT' },
           data: { status: 'EXPIRED' },

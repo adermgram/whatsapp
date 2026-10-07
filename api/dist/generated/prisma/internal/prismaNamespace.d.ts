@@ -1263,6 +1263,7 @@ export declare const MerchantScalarFieldEnum: {
     readonly ownerName: "ownerName";
     readonly ownerPhone: "ownerPhone";
     readonly ownerEmail: "ownerEmail";
+    readonly alertEmail: "alertEmail";
     readonly passwordHash: "passwordHash";
     readonly maxDiscountPercent: "maxDiscountPercent";
     readonly aiEnabled: "aiEnabled";
@@ -1329,6 +1330,7 @@ export declare const ConversationScalarFieldEnum: {
     readonly chatId: "chatId";
     readonly mode: "mode";
     readonly handoffReason: "handoffReason";
+    readonly handoffBy: "handoffBy";
     readonly humanSince: "humanSince";
     readonly lastMessageAt: "lastMessageAt";
     readonly createdAt: "createdAt";
@@ -1456,6 +1458,8 @@ export type JsonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'J
 export type EnumQueryModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'QueryMode'>;
 export type EnumConversationModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ConversationMode'>;
 export type ListEnumConversationModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ConversationMode[]'>;
+export type EnumHandoffSourceFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'HandoffSource'>;
+export type ListEnumHandoffSourceFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'HandoffSource[]'>;
 export type EnumMessageDirectionFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'MessageDirection'>;
 export type ListEnumMessageDirectionFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'MessageDirection[]'>;
 export type EnumMessageSenderFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'MessageSender'>;

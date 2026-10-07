@@ -9,6 +9,7 @@ export interface ToolContext {
     customerId: string;
     effects: {
         handoffReason?: string;
+        notifyReason?: string;
         paymentLink?: string;
         shown?: string[];
     };

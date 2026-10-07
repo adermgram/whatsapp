@@ -48,7 +48,8 @@ export const TOOL_DEFINITIONS = [
     fn('save_customer_details', 'Save the name and/or delivery address the customer gave.', { name: { type: 'string' }, address: { type: 'string' } }),
     fn('create_payment_link', 'Create the order and payment link. Only after the customer confirmed the cart and gave name and address.'),
     fn('check_order_status', "Look up the customer's latest orders and whether payment was received."),
-    fn('handoff_to_owner', 'Pass the chat to the human owner (complaints, refunds, custom requests, anger, or when unsure).', { reason: { type: 'string' } }, ['reason']),
+    fn('notify_owner', 'Tell the owner something WITHOUT stopping yourself: e.g. the customer says they paid by bank transfer or sent a payment screenshot you cannot verify. You keep chatting normally.', { reason: { type: 'string' } }, ['reason']),
+    fn('handoff_to_owner', 'Stop answering and pass the chat to the human owner. ONLY for complaints, refund demands, anger, a request to speak to a person, or a custom order you cannot price. Not for payment questions.', { reason: { type: 'string' } }, ['reason']),
 ];
 const searchArgs = z.object({
     query: z.string().optional(),
@@ -101,6 +102,9 @@ let Toolbox = class Toolbox {
                     return await this.createPaymentLink(ctx);
                 case 'check_order_status':
                     return await this.orderStatus(ctx);
+                case 'notify_owner':
+                    ctx.effects.notifyReason = reasonArgs.parse(args).reason;
+                    return { ok: true, note: 'The owner has been told. Keep helping the customer yourself.' };
                 case 'handoff_to_owner':
                     ctx.effects.handoffReason = reasonArgs.parse(args).reason;
                     return { ok: true, note: 'Owner has been alerted. Tell the customer the owner will reply shortly.' };

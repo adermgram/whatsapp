@@ -8,7 +8,10 @@ import { resolve } from 'node:path';
 //                        the receipt then appears here by itself (checked every 10 seconds)
 // Commands: /pay (fake mode)  /owner  /resume  /quit
 const real = process.argv.includes('--real');
-if (real) process.env.PAYMENT_DRIVER = 'paystack'; // must be set before the app modules load
+// Must be set before the app modules load. Plain `npm run chat` is ALWAYS fake, whatever .env says,
+// so the banner below is the truth and /pay works.
+process.env.PAYMENT_DRIVER = real ? 'paystack' : 'fake';
+process.env.WHATSAPP_ADAPTER = 'simulator';
 
 const { NestFactory } = await import('@nestjs/core');
 const { AppModule } = await import('../app.module.js');

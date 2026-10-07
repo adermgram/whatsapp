@@ -24,6 +24,7 @@ export type MerchantMinAggregateOutputType = {
     ownerName: string | null;
     ownerPhone: string | null;
     ownerEmail: string | null;
+    alertEmail: string | null;
     passwordHash: string | null;
     maxDiscountPercent: number | null;
     aiEnabled: boolean | null;
@@ -39,6 +40,7 @@ export type MerchantMaxAggregateOutputType = {
     ownerName: string | null;
     ownerPhone: string | null;
     ownerEmail: string | null;
+    alertEmail: string | null;
     passwordHash: string | null;
     maxDiscountPercent: number | null;
     aiEnabled: boolean | null;
@@ -54,6 +56,7 @@ export type MerchantCountAggregateOutputType = {
     ownerName: number;
     ownerPhone: number;
     ownerEmail: number;
+    alertEmail: number;
     passwordHash: number;
     maxDiscountPercent: number;
     aiEnabled: number;
@@ -80,6 +83,7 @@ export type MerchantMinAggregateInputType = {
     ownerName?: true;
     ownerPhone?: true;
     ownerEmail?: true;
+    alertEmail?: true;
     passwordHash?: true;
     maxDiscountPercent?: true;
     aiEnabled?: true;
@@ -95,6 +99,7 @@ export type MerchantMaxAggregateInputType = {
     ownerName?: true;
     ownerPhone?: true;
     ownerEmail?: true;
+    alertEmail?: true;
     passwordHash?: true;
     maxDiscountPercent?: true;
     aiEnabled?: true;
@@ -110,6 +115,7 @@ export type MerchantCountAggregateInputType = {
     ownerName?: true;
     ownerPhone?: true;
     ownerEmail?: true;
+    alertEmail?: true;
     passwordHash?: true;
     maxDiscountPercent?: true;
     aiEnabled?: true;
@@ -154,6 +160,7 @@ export type MerchantGroupByOutputType = {
     ownerName: string;
     ownerPhone: string;
     ownerEmail: string;
+    alertEmail: string | null;
     passwordHash: string;
     maxDiscountPercent: number;
     aiEnabled: boolean;
@@ -180,6 +187,7 @@ export type MerchantWhereInput = {
     ownerName?: Prisma.StringFilter<"Merchant"> | string;
     ownerPhone?: Prisma.StringFilter<"Merchant"> | string;
     ownerEmail?: Prisma.StringFilter<"Merchant"> | string;
+    alertEmail?: Prisma.StringNullableFilter<"Merchant"> | string | null;
     passwordHash?: Prisma.StringFilter<"Merchant"> | string;
     maxDiscountPercent?: Prisma.IntFilter<"Merchant"> | number;
     aiEnabled?: Prisma.BoolFilter<"Merchant"> | boolean;
@@ -201,6 +209,7 @@ export type MerchantOrderByWithRelationInput = {
     ownerName?: Prisma.SortOrder;
     ownerPhone?: Prisma.SortOrder;
     ownerEmail?: Prisma.SortOrder;
+    alertEmail?: Prisma.SortOrderInput | Prisma.SortOrder;
     passwordHash?: Prisma.SortOrder;
     maxDiscountPercent?: Prisma.SortOrder;
     aiEnabled?: Prisma.SortOrder;
@@ -225,6 +234,7 @@ export type MerchantWhereUniqueInput = Prisma.AtLeast<{
     businessName?: Prisma.StringFilter<"Merchant"> | string;
     ownerName?: Prisma.StringFilter<"Merchant"> | string;
     ownerPhone?: Prisma.StringFilter<"Merchant"> | string;
+    alertEmail?: Prisma.StringNullableFilter<"Merchant"> | string | null;
     passwordHash?: Prisma.StringFilter<"Merchant"> | string;
     maxDiscountPercent?: Prisma.IntFilter<"Merchant"> | number;
     aiEnabled?: Prisma.BoolFilter<"Merchant"> | boolean;
@@ -246,6 +256,7 @@ export type MerchantOrderByWithAggregationInput = {
     ownerName?: Prisma.SortOrder;
     ownerPhone?: Prisma.SortOrder;
     ownerEmail?: Prisma.SortOrder;
+    alertEmail?: Prisma.SortOrderInput | Prisma.SortOrder;
     passwordHash?: Prisma.SortOrder;
     maxDiscountPercent?: Prisma.SortOrder;
     aiEnabled?: Prisma.SortOrder;
@@ -269,6 +280,7 @@ export type MerchantScalarWhereWithAggregatesInput = {
     ownerName?: Prisma.StringWithAggregatesFilter<"Merchant"> | string;
     ownerPhone?: Prisma.StringWithAggregatesFilter<"Merchant"> | string;
     ownerEmail?: Prisma.StringWithAggregatesFilter<"Merchant"> | string;
+    alertEmail?: Prisma.StringNullableWithAggregatesFilter<"Merchant"> | string | null;
     passwordHash?: Prisma.StringWithAggregatesFilter<"Merchant"> | string;
     maxDiscountPercent?: Prisma.IntWithAggregatesFilter<"Merchant"> | number;
     aiEnabled?: Prisma.BoolWithAggregatesFilter<"Merchant"> | boolean;
@@ -284,6 +296,7 @@ export type MerchantCreateInput = {
     ownerName: string;
     ownerPhone: string;
     ownerEmail: string;
+    alertEmail?: string | null;
     passwordHash: string;
     maxDiscountPercent?: number;
     aiEnabled?: boolean;
@@ -305,6 +318,7 @@ export type MerchantUncheckedCreateInput = {
     ownerName: string;
     ownerPhone: string;
     ownerEmail: string;
+    alertEmail?: string | null;
     passwordHash: string;
     maxDiscountPercent?: number;
     aiEnabled?: boolean;
@@ -326,6 +340,7 @@ export type MerchantUpdateInput = {
     ownerName?: Prisma.StringFieldUpdateOperationsInput | string;
     ownerPhone?: Prisma.StringFieldUpdateOperationsInput | string;
     ownerEmail?: Prisma.StringFieldUpdateOperationsInput | string;
+    alertEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     passwordHash?: Prisma.StringFieldUpdateOperationsInput | string;
     maxDiscountPercent?: Prisma.IntFieldUpdateOperationsInput | number;
     aiEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean;
@@ -347,6 +362,7 @@ export type MerchantUncheckedUpdateInput = {
     ownerName?: Prisma.StringFieldUpdateOperationsInput | string;
     ownerPhone?: Prisma.StringFieldUpdateOperationsInput | string;
     ownerEmail?: Prisma.StringFieldUpdateOperationsInput | string;
+    alertEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     passwordHash?: Prisma.StringFieldUpdateOperationsInput | string;
     maxDiscountPercent?: Prisma.IntFieldUpdateOperationsInput | number;
     aiEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean;
@@ -368,6 +384,7 @@ export type MerchantCreateManyInput = {
     ownerName: string;
     ownerPhone: string;
     ownerEmail: string;
+    alertEmail?: string | null;
     passwordHash: string;
     maxDiscountPercent?: number;
     aiEnabled?: boolean;
@@ -383,6 +400,7 @@ export type MerchantUpdateManyMutationInput = {
     ownerName?: Prisma.StringFieldUpdateOperationsInput | string;
     ownerPhone?: Prisma.StringFieldUpdateOperationsInput | string;
     ownerEmail?: Prisma.StringFieldUpdateOperationsInput | string;
+    alertEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     passwordHash?: Prisma.StringFieldUpdateOperationsInput | string;
     maxDiscountPercent?: Prisma.IntFieldUpdateOperationsInput | number;
     aiEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean;
@@ -398,6 +416,7 @@ export type MerchantUncheckedUpdateManyInput = {
     ownerName?: Prisma.StringFieldUpdateOperationsInput | string;
     ownerPhone?: Prisma.StringFieldUpdateOperationsInput | string;
     ownerEmail?: Prisma.StringFieldUpdateOperationsInput | string;
+    alertEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     passwordHash?: Prisma.StringFieldUpdateOperationsInput | string;
     maxDiscountPercent?: Prisma.IntFieldUpdateOperationsInput | number;
     aiEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean;
@@ -413,6 +432,7 @@ export type MerchantCountOrderByAggregateInput = {
     ownerName?: Prisma.SortOrder;
     ownerPhone?: Prisma.SortOrder;
     ownerEmail?: Prisma.SortOrder;
+    alertEmail?: Prisma.SortOrder;
     passwordHash?: Prisma.SortOrder;
     maxDiscountPercent?: Prisma.SortOrder;
     aiEnabled?: Prisma.SortOrder;
@@ -433,6 +453,7 @@ export type MerchantMaxOrderByAggregateInput = {
     ownerName?: Prisma.SortOrder;
     ownerPhone?: Prisma.SortOrder;
     ownerEmail?: Prisma.SortOrder;
+    alertEmail?: Prisma.SortOrder;
     passwordHash?: Prisma.SortOrder;
     maxDiscountPercent?: Prisma.SortOrder;
     aiEnabled?: Prisma.SortOrder;
@@ -448,6 +469,7 @@ export type MerchantMinOrderByAggregateInput = {
     ownerName?: Prisma.SortOrder;
     ownerPhone?: Prisma.SortOrder;
     ownerEmail?: Prisma.SortOrder;
+    alertEmail?: Prisma.SortOrder;
     passwordHash?: Prisma.SortOrder;
     maxDiscountPercent?: Prisma.SortOrder;
     aiEnabled?: Prisma.SortOrder;
@@ -469,6 +491,9 @@ export type MerchantScalarRelationFilter = {
 export type StringFieldUpdateOperationsInput = {
     set?: string;
 };
+export type NullableStringFieldUpdateOperationsInput = {
+    set?: string | null;
+};
 export type IntFieldUpdateOperationsInput = {
     set?: number;
     increment?: number;
@@ -478,9 +503,6 @@ export type IntFieldUpdateOperationsInput = {
 };
 export type BoolFieldUpdateOperationsInput = {
     set?: boolean;
-};
-export type NullableStringFieldUpdateOperationsInput = {
-    set?: string | null;
 };
 export type DateTimeFieldUpdateOperationsInput = {
     set?: Date | string;
@@ -563,6 +585,7 @@ export type MerchantCreateWithoutSessionInput = {
     ownerName: string;
     ownerPhone: string;
     ownerEmail: string;
+    alertEmail?: string | null;
     passwordHash: string;
     maxDiscountPercent?: number;
     aiEnabled?: boolean;
@@ -583,6 +606,7 @@ export type MerchantUncheckedCreateWithoutSessionInput = {
     ownerName: string;
     ownerPhone: string;
     ownerEmail: string;
+    alertEmail?: string | null;
     passwordHash: string;
     maxDiscountPercent?: number;
     aiEnabled?: boolean;
@@ -616,6 +640,7 @@ export type MerchantUpdateWithoutSessionInput = {
     ownerName?: Prisma.StringFieldUpdateOperationsInput | string;
     ownerPhone?: Prisma.StringFieldUpdateOperationsInput | string;
     ownerEmail?: Prisma.StringFieldUpdateOperationsInput | string;
+    alertEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     passwordHash?: Prisma.StringFieldUpdateOperationsInput | string;
     maxDiscountPercent?: Prisma.IntFieldUpdateOperationsInput | number;
     aiEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean;
@@ -636,6 +661,7 @@ export type MerchantUncheckedUpdateWithoutSessionInput = {
     ownerName?: Prisma.StringFieldUpdateOperationsInput | string;
     ownerPhone?: Prisma.StringFieldUpdateOperationsInput | string;
     ownerEmail?: Prisma.StringFieldUpdateOperationsInput | string;
+    alertEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     passwordHash?: Prisma.StringFieldUpdateOperationsInput | string;
     maxDiscountPercent?: Prisma.IntFieldUpdateOperationsInput | number;
     aiEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean;
@@ -656,6 +682,7 @@ export type MerchantCreateWithoutAuthItemsInput = {
     ownerName: string;
     ownerPhone: string;
     ownerEmail: string;
+    alertEmail?: string | null;
     passwordHash: string;
     maxDiscountPercent?: number;
     aiEnabled?: boolean;
@@ -676,6 +703,7 @@ export type MerchantUncheckedCreateWithoutAuthItemsInput = {
     ownerName: string;
     ownerPhone: string;
     ownerEmail: string;
+    alertEmail?: string | null;
     passwordHash: string;
     maxDiscountPercent?: number;
     aiEnabled?: boolean;
@@ -709,6 +737,7 @@ export type MerchantUpdateWithoutAuthItemsInput = {
     ownerName?: Prisma.StringFieldUpdateOperationsInput | string;
     ownerPhone?: Prisma.StringFieldUpdateOperationsInput | string;
     ownerEmail?: Prisma.StringFieldUpdateOperationsInput | string;
+    alertEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     passwordHash?: Prisma.StringFieldUpdateOperationsInput | string;
     maxDiscountPercent?: Prisma.IntFieldUpdateOperationsInput | number;
     aiEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean;
@@ -729,6 +758,7 @@ export type MerchantUncheckedUpdateWithoutAuthItemsInput = {
     ownerName?: Prisma.StringFieldUpdateOperationsInput | string;
     ownerPhone?: Prisma.StringFieldUpdateOperationsInput | string;
     ownerEmail?: Prisma.StringFieldUpdateOperationsInput | string;
+    alertEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     passwordHash?: Prisma.StringFieldUpdateOperationsInput | string;
     maxDiscountPercent?: Prisma.IntFieldUpdateOperationsInput | number;
     aiEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean;
@@ -749,6 +779,7 @@ export type MerchantCreateWithoutProductsInput = {
     ownerName: string;
     ownerPhone: string;
     ownerEmail: string;
+    alertEmail?: string | null;
     passwordHash: string;
     maxDiscountPercent?: number;
     aiEnabled?: boolean;
@@ -769,6 +800,7 @@ export type MerchantUncheckedCreateWithoutProductsInput = {
     ownerName: string;
     ownerPhone: string;
     ownerEmail: string;
+    alertEmail?: string | null;
     passwordHash: string;
     maxDiscountPercent?: number;
     aiEnabled?: boolean;
@@ -802,6 +834,7 @@ export type MerchantUpdateWithoutProductsInput = {
     ownerName?: Prisma.StringFieldUpdateOperationsInput | string;
     ownerPhone?: Prisma.StringFieldUpdateOperationsInput | string;
     ownerEmail?: Prisma.StringFieldUpdateOperationsInput | string;
+    alertEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     passwordHash?: Prisma.StringFieldUpdateOperationsInput | string;
     maxDiscountPercent?: Prisma.IntFieldUpdateOperationsInput | number;
     aiEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean;
@@ -822,6 +855,7 @@ export type MerchantUncheckedUpdateWithoutProductsInput = {
     ownerName?: Prisma.StringFieldUpdateOperationsInput | string;
     ownerPhone?: Prisma.StringFieldUpdateOperationsInput | string;
     ownerEmail?: Prisma.StringFieldUpdateOperationsInput | string;
+    alertEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     passwordHash?: Prisma.StringFieldUpdateOperationsInput | string;
     maxDiscountPercent?: Prisma.IntFieldUpdateOperationsInput | number;
     aiEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean;
@@ -842,6 +876,7 @@ export type MerchantCreateWithoutCustomersInput = {
     ownerName: string;
     ownerPhone: string;
     ownerEmail: string;
+    alertEmail?: string | null;
     passwordHash: string;
     maxDiscountPercent?: number;
     aiEnabled?: boolean;
@@ -862,6 +897,7 @@ export type MerchantUncheckedCreateWithoutCustomersInput = {
     ownerName: string;
     ownerPhone: string;
     ownerEmail: string;
+    alertEmail?: string | null;
     passwordHash: string;
     maxDiscountPercent?: number;
     aiEnabled?: boolean;
@@ -895,6 +931,7 @@ export type MerchantUpdateWithoutCustomersInput = {
     ownerName?: Prisma.StringFieldUpdateOperationsInput | string;
     ownerPhone?: Prisma.StringFieldUpdateOperationsInput | string;
     ownerEmail?: Prisma.StringFieldUpdateOperationsInput | string;
+    alertEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     passwordHash?: Prisma.StringFieldUpdateOperationsInput | string;
     maxDiscountPercent?: Prisma.IntFieldUpdateOperationsInput | number;
     aiEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean;
@@ -915,6 +952,7 @@ export type MerchantUncheckedUpdateWithoutCustomersInput = {
     ownerName?: Prisma.StringFieldUpdateOperationsInput | string;
     ownerPhone?: Prisma.StringFieldUpdateOperationsInput | string;
     ownerEmail?: Prisma.StringFieldUpdateOperationsInput | string;
+    alertEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     passwordHash?: Prisma.StringFieldUpdateOperationsInput | string;
     maxDiscountPercent?: Prisma.IntFieldUpdateOperationsInput | number;
     aiEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean;
@@ -935,6 +973,7 @@ export type MerchantCreateWithoutConversationsInput = {
     ownerName: string;
     ownerPhone: string;
     ownerEmail: string;
+    alertEmail?: string | null;
     passwordHash: string;
     maxDiscountPercent?: number;
     aiEnabled?: boolean;
@@ -955,6 +994,7 @@ export type MerchantUncheckedCreateWithoutConversationsInput = {
     ownerName: string;
     ownerPhone: string;
     ownerEmail: string;
+    alertEmail?: string | null;
     passwordHash: string;
     maxDiscountPercent?: number;
     aiEnabled?: boolean;
@@ -988,6 +1028,7 @@ export type MerchantUpdateWithoutConversationsInput = {
     ownerName?: Prisma.StringFieldUpdateOperationsInput | string;
     ownerPhone?: Prisma.StringFieldUpdateOperationsInput | string;
     ownerEmail?: Prisma.StringFieldUpdateOperationsInput | string;
+    alertEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     passwordHash?: Prisma.StringFieldUpdateOperationsInput | string;
     maxDiscountPercent?: Prisma.IntFieldUpdateOperationsInput | number;
     aiEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean;
@@ -1008,6 +1049,7 @@ export type MerchantUncheckedUpdateWithoutConversationsInput = {
     ownerName?: Prisma.StringFieldUpdateOperationsInput | string;
     ownerPhone?: Prisma.StringFieldUpdateOperationsInput | string;
     ownerEmail?: Prisma.StringFieldUpdateOperationsInput | string;
+    alertEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     passwordHash?: Prisma.StringFieldUpdateOperationsInput | string;
     maxDiscountPercent?: Prisma.IntFieldUpdateOperationsInput | number;
     aiEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean;
@@ -1028,6 +1070,7 @@ export type MerchantCreateWithoutOrdersInput = {
     ownerName: string;
     ownerPhone: string;
     ownerEmail: string;
+    alertEmail?: string | null;
     passwordHash: string;
     maxDiscountPercent?: number;
     aiEnabled?: boolean;
@@ -1048,6 +1091,7 @@ export type MerchantUncheckedCreateWithoutOrdersInput = {
     ownerName: string;
     ownerPhone: string;
     ownerEmail: string;
+    alertEmail?: string | null;
     passwordHash: string;
     maxDiscountPercent?: number;
     aiEnabled?: boolean;
@@ -1081,6 +1125,7 @@ export type MerchantUpdateWithoutOrdersInput = {
     ownerName?: Prisma.StringFieldUpdateOperationsInput | string;
     ownerPhone?: Prisma.StringFieldUpdateOperationsInput | string;
     ownerEmail?: Prisma.StringFieldUpdateOperationsInput | string;
+    alertEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     passwordHash?: Prisma.StringFieldUpdateOperationsInput | string;
     maxDiscountPercent?: Prisma.IntFieldUpdateOperationsInput | number;
     aiEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean;
@@ -1101,6 +1146,7 @@ export type MerchantUncheckedUpdateWithoutOrdersInput = {
     ownerName?: Prisma.StringFieldUpdateOperationsInput | string;
     ownerPhone?: Prisma.StringFieldUpdateOperationsInput | string;
     ownerEmail?: Prisma.StringFieldUpdateOperationsInput | string;
+    alertEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     passwordHash?: Prisma.StringFieldUpdateOperationsInput | string;
     maxDiscountPercent?: Prisma.IntFieldUpdateOperationsInput | number;
     aiEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean;
@@ -1153,6 +1199,7 @@ export type MerchantSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs
     ownerName?: boolean;
     ownerPhone?: boolean;
     ownerEmail?: boolean;
+    alertEmail?: boolean;
     passwordHash?: boolean;
     maxDiscountPercent?: boolean;
     aiEnabled?: boolean;
@@ -1175,6 +1222,7 @@ export type MerchantSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exte
     ownerName?: boolean;
     ownerPhone?: boolean;
     ownerEmail?: boolean;
+    alertEmail?: boolean;
     passwordHash?: boolean;
     maxDiscountPercent?: boolean;
     aiEnabled?: boolean;
@@ -1190,6 +1238,7 @@ export type MerchantSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exte
     ownerName?: boolean;
     ownerPhone?: boolean;
     ownerEmail?: boolean;
+    alertEmail?: boolean;
     passwordHash?: boolean;
     maxDiscountPercent?: boolean;
     aiEnabled?: boolean;
@@ -1205,6 +1254,7 @@ export type MerchantSelectScalar = {
     ownerName?: boolean;
     ownerPhone?: boolean;
     ownerEmail?: boolean;
+    alertEmail?: boolean;
     passwordHash?: boolean;
     maxDiscountPercent?: boolean;
     aiEnabled?: boolean;
@@ -1214,7 +1264,7 @@ export type MerchantSelectScalar = {
     createdAt?: boolean;
     updatedAt?: boolean;
 };
-export type MerchantOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "businessName" | "ownerName" | "ownerPhone" | "ownerEmail" | "passwordHash" | "maxDiscountPercent" | "aiEnabled" | "paystackSecretEnc" | "receiptCounter" | "orderCounter" | "createdAt" | "updatedAt", ExtArgs["result"]["merchant"]>;
+export type MerchantOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "businessName" | "ownerName" | "ownerPhone" | "ownerEmail" | "alertEmail" | "passwordHash" | "maxDiscountPercent" | "aiEnabled" | "paystackSecretEnc" | "receiptCounter" | "orderCounter" | "createdAt" | "updatedAt", ExtArgs["result"]["merchant"]>;
 export type MerchantInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
     session?: boolean | Prisma.Merchant$sessionArgs<ExtArgs>;
     authItems?: boolean | Prisma.Merchant$authItemsArgs<ExtArgs>;
@@ -1242,6 +1292,7 @@ export type $MerchantPayload<ExtArgs extends runtime.Types.Extensions.InternalAr
         ownerName: string;
         ownerPhone: string;
         ownerEmail: string;
+        alertEmail: string | null;
         passwordHash: string;
         maxDiscountPercent: number;
         aiEnabled: boolean;
@@ -1318,6 +1369,7 @@ export interface MerchantFieldRefs {
     readonly ownerName: Prisma.FieldRef<"Merchant", 'String'>;
     readonly ownerPhone: Prisma.FieldRef<"Merchant", 'String'>;
     readonly ownerEmail: Prisma.FieldRef<"Merchant", 'String'>;
+    readonly alertEmail: Prisma.FieldRef<"Merchant", 'String'>;
     readonly passwordHash: Prisma.FieldRef<"Merchant", 'String'>;
     readonly maxDiscountPercent: Prisma.FieldRef<"Merchant", 'Int'>;
     readonly aiEnabled: Prisma.FieldRef<"Merchant", 'Boolean'>;

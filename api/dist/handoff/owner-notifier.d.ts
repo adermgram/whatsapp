@@ -10,6 +10,7 @@ export interface HandoffAlert {
     customerName: string | null;
     customerPhone: string;
     reason: string;
+    kind?: 'handoff' | 'attention';
     recent: string[];
 }
 export declare abstract class OwnerNotifier {

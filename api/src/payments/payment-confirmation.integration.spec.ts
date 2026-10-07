@@ -194,7 +194,7 @@ describe('reconciler (missed webhooks)', () => {
     const { order, reference, customer } = await awaitingOrder();
     fake.markPaid(reference, order.totalKobo); // customer paid, but no webhook was delivered
 
-    await jobs.reconcile();
+    await jobs.reconcile(merchantId); // only this test's store, never real shops
 
     expect((await prisma.order.findUniqueOrThrow({ where: { id: order.id } })).status).toBe('PAID');
     expect(sentTo(customer.phone).filter((s) => s.kind === 'document')).toHaveLength(1);

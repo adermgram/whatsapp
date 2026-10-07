@@ -5,16 +5,38 @@ import { InboundMessage, MessagingGateway } from '../messaging/messaging.types.j
 import { OwnerNotifier } from '../handoff/owner-notifier.js';
 import { HandoffService } from '../handoff/handoff.service.js';
 import { SpeechToText } from '../speech/speech-to-text.js';
-import { env } from '../config/env.js';
+import { OwnerCommands } from './owner-commands.js';
+import { TurnBatcher, TurnControl } from './turn-batcher.js';
+import { debounceMs, env } from '../config/env.js';
+import { formatNaira } from '../common/money.js';
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+const IMAGE_ALERT_GAP_MS = 5 * 60_000;
 
-/** Inbound pipeline: dedupe, store, decide AI vs human, run the agent, reply. */
+interface Turn {
+  merchantId: string;
+  chatId: string;
+  conversationId: string;
+  customerId: string;
+}
+
+/**
+ * The inbound pipeline.
+ *
+ *   ingest  (one at a time per chat, in order): dedupe, store, owner commands, owner takeover, human-mode handling
+ *   answer  (batched): wait for a quiet moment, run the AI once over everything the customer said, reply
+ *
+ * Splitting the two is what lets a customer send "hi" / "i want man united jersey" / "away one" and get ONE sensible
+ * answer, while every message is still stored the instant it arrives.
+ */
 @Injectable()
 export class ConversationService implements OnModuleInit {
   private readonly log = new Logger(ConversationService.name);
-  /** One in-flight job per chat so replies never interleave. (Single instance; pg-boss when we scale out.) */
-  private readonly chains = new Map<string, Promise<void>>();
+  /** Quiet period before answering. Public so tests can shorten it. */
+  debounceMs = debounceMs;
+  private batcherInstance?: TurnBatcher;
+  private readonly ingestChains = new Map<string, Promise<unknown>>();
+  private readonly lastImageAlert = new Map<string, number>();
 
   constructor(
     private readonly prisma: PrismaService,
@@ -23,37 +45,75 @@ export class ConversationService implements OnModuleInit {
     private readonly notifier: OwnerNotifier,
     private readonly handoffs: HandoffService,
     private readonly speech: SpeechToText,
+    private readonly commands: OwnerCommands,
   ) {}
+
+  private get batcher(): TurnBatcher {
+    return (this.batcherInstance ??= new TurnBatcher(this.debounceMs));
+  }
 
   onModuleInit() {
     this.gateway.onInbound((msg) => this.enqueue(msg));
   }
 
-  /** Public so tests and the CLI can await completion. */
+  /** Public so tests and the CLI can await completion: resolves once the message has been fully dealt with. */
   enqueue(msg: InboundMessage): Promise<void> {
     const key = `${msg.merchantId}:${msg.chatId}`;
-    const prev = this.chains.get(key) ?? Promise.resolve();
-    const next = prev
-      .catch(() => undefined)
-      .then(() => this.process(msg))
-      .catch((err) => this.log.error(`Failed processing ${key}: ${err instanceof Error ? err.stack : err}`))
-      .finally(() => {
-        if (this.chains.get(key) === next) this.chains.delete(key);
+    // The moment a message ARRIVES the AI must not start (or finish) answering that chat until the message is stored:
+    // storing takes several round trips to a remote database, and a burst of messages should be answered together.
+    const release = this.batcher.hold(key);
+
+    const prev = this.ingestChains.get(key) ?? Promise.resolve();
+    const ingest = prev.catch(() => undefined).then(() => this.ingest(msg));
+    const tail = ingest.catch(() => undefined);
+    this.ingestChains.set(key, tail);
+    void tail.then(() => {
+      if (this.ingestChains.get(key) === tail) this.ingestChains.delete(key);
+    });
+
+    return ingest
+      .then((turn) => {
+        const answered = turn ? this.batcher.submit(key, (control) => this.runTurn(turn, control)) : undefined;
+        release(); // after submit, so the quiet period starts only now
+        return answered;
+      })
+      .catch((err) => {
+        release();
+        this.log.error(`Failed processing ${key}: ${err instanceof Error ? err.stack : String(err)}`);
       });
-    this.chains.set(key, next);
-    return next;
   }
 
-  private async process(msg: InboundMessage) {
+  /** After a chat is handed back to the AI: answer anything the customer is still waiting on. */
+  async catchUp(conversationId: string): Promise<void> {
+    const conv = await this.prisma.conversation.findUnique({ where: { id: conversationId } });
+    if (!conv || conv.mode !== 'AI') return;
+    const last = await this.prisma.message.findFirst({ where: { conversationId }, orderBy: { createdAt: 'desc' } });
+    if (last?.sender !== 'CUSTOMER') return; // nobody is waiting
+    const turn: Turn = { merchantId: conv.merchantId, chatId: conv.chatId, conversationId, customerId: conv.customerId };
+    await this.batcher.submit(`${conv.merchantId}:${conv.chatId}`, (control) => this.runTurn(turn, control));
+  }
+
+  // ---- step 1: ingest ----------------------------------------------------------------------------
+
+  /** Returns a Turn when the AI should answer, or null when nothing more needs doing. */
+  private async ingest(msg: InboundMessage): Promise<Turn | null> {
     const merchant = await this.prisma.merchant.findUnique({ where: { id: msg.merchantId } });
-    if (!merchant) return;
+    if (!merchant) return null;
+
+    // The owner talking to the bot (/resume, /paid ...) is not a customer: no conversation, no AI.
+    if (!msg.fromMe && this.commands.isOwnerCommand(merchant, msg.chatId, msg.text)) {
+      const out = await this.commands.handle(merchant, msg.text!);
+      await this.gateway.sendText(msg.merchantId, msg.chatId, out.reply);
+      for (const id of out.resumed) void this.catchUp(id).catch((e) => this.log.error(`catch-up failed: ${String(e)}`));
+      return null;
+    }
 
     if (msg.messageId) {
       const seen = await this.prisma.message.findFirst({
         where: { merchantId: msg.merchantId, externalId: msg.messageId },
         select: { id: true },
       });
-      if (seen) return; // provider redelivery
+      if (seen) return null; // provider redelivery
     }
 
     const customer = await this.prisma.customer.upsert({
@@ -67,16 +127,13 @@ export class ConversationService implements OnModuleInit {
       update: { lastMessageAt: new Date() },
     });
 
-    // The owner typed from their own phone: store it and silence the AI for this chat.
+    // The owner typed from their own phone: store it, and the AI steps back for this chat.
     if (msg.fromMe) {
       await this.store(msg, conversation.id, 'OUTBOUND', 'OWNER', msg.text ?? '');
-      if (conversation.mode !== 'HUMAN') {
-        await this.prisma.conversation.update({
-          where: { id: conversation.id },
-          data: { mode: 'HUMAN', humanSince: new Date(), handoffReason: 'Owner replied manually' },
-        });
+      if (conversation.mode !== 'HUMAN' || conversation.handoffBy !== 'OWNER') {
+        await this.handoffs.handoff(conversation.id, 'Owner replied manually', 'OWNER');
       }
-      return;
+      return null;
     }
 
     let text = msg.text ?? '';
@@ -91,54 +148,123 @@ export class ConversationService implements OnModuleInit {
       if (!text) {
         await this.store(msg, conversation.id, 'INBOUND', 'CUSTOMER', '[voice note could not be understood]');
         await this.reply(msg, conversation.id, "Sorry, I couldn't hear that voice note clearly. Abeg type your message for me?");
-        return;
+        return null;
       }
     } else if (msg.type === 'image') {
-      text = text || '[customer sent an image]';
+      text = `[customer sent an image${text ? `: ${text}` : ''}]`;
     }
-    if (!text) return;
+    if (!text) return null;
 
     await this.store(msg, conversation.id, 'INBOUND', 'CUSTOMER', text, msg.type === 'audio' ? 'audio' : 'text');
+    if (msg.type === 'image') void this.flagPossiblePaymentProof(conversation.id).catch((e) => this.log.error(`proof alert failed: ${String(e)}`));
 
     if (conversation.mode === 'HUMAN') {
       await this.notifier.notifyMessageWhileHuman(msg.merchantId, msg.chatId, text);
-      return;
+      await this.holdingReply(msg, conversation);
+      return null;
     }
-    if (!merchant.aiEnabled) return;
+    if (!merchant.aiEnabled) return null;
+
+    return { merchantId: msg.merchantId, chatId: msg.chatId, conversationId: conversation.id, customerId: customer.id };
+  }
+
+  /**
+   * The AI cannot read pictures, and the most common picture a customer sends is a payment screenshot.
+   * So an image from someone with an unpaid order always tells the owner (code, not the AI's judgement),
+   * and the AI carries on helping instead of giving up on the chat.
+   */
+  private async flagPossiblePaymentProof(conversationId: string) {
+    const unpaid = await this.prisma.order.findFirst({
+      where: { conversationId, status: { in: ['AWAITING_PAYMENT', 'EXPIRED'] } },
+      orderBy: { createdAt: 'desc' },
+    });
+    if (!unpaid) return;
+    const last = this.lastImageAlert.get(conversationId) ?? 0;
+    if (Date.now() - last < IMAGE_ALERT_GAP_MS) return; // one alert per burst of screenshots
+    this.lastImageAlert.set(conversationId, Date.now());
+    await this.handoffs.notify(
+      conversationId,
+      `Sent an image, probably proof of payment for ${unpaid.orderNumber} (${formatNaira(unpaid.totalKobo)}). If the money reached your account, reply /paid ${unpaid.orderNumber}`,
+    );
+  }
+
+  /** A chat that is with a human is never ignored in silence: say the owner has been told, at most once per while. */
+  private async holdingReply(msg: InboundMessage, conversation: { id: string; handoffBy: string | null }) {
+    if (conversation.handoffBy === 'OWNER') return; // the owner is actively in this chat
+    const last = await this.prisma.message.findFirst({
+      where: { conversationId: conversation.id, direction: 'OUTBOUND' },
+      orderBy: { createdAt: 'desc' },
+    });
+    if (last && Date.now() - last.createdAt.getTime() < env.HOLDING_REPLY_GAP_MINUTES * 60_000) return;
+    await this.reply(msg, conversation.id, "Thanks for your message 🙏 I've told the owner and they'll reply you shortly.");
+  }
+
+  // ---- step 2: answer (batched) ----------------------------------------------------------------------
+
+  private async runTurn(turn: Turn, control: TurnControl): Promise<void> {
+    // Nothing to do if the owner stepped in during the quiet period, or the customer is already answered.
+    if (!(await this.awaitingAnswer(turn.conversationId))) return;
 
     let result;
     try {
       result = await this.agent.respond({
-        merchantId: msg.merchantId,
-        conversationId: conversation.id,
-        customerId: customer.id,
+        merchantId: turn.merchantId,
+        conversationId: turn.conversationId,
+        customerId: turn.customerId,
       });
     } catch (err) {
       // LLM outage, rate limit, or a bug: the customer must never be left on read.
-      this.log.error(`Agent failed for ${msg.chatId}: ${err instanceof Error ? err.message : String(err)}`);
-      await this.reply(
-        msg,
-        conversation.id,
-        'Sorry, I had a small problem on my side. Please send that again in a minute and I will sort you out.',
-      );
+      this.log.error(`Agent failed for ${turn.chatId}: ${err instanceof Error ? err.message : String(err)}`);
+      if (!control.isStale() && (await this.awaitingAnswer(turn.conversationId))) {
+        await this.reply(
+          turn,
+          turn.conversationId,
+          'Sorry, I had a small problem on my side. Please send that again in a minute and I will sort you out.',
+        );
+      }
       return;
     }
 
-    await this.reply(msg, conversation.id, result.reply, result.meta);
+    // A newer message arrived while the AI was thinking: this answer is out of date, so drop it. The batcher
+    // runs the turn again over everything the customer has said. Same if the owner stepped in meanwhile.
+    if (control.isStale()) return;
+    if (!(await this.awaitingAnswer(turn.conversationId))) return;
 
-    if (result.handoffReason) await this.handoffs.handoff(conversation.id, result.handoffReason);
+    await this.reply(turn, turn.conversationId, result.reply, result.meta);
+
+    if (result.handoffReason) await this.handoffs.handoff(turn.conversationId, result.handoffReason, 'AI');
+    else if (result.notifyReason) await this.handoffs.notify(turn.conversationId, result.notifyReason);
   }
 
-  private async reply(msg: InboundMessage, conversationId: string, text: string, meta?: { shown: string[] }) {
+  /**
+   * True only while the AI is in charge of this chat AND the customer's message is the latest thing in it.
+   * That one check covers: the owner stepping in, an answer already sent, and a duplicate trigger.
+   */
+  private async awaitingAnswer(conversationId: string): Promise<boolean> {
+    const c = await this.prisma.conversation.findUnique({
+      where: { id: conversationId },
+      select: { mode: true, messages: { orderBy: { createdAt: 'desc' }, take: 1, select: { sender: true } } },
+    });
+    return c?.mode === 'AI' && c.messages[0]?.sender === 'CUSTOMER';
+  }
+
+  // ---- sending ---------------------------------------------------------------------------------------
+
+  private async reply(
+    to: { merchantId: string; chatId: string },
+    conversationId: string,
+    text: string,
+    meta?: { shown: string[] },
+  ) {
     // Typing indicator + short delay: reads more human and is gentler on WhatsApp's bot detection.
     if (env.WHATSAPP_ADAPTER !== 'simulator') {
-      await this.gateway.setTyping(msg.merchantId, msg.chatId, true);
+      await this.gateway.setTyping(to.merchantId, to.chatId, true);
       await sleep(Math.min(800 + text.length * 25, 4000));
-      await this.gateway.setTyping(msg.merchantId, msg.chatId, false);
+      await this.gateway.setTyping(to.merchantId, to.chatId, false);
     }
-    await this.gateway.sendText(msg.merchantId, msg.chatId, text);
+    await this.gateway.sendText(to.merchantId, to.chatId, text);
     await this.prisma.message.create({
-      data: { merchantId: msg.merchantId, conversationId, direction: 'OUTBOUND', sender: 'AI', type: 'text', text, meta },
+      data: { merchantId: to.merchantId, conversationId, direction: 'OUTBOUND', sender: 'AI', type: 'text', text, meta },
     });
   }
 

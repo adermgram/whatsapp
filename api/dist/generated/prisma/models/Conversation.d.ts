@@ -14,6 +14,7 @@ export type ConversationMinAggregateOutputType = {
     chatId: string | null;
     mode: $Enums.ConversationMode | null;
     handoffReason: string | null;
+    handoffBy: $Enums.HandoffSource | null;
     humanSince: Date | null;
     lastMessageAt: Date | null;
     createdAt: Date | null;
@@ -25,6 +26,7 @@ export type ConversationMaxAggregateOutputType = {
     chatId: string | null;
     mode: $Enums.ConversationMode | null;
     handoffReason: string | null;
+    handoffBy: $Enums.HandoffSource | null;
     humanSince: Date | null;
     lastMessageAt: Date | null;
     createdAt: Date | null;
@@ -36,6 +38,7 @@ export type ConversationCountAggregateOutputType = {
     chatId: number;
     mode: number;
     handoffReason: number;
+    handoffBy: number;
     humanSince: number;
     lastMessageAt: number;
     createdAt: number;
@@ -48,6 +51,7 @@ export type ConversationMinAggregateInputType = {
     chatId?: true;
     mode?: true;
     handoffReason?: true;
+    handoffBy?: true;
     humanSince?: true;
     lastMessageAt?: true;
     createdAt?: true;
@@ -59,6 +63,7 @@ export type ConversationMaxAggregateInputType = {
     chatId?: true;
     mode?: true;
     handoffReason?: true;
+    handoffBy?: true;
     humanSince?: true;
     lastMessageAt?: true;
     createdAt?: true;
@@ -70,6 +75,7 @@ export type ConversationCountAggregateInputType = {
     chatId?: true;
     mode?: true;
     handoffReason?: true;
+    handoffBy?: true;
     humanSince?: true;
     lastMessageAt?: true;
     createdAt?: true;
@@ -106,6 +112,7 @@ export type ConversationGroupByOutputType = {
     chatId: string;
     mode: $Enums.ConversationMode;
     handoffReason: string | null;
+    handoffBy: $Enums.HandoffSource | null;
     humanSince: Date | null;
     lastMessageAt: Date;
     createdAt: Date;
@@ -126,6 +133,7 @@ export type ConversationWhereInput = {
     chatId?: Prisma.StringFilter<"Conversation"> | string;
     mode?: Prisma.EnumConversationModeFilter<"Conversation"> | $Enums.ConversationMode;
     handoffReason?: Prisma.StringNullableFilter<"Conversation"> | string | null;
+    handoffBy?: Prisma.EnumHandoffSourceNullableFilter<"Conversation"> | $Enums.HandoffSource | null;
     humanSince?: Prisma.DateTimeNullableFilter<"Conversation"> | Date | string | null;
     lastMessageAt?: Prisma.DateTimeFilter<"Conversation"> | Date | string;
     createdAt?: Prisma.DateTimeFilter<"Conversation"> | Date | string;
@@ -142,6 +150,7 @@ export type ConversationOrderByWithRelationInput = {
     chatId?: Prisma.SortOrder;
     mode?: Prisma.SortOrder;
     handoffReason?: Prisma.SortOrderInput | Prisma.SortOrder;
+    handoffBy?: Prisma.SortOrderInput | Prisma.SortOrder;
     humanSince?: Prisma.SortOrderInput | Prisma.SortOrder;
     lastMessageAt?: Prisma.SortOrder;
     createdAt?: Prisma.SortOrder;
@@ -162,6 +171,7 @@ export type ConversationWhereUniqueInput = Prisma.AtLeast<{
     chatId?: Prisma.StringFilter<"Conversation"> | string;
     mode?: Prisma.EnumConversationModeFilter<"Conversation"> | $Enums.ConversationMode;
     handoffReason?: Prisma.StringNullableFilter<"Conversation"> | string | null;
+    handoffBy?: Prisma.EnumHandoffSourceNullableFilter<"Conversation"> | $Enums.HandoffSource | null;
     humanSince?: Prisma.DateTimeNullableFilter<"Conversation"> | Date | string | null;
     lastMessageAt?: Prisma.DateTimeFilter<"Conversation"> | Date | string;
     createdAt?: Prisma.DateTimeFilter<"Conversation"> | Date | string;
@@ -178,6 +188,7 @@ export type ConversationOrderByWithAggregationInput = {
     chatId?: Prisma.SortOrder;
     mode?: Prisma.SortOrder;
     handoffReason?: Prisma.SortOrderInput | Prisma.SortOrder;
+    handoffBy?: Prisma.SortOrderInput | Prisma.SortOrder;
     humanSince?: Prisma.SortOrderInput | Prisma.SortOrder;
     lastMessageAt?: Prisma.SortOrder;
     createdAt?: Prisma.SortOrder;
@@ -195,6 +206,7 @@ export type ConversationScalarWhereWithAggregatesInput = {
     chatId?: Prisma.StringWithAggregatesFilter<"Conversation"> | string;
     mode?: Prisma.EnumConversationModeWithAggregatesFilter<"Conversation"> | $Enums.ConversationMode;
     handoffReason?: Prisma.StringNullableWithAggregatesFilter<"Conversation"> | string | null;
+    handoffBy?: Prisma.EnumHandoffSourceNullableWithAggregatesFilter<"Conversation"> | $Enums.HandoffSource | null;
     humanSince?: Prisma.DateTimeNullableWithAggregatesFilter<"Conversation"> | Date | string | null;
     lastMessageAt?: Prisma.DateTimeWithAggregatesFilter<"Conversation"> | Date | string;
     createdAt?: Prisma.DateTimeWithAggregatesFilter<"Conversation"> | Date | string;
@@ -204,6 +216,7 @@ export type ConversationCreateInput = {
     chatId: string;
     mode?: $Enums.ConversationMode;
     handoffReason?: string | null;
+    handoffBy?: $Enums.HandoffSource | null;
     humanSince?: Date | string | null;
     lastMessageAt?: Date | string;
     createdAt?: Date | string;
@@ -220,6 +233,7 @@ export type ConversationUncheckedCreateInput = {
     chatId: string;
     mode?: $Enums.ConversationMode;
     handoffReason?: string | null;
+    handoffBy?: $Enums.HandoffSource | null;
     humanSince?: Date | string | null;
     lastMessageAt?: Date | string;
     createdAt?: Date | string;
@@ -232,6 +246,7 @@ export type ConversationUpdateInput = {
     chatId?: Prisma.StringFieldUpdateOperationsInput | string;
     mode?: Prisma.EnumConversationModeFieldUpdateOperationsInput | $Enums.ConversationMode;
     handoffReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    handoffBy?: Prisma.NullableEnumHandoffSourceFieldUpdateOperationsInput | $Enums.HandoffSource | null;
     humanSince?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     lastMessageAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -248,6 +263,7 @@ export type ConversationUncheckedUpdateInput = {
     chatId?: Prisma.StringFieldUpdateOperationsInput | string;
     mode?: Prisma.EnumConversationModeFieldUpdateOperationsInput | $Enums.ConversationMode;
     handoffReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    handoffBy?: Prisma.NullableEnumHandoffSourceFieldUpdateOperationsInput | $Enums.HandoffSource | null;
     humanSince?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     lastMessageAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -262,6 +278,7 @@ export type ConversationCreateManyInput = {
     chatId: string;
     mode?: $Enums.ConversationMode;
     handoffReason?: string | null;
+    handoffBy?: $Enums.HandoffSource | null;
     humanSince?: Date | string | null;
     lastMessageAt?: Date | string;
     createdAt?: Date | string;
@@ -271,6 +288,7 @@ export type ConversationUpdateManyMutationInput = {
     chatId?: Prisma.StringFieldUpdateOperationsInput | string;
     mode?: Prisma.EnumConversationModeFieldUpdateOperationsInput | $Enums.ConversationMode;
     handoffReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    handoffBy?: Prisma.NullableEnumHandoffSourceFieldUpdateOperationsInput | $Enums.HandoffSource | null;
     humanSince?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     lastMessageAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -282,6 +300,7 @@ export type ConversationUncheckedUpdateManyInput = {
     chatId?: Prisma.StringFieldUpdateOperationsInput | string;
     mode?: Prisma.EnumConversationModeFieldUpdateOperationsInput | $Enums.ConversationMode;
     handoffReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    handoffBy?: Prisma.NullableEnumHandoffSourceFieldUpdateOperationsInput | $Enums.HandoffSource | null;
     humanSince?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     lastMessageAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -305,6 +324,7 @@ export type ConversationCountOrderByAggregateInput = {
     chatId?: Prisma.SortOrder;
     mode?: Prisma.SortOrder;
     handoffReason?: Prisma.SortOrder;
+    handoffBy?: Prisma.SortOrder;
     humanSince?: Prisma.SortOrder;
     lastMessageAt?: Prisma.SortOrder;
     createdAt?: Prisma.SortOrder;
@@ -316,6 +336,7 @@ export type ConversationMaxOrderByAggregateInput = {
     chatId?: Prisma.SortOrder;
     mode?: Prisma.SortOrder;
     handoffReason?: Prisma.SortOrder;
+    handoffBy?: Prisma.SortOrder;
     humanSince?: Prisma.SortOrder;
     lastMessageAt?: Prisma.SortOrder;
     createdAt?: Prisma.SortOrder;
@@ -327,6 +348,7 @@ export type ConversationMinOrderByAggregateInput = {
     chatId?: Prisma.SortOrder;
     mode?: Prisma.SortOrder;
     handoffReason?: Prisma.SortOrder;
+    handoffBy?: Prisma.SortOrder;
     humanSince?: Prisma.SortOrder;
     lastMessageAt?: Prisma.SortOrder;
     createdAt?: Prisma.SortOrder;
@@ -414,6 +436,9 @@ export type ConversationUncheckedUpdateManyWithoutCustomerNestedInput = {
 export type EnumConversationModeFieldUpdateOperationsInput = {
     set?: $Enums.ConversationMode;
 };
+export type NullableEnumHandoffSourceFieldUpdateOperationsInput = {
+    set?: $Enums.HandoffSource | null;
+};
 export type NullableDateTimeFieldUpdateOperationsInput = {
     set?: Date | string | null;
 };
@@ -458,6 +483,7 @@ export type ConversationCreateWithoutMerchantInput = {
     chatId: string;
     mode?: $Enums.ConversationMode;
     handoffReason?: string | null;
+    handoffBy?: $Enums.HandoffSource | null;
     humanSince?: Date | string | null;
     lastMessageAt?: Date | string;
     createdAt?: Date | string;
@@ -472,6 +498,7 @@ export type ConversationUncheckedCreateWithoutMerchantInput = {
     chatId: string;
     mode?: $Enums.ConversationMode;
     handoffReason?: string | null;
+    handoffBy?: $Enums.HandoffSource | null;
     humanSince?: Date | string | null;
     lastMessageAt?: Date | string;
     createdAt?: Date | string;
@@ -510,6 +537,7 @@ export type ConversationScalarWhereInput = {
     chatId?: Prisma.StringFilter<"Conversation"> | string;
     mode?: Prisma.EnumConversationModeFilter<"Conversation"> | $Enums.ConversationMode;
     handoffReason?: Prisma.StringNullableFilter<"Conversation"> | string | null;
+    handoffBy?: Prisma.EnumHandoffSourceNullableFilter<"Conversation"> | $Enums.HandoffSource | null;
     humanSince?: Prisma.DateTimeNullableFilter<"Conversation"> | Date | string | null;
     lastMessageAt?: Prisma.DateTimeFilter<"Conversation"> | Date | string;
     createdAt?: Prisma.DateTimeFilter<"Conversation"> | Date | string;
@@ -519,6 +547,7 @@ export type ConversationCreateWithoutCustomerInput = {
     chatId: string;
     mode?: $Enums.ConversationMode;
     handoffReason?: string | null;
+    handoffBy?: $Enums.HandoffSource | null;
     humanSince?: Date | string | null;
     lastMessageAt?: Date | string;
     createdAt?: Date | string;
@@ -533,6 +562,7 @@ export type ConversationUncheckedCreateWithoutCustomerInput = {
     chatId: string;
     mode?: $Enums.ConversationMode;
     handoffReason?: string | null;
+    handoffBy?: $Enums.HandoffSource | null;
     humanSince?: Date | string | null;
     lastMessageAt?: Date | string;
     createdAt?: Date | string;
@@ -566,6 +596,7 @@ export type ConversationCreateWithoutMessagesInput = {
     chatId: string;
     mode?: $Enums.ConversationMode;
     handoffReason?: string | null;
+    handoffBy?: $Enums.HandoffSource | null;
     humanSince?: Date | string | null;
     lastMessageAt?: Date | string;
     createdAt?: Date | string;
@@ -581,6 +612,7 @@ export type ConversationUncheckedCreateWithoutMessagesInput = {
     chatId: string;
     mode?: $Enums.ConversationMode;
     handoffReason?: string | null;
+    handoffBy?: $Enums.HandoffSource | null;
     humanSince?: Date | string | null;
     lastMessageAt?: Date | string;
     createdAt?: Date | string;
@@ -605,6 +637,7 @@ export type ConversationUpdateWithoutMessagesInput = {
     chatId?: Prisma.StringFieldUpdateOperationsInput | string;
     mode?: Prisma.EnumConversationModeFieldUpdateOperationsInput | $Enums.ConversationMode;
     handoffReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    handoffBy?: Prisma.NullableEnumHandoffSourceFieldUpdateOperationsInput | $Enums.HandoffSource | null;
     humanSince?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     lastMessageAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -620,6 +653,7 @@ export type ConversationUncheckedUpdateWithoutMessagesInput = {
     chatId?: Prisma.StringFieldUpdateOperationsInput | string;
     mode?: Prisma.EnumConversationModeFieldUpdateOperationsInput | $Enums.ConversationMode;
     handoffReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    handoffBy?: Prisma.NullableEnumHandoffSourceFieldUpdateOperationsInput | $Enums.HandoffSource | null;
     humanSince?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     lastMessageAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -631,6 +665,7 @@ export type ConversationCreateWithoutNegotiationsInput = {
     chatId: string;
     mode?: $Enums.ConversationMode;
     handoffReason?: string | null;
+    handoffBy?: $Enums.HandoffSource | null;
     humanSince?: Date | string | null;
     lastMessageAt?: Date | string;
     createdAt?: Date | string;
@@ -646,6 +681,7 @@ export type ConversationUncheckedCreateWithoutNegotiationsInput = {
     chatId: string;
     mode?: $Enums.ConversationMode;
     handoffReason?: string | null;
+    handoffBy?: $Enums.HandoffSource | null;
     humanSince?: Date | string | null;
     lastMessageAt?: Date | string;
     createdAt?: Date | string;
@@ -670,6 +706,7 @@ export type ConversationUpdateWithoutNegotiationsInput = {
     chatId?: Prisma.StringFieldUpdateOperationsInput | string;
     mode?: Prisma.EnumConversationModeFieldUpdateOperationsInput | $Enums.ConversationMode;
     handoffReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    handoffBy?: Prisma.NullableEnumHandoffSourceFieldUpdateOperationsInput | $Enums.HandoffSource | null;
     humanSince?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     lastMessageAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -685,6 +722,7 @@ export type ConversationUncheckedUpdateWithoutNegotiationsInput = {
     chatId?: Prisma.StringFieldUpdateOperationsInput | string;
     mode?: Prisma.EnumConversationModeFieldUpdateOperationsInput | $Enums.ConversationMode;
     handoffReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    handoffBy?: Prisma.NullableEnumHandoffSourceFieldUpdateOperationsInput | $Enums.HandoffSource | null;
     humanSince?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     lastMessageAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -696,6 +734,7 @@ export type ConversationCreateWithoutOrdersInput = {
     chatId: string;
     mode?: $Enums.ConversationMode;
     handoffReason?: string | null;
+    handoffBy?: $Enums.HandoffSource | null;
     humanSince?: Date | string | null;
     lastMessageAt?: Date | string;
     createdAt?: Date | string;
@@ -711,6 +750,7 @@ export type ConversationUncheckedCreateWithoutOrdersInput = {
     chatId: string;
     mode?: $Enums.ConversationMode;
     handoffReason?: string | null;
+    handoffBy?: $Enums.HandoffSource | null;
     humanSince?: Date | string | null;
     lastMessageAt?: Date | string;
     createdAt?: Date | string;
@@ -735,6 +775,7 @@ export type ConversationUpdateWithoutOrdersInput = {
     chatId?: Prisma.StringFieldUpdateOperationsInput | string;
     mode?: Prisma.EnumConversationModeFieldUpdateOperationsInput | $Enums.ConversationMode;
     handoffReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    handoffBy?: Prisma.NullableEnumHandoffSourceFieldUpdateOperationsInput | $Enums.HandoffSource | null;
     humanSince?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     lastMessageAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -750,6 +791,7 @@ export type ConversationUncheckedUpdateWithoutOrdersInput = {
     chatId?: Prisma.StringFieldUpdateOperationsInput | string;
     mode?: Prisma.EnumConversationModeFieldUpdateOperationsInput | $Enums.ConversationMode;
     handoffReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    handoffBy?: Prisma.NullableEnumHandoffSourceFieldUpdateOperationsInput | $Enums.HandoffSource | null;
     humanSince?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     lastMessageAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -762,6 +804,7 @@ export type ConversationCreateManyMerchantInput = {
     chatId: string;
     mode?: $Enums.ConversationMode;
     handoffReason?: string | null;
+    handoffBy?: $Enums.HandoffSource | null;
     humanSince?: Date | string | null;
     lastMessageAt?: Date | string;
     createdAt?: Date | string;
@@ -771,6 +814,7 @@ export type ConversationUpdateWithoutMerchantInput = {
     chatId?: Prisma.StringFieldUpdateOperationsInput | string;
     mode?: Prisma.EnumConversationModeFieldUpdateOperationsInput | $Enums.ConversationMode;
     handoffReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    handoffBy?: Prisma.NullableEnumHandoffSourceFieldUpdateOperationsInput | $Enums.HandoffSource | null;
     humanSince?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     lastMessageAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -785,6 +829,7 @@ export type ConversationUncheckedUpdateWithoutMerchantInput = {
     chatId?: Prisma.StringFieldUpdateOperationsInput | string;
     mode?: Prisma.EnumConversationModeFieldUpdateOperationsInput | $Enums.ConversationMode;
     handoffReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    handoffBy?: Prisma.NullableEnumHandoffSourceFieldUpdateOperationsInput | $Enums.HandoffSource | null;
     humanSince?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     lastMessageAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -798,6 +843,7 @@ export type ConversationUncheckedUpdateManyWithoutMerchantInput = {
     chatId?: Prisma.StringFieldUpdateOperationsInput | string;
     mode?: Prisma.EnumConversationModeFieldUpdateOperationsInput | $Enums.ConversationMode;
     handoffReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    handoffBy?: Prisma.NullableEnumHandoffSourceFieldUpdateOperationsInput | $Enums.HandoffSource | null;
     humanSince?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     lastMessageAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -808,6 +854,7 @@ export type ConversationCreateManyCustomerInput = {
     chatId: string;
     mode?: $Enums.ConversationMode;
     handoffReason?: string | null;
+    handoffBy?: $Enums.HandoffSource | null;
     humanSince?: Date | string | null;
     lastMessageAt?: Date | string;
     createdAt?: Date | string;
@@ -817,6 +864,7 @@ export type ConversationUpdateWithoutCustomerInput = {
     chatId?: Prisma.StringFieldUpdateOperationsInput | string;
     mode?: Prisma.EnumConversationModeFieldUpdateOperationsInput | $Enums.ConversationMode;
     handoffReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    handoffBy?: Prisma.NullableEnumHandoffSourceFieldUpdateOperationsInput | $Enums.HandoffSource | null;
     humanSince?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     lastMessageAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -831,6 +879,7 @@ export type ConversationUncheckedUpdateWithoutCustomerInput = {
     chatId?: Prisma.StringFieldUpdateOperationsInput | string;
     mode?: Prisma.EnumConversationModeFieldUpdateOperationsInput | $Enums.ConversationMode;
     handoffReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    handoffBy?: Prisma.NullableEnumHandoffSourceFieldUpdateOperationsInput | $Enums.HandoffSource | null;
     humanSince?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     lastMessageAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -844,6 +893,7 @@ export type ConversationUncheckedUpdateManyWithoutCustomerInput = {
     chatId?: Prisma.StringFieldUpdateOperationsInput | string;
     mode?: Prisma.EnumConversationModeFieldUpdateOperationsInput | $Enums.ConversationMode;
     handoffReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    handoffBy?: Prisma.NullableEnumHandoffSourceFieldUpdateOperationsInput | $Enums.HandoffSource | null;
     humanSince?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     lastMessageAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -877,6 +927,7 @@ export type ConversationSelect<ExtArgs extends runtime.Types.Extensions.Internal
     chatId?: boolean;
     mode?: boolean;
     handoffReason?: boolean;
+    handoffBy?: boolean;
     humanSince?: boolean;
     lastMessageAt?: boolean;
     createdAt?: boolean;
@@ -894,6 +945,7 @@ export type ConversationSelectCreateManyAndReturn<ExtArgs extends runtime.Types.
     chatId?: boolean;
     mode?: boolean;
     handoffReason?: boolean;
+    handoffBy?: boolean;
     humanSince?: boolean;
     lastMessageAt?: boolean;
     createdAt?: boolean;
@@ -907,6 +959,7 @@ export type ConversationSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.
     chatId?: boolean;
     mode?: boolean;
     handoffReason?: boolean;
+    handoffBy?: boolean;
     humanSince?: boolean;
     lastMessageAt?: boolean;
     createdAt?: boolean;
@@ -920,11 +973,12 @@ export type ConversationSelectScalar = {
     chatId?: boolean;
     mode?: boolean;
     handoffReason?: boolean;
+    handoffBy?: boolean;
     humanSince?: boolean;
     lastMessageAt?: boolean;
     createdAt?: boolean;
 };
-export type ConversationOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "merchantId" | "customerId" | "chatId" | "mode" | "handoffReason" | "humanSince" | "lastMessageAt" | "createdAt", ExtArgs["result"]["conversation"]>;
+export type ConversationOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "merchantId" | "customerId" | "chatId" | "mode" | "handoffReason" | "handoffBy" | "humanSince" | "lastMessageAt" | "createdAt", ExtArgs["result"]["conversation"]>;
 export type ConversationInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
     merchant?: boolean | Prisma.MerchantDefaultArgs<ExtArgs>;
     customer?: boolean | Prisma.CustomerDefaultArgs<ExtArgs>;
@@ -957,6 +1011,7 @@ export type $ConversationPayload<ExtArgs extends runtime.Types.Extensions.Intern
         chatId: string;
         mode: $Enums.ConversationMode;
         handoffReason: string | null;
+        handoffBy: $Enums.HandoffSource | null;
         humanSince: Date | null;
         lastMessageAt: Date;
         createdAt: Date;
@@ -1028,6 +1083,7 @@ export interface ConversationFieldRefs {
     readonly chatId: Prisma.FieldRef<"Conversation", 'String'>;
     readonly mode: Prisma.FieldRef<"Conversation", 'ConversationMode'>;
     readonly handoffReason: Prisma.FieldRef<"Conversation", 'String'>;
+    readonly handoffBy: Prisma.FieldRef<"Conversation", 'HandoffSource'>;
     readonly humanSince: Prisma.FieldRef<"Conversation", 'DateTime'>;
     readonly lastMessageAt: Prisma.FieldRef<"Conversation", 'DateTime'>;
     readonly createdAt: Prisma.FieldRef<"Conversation", 'DateTime'>;

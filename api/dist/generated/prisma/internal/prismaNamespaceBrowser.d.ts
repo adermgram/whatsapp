@@ -40,6 +40,7 @@ export declare const MerchantScalarFieldEnum: {
     readonly ownerName: "ownerName";
     readonly ownerPhone: "ownerPhone";
     readonly ownerEmail: "ownerEmail";
+    readonly alertEmail: "alertEmail";
     readonly passwordHash: "passwordHash";
     readonly maxDiscountPercent: "maxDiscountPercent";
     readonly aiEnabled: "aiEnabled";
@@ -106,6 +107,7 @@ export declare const ConversationScalarFieldEnum: {
     readonly chatId: "chatId";
     readonly mode: "mode";
     readonly handoffReason: "handoffReason";
+    readonly handoffBy: "handoffBy";
     readonly humanSince: "humanSince";
     readonly lastMessageAt: "lastMessageAt";
     readonly createdAt: "createdAt";
