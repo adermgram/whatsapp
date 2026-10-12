@@ -106,7 +106,7 @@ export function ProductEditor({ productId }: { productId?: string }) {
   if (productId && (error || !data)) {
     return (
       <>
-        <Link href="/products" className="text-sm text-brand">
+        <Link href="/products" className="inline-flex min-h-11 items-center text-sm text-brand">
           ← All products
         </Link>
         <div className="mt-4">
@@ -121,7 +121,7 @@ export function ProductEditor({ productId }: { productId?: string }) {
 
   return (
     <>
-      <Link href="/products" className="text-sm text-brand">
+      <Link href="/products" className="inline-flex min-h-11 items-center text-sm text-brand">
         ← All products
       </Link>
       <div className="mt-2">

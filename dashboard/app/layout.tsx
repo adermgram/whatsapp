@@ -22,6 +22,7 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
+  viewportFit: "cover" as const, // lets the bottom bar sit above the iPhone home indicator
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

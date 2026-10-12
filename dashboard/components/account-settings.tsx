@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { FormEvent } from "react";
+import Link from "next/link";
 import useSWR from "swr";
 import { api, ApiError, fetcher } from "@/lib/api";
 import type { Me } from "@/lib/types";
@@ -56,6 +57,13 @@ export function AccountSettings() {
     <>
       <PageHeader title="Settings" subtitle={me ? `${me.businessName} · ${me.email}` : undefined} />
       <div className="space-y-5">
+        <Card>
+          <h2 className="text-lg font-semibold">WhatsApp connection</h2>
+          <p className="mt-1 text-sm text-muted">See whether the assistant is connected to your WhatsApp number, and scan a new code if it ever gets disconnected.</p>
+          <Link href="/whatsapp" className="mt-3 inline-flex min-h-11 items-center rounded-lg border border-line px-4 text-sm font-medium hover:bg-brand-soft">
+            Check WhatsApp connection
+          </Link>
+        </Card>
         <ChangePassword />
       </div>
     </>

@@ -53,7 +53,7 @@ export function Spinner({ className }: { className?: string }) {
 
 // ---- Form fields --------------------------------------------------------------------------------
 
-const FIELD = "min-h-11 w-full rounded-lg border border-line bg-surface px-3 text-sm text-ink placeholder:text-muted/70 focus:border-brand";
+const FIELD = "min-h-11 w-full rounded-lg border border-line bg-surface px-3 text-base text-ink sm:text-sm placeholder:text-muted/70 focus:border-brand";
 
 interface FieldProps {
   label: string;

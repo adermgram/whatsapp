@@ -167,6 +167,92 @@ try {
   const intact = await call('GET', `/api/products/${pid}`, { cookie: cookieA });
   check(intact.body.name === 'E2E Arsenal Jersey' && intact.body.variants[0].price === 18000 && intact.body.images.length === 1, "and shop A's data is untouched");
 
+  console.log('--- orders, chats and WhatsApp (dashboard pages)');
+  for (const path of ['/api/orders', '/api/chats', '/api/whatsapp', '/api/overview', `/api/orders/${randomUUID()}/receipt`]) {
+    check((await call('GET', path)).status === 401, `GET ${path.replace(/[0-9a-f-]{36}/, ':id')} without logging in is refused (401)`);
+  }
+  check((await call('POST', `/api/orders/${randomUUID()}/mark-paid`)).status === 401, 'marking an order paid without logging in is refused (401)');
+  check((await call('POST', `/api/chats/${randomUUID()}/resume`)).status === 401, 'resuming a chat without logging in is refused (401)');
+
+  const mkCustomer = (merchantId: string, phone: string) => prisma.customer.create({ data: { merchantId, phone, name: 'Ife Ade', address: '9 Test Road, Lagos' } });
+  const custA = await mkCustomer(A.id, '2348011110001');
+  const custB = await mkCustomer(B.id, '2348011110002');
+  const convA = await prisma.conversation.create({ data: { merchantId: A.id, customerId: custA.id, chatId: custA.phone, mode: 'HUMAN', humanSince: new Date(), handoffBy: 'AI', handoffReason: 'Customer wants to negotiate a bulk price' } });
+  const convB = await prisma.conversation.create({ data: { merchantId: B.id, customerId: custB.id, chatId: custB.phone, mode: 'HUMAN', humanSince: new Date(), handoffBy: 'AI', handoffReason: 'Shop B only' } });
+  const t0 = Date.now();
+  // the last message is from the owner so that resuming does not wake the AI (which would call the real model)
+  await prisma.message.createMany({
+    data: [
+      { merchantId: A.id, conversationId: convA.id, direction: 'INBOUND', sender: 'CUSTOMER', type: 'text', text: 'Can I get 10 jerseys for less?', createdAt: new Date(t0 - 3000) },
+      { merchantId: A.id, conversationId: convA.id, direction: 'OUTBOUND', sender: 'AI', type: 'text', text: 'Let me get the owner for you.', createdAt: new Date(t0 - 2000) },
+      { merchantId: A.id, conversationId: convA.id, direction: 'OUTBOUND', sender: 'OWNER', type: 'text', text: 'Hello, how many exactly?', createdAt: new Date(t0 - 1000) },
+    ],
+  });
+  await prisma.variant.update({ where: { id: vid }, data: { reserved: 2 } }); // as if the checkout had reserved 2
+  const orderA = await prisma.order.create({
+    data: {
+      merchantId: A.id, customerId: custA.id, conversationId: convA.id, orderNumber: 'ORD-000901', status: 'AWAITING_PAYMENT',
+      subtotalKobo: 3_600_000, totalKobo: 3_600_000, deliveryAddress: custA.address, expiresAt: new Date(Date.now() + 1_800_000),
+      items: { create: [{ variantId: vid, quantity: 2, listPriceKobo: 1_800_000, unitPriceKobo: 1_800_000 }] },
+      payment: { create: { reference: `e2e-${randomUUID()}`, amountKobo: 3_600_000, checkoutUrl: 'https://fake-pay.local/x' } },
+    },
+  });
+  const draftA = await prisma.order.create({ data: { merchantId: A.id, customerId: custA.id, conversationId: convA.id, orderNumber: `DRAFT-${randomUUID().slice(0, 6)}` } });
+  const orderB = await prisma.order.create({
+    data: { merchantId: B.id, customerId: custB.id, conversationId: convB.id, orderNumber: 'ORD-000902', status: 'AWAITING_PAYMENT', totalKobo: 500_000, subtotalKobo: 500_000 },
+  });
+
+  const ordersA = await call('GET', '/api/orders', { cookie: cookieA });
+  check(ordersA.status === 200 && ordersA.body.orders.length === 1 && ordersA.body.orders[0].orderNumber === 'ORD-000901', 'the orders list shows this shop\'s order, and not the unfinished cart');
+  check(ordersA.body.orders[0].total === 36000 && ordersA.body.orders[0].items[0].name === 'E2E Arsenal Jersey' && ordersA.body.counts.AWAITING_PAYMENT === 1, 'the order shows its total in naira, its items, and the status counts');
+  check(!JSON.stringify(ordersA.body).toLowerCase().includes('minprice') && !JSON.stringify(ordersA.body).includes('14000'), 'the lowest acceptable price never appears in an order');
+  check((await call('GET', '/api/orders?status=PAID', { cookie: cookieA })).body.orders.length === 0, 'filtering by status works');
+  check((await call('GET', '/api/orders?q=ife', { cookie: cookieA })).body.orders.length === 1 && (await call('GET', '/api/orders?q=nobody', { cookie: cookieA })).body.orders.length === 0, 'searching by customer name works');
+  check((await call('GET', '/api/orders?status=HACKED', { cookie: cookieA })).status === 400, 'an unknown status filter is rejected (400)');
+  check((await call('GET', `/api/orders/${draftA.id}`, { cookie: cookieA })).status === 404, 'an unfinished cart cannot be opened as an order (404)');
+  check((await call('POST', `/api/orders/${draftA.id}/mark-paid`, { cookie: cookieA })).status === 409, 'an unfinished cart cannot be marked paid (409)');
+
+  check((await call('GET', '/api/orders', { cookie: cookieB })).body.orders.every((o: { id: string }) => o.id !== orderA.id), "shop B's order list does not contain shop A's order");
+  check((await call('GET', `/api/orders/${orderA.id}`, { cookie: cookieB })).status === 404, "shop B cannot open shop A's order (404)");
+  check((await call('POST', `/api/orders/${orderA.id}/mark-paid`, { cookie: cookieB })).status === 404, "shop B cannot mark shop A's order paid (404)");
+  check((await call('POST', `/api/chats/${convA.id}/resume`, { cookie: cookieB })).status === 404, "shop B cannot hand shop A's chat back to the AI (404)");
+  check((await call('POST', `/api/chats/${convA.id}/take-over`, { cookie: cookieB })).status === 404, "shop B cannot take over shop A's chat (404)");
+  check((await call('GET', `/api/chats/${convA.id}`, { cookie: cookieB })).status === 404, "shop B cannot read shop A's chat (404)");
+  check((await call('POST', `/api/orders/${orderA.id}/mark-paid`, { cookie: cookieA, origin: 'https://evil.example' })).status === 403, 'marking paid from another website is refused (403)');
+  check((await prisma.order.findUnique({ where: { id: orderA.id } }))?.status === 'AWAITING_PAYMENT', "and shop A's order is still unpaid after all those attempts");
+  check((await call('GET', `/api/orders/${orderA.id}/receipt`, { cookie: cookieA })).status === 404, 'there is no receipt before the order is paid (404)');
+
+  const paid = await call('POST', `/api/orders/${orderA.id}/mark-paid`, { cookie: cookieA });
+  check(paid.status === 200 && paid.body.outcome === 'paid' && paid.body.order.status === 'PAID' && paid.body.order.payment.manual === true, 'marking an order paid works, and records that the owner confirmed it');
+  check(paid.body.order.receipt?.sent === true && !!paid.body.order.paidAt, 'the receipt was issued and sent');
+  const vAfter = await prisma.variant.findUniqueOrThrow({ where: { id: vid } });
+  check(vAfter.stock === 1 && vAfter.reserved === 0, 'stock was committed: 3 in stock, 2 sold, none held');
+  const again = await call('POST', `/api/orders/${orderA.id}/mark-paid`, { cookie: cookieA });
+  const vAgain = await prisma.variant.findUniqueOrThrow({ where: { id: vid } });
+  check(again.status === 200 && again.body.outcome === 'already_paid' && vAgain.stock === 1, 'pressing it twice changes nothing the second time');
+  const pdf = await call('GET', `/api/orders/${orderA.id}/receipt`, { cookie: cookieA });
+  check(pdf.status === 200 && pdf.headers.get('content-type') === 'application/pdf' && String(pdf.body).startsWith('%PDF'), 'the receipt downloads as a real PDF');
+  check((await call('GET', `/api/orders/${orderA.id}/receipt`, { cookie: cookieB })).status === 404, "shop B cannot download shop A's receipt (404)");
+  check((await prisma.order.findUnique({ where: { id: orderB.id } }))?.status === 'AWAITING_PAYMENT', "shop B's order was not touched");
+
+  const waiting = await call('GET', '/api/chats?waiting=true', { cookie: cookieA });
+  check(waiting.status === 200 && waiting.body.waitingCount === 1 && waiting.body.chats[0].id === convA.id && waiting.body.chats[0].lastMessage.text.startsWith('Payment received'), 'the waiting list shows the chat that needs the owner, with its latest message (the receipt notice sent when the order was marked paid)');
+  const thread = await call('GET', `/api/chats/${convA.id}`, { cookie: cookieA });
+  check(thread.body.messages.map((m: { sender: string }) => m.sender).join().startsWith('CUSTOMER,AI,OWNER') && thread.body.orders[0]?.orderNumber === 'ORD-000901', 'opening a chat shows the messages in order, and the customer\'s orders');
+  check(thread.body.handoffReason === 'Customer wants to negotiate a bulk price', 'and why the AI stepped back');
+  const resumed = await call('POST', `/api/chats/${convA.id}/resume`, { cookie: cookieA });
+  check(resumed.status === 200 && resumed.body.mode === 'AI' && resumed.body.handoffReason === null, 'giving a chat back to the AI works');
+  check((await call('GET', '/api/chats?waiting=true', { cookie: cookieA })).body.waitingCount === 0, 'and it leaves the waiting list');
+  const taken = await call('POST', `/api/chats/${convA.id}/take-over`, { cookie: cookieA });
+  check(taken.status === 200 && taken.body.mode === 'HUMAN' && taken.body.handoffBy === 'OWNER', 'taking a chat over makes the AI stop answering it');
+  check((await call('GET', '/api/chats', { cookie: cookieB })).body.chats.every((c: { id: string }) => c.id !== convA.id), "shop B's chat list does not contain shop A's chats");
+
+  const wa = await call('GET', '/api/whatsapp', { cookie: cookieA });
+  check(wa.status === 200 && wa.body.live === false && wa.body.state === 'DISCONNECTED' && wa.body.qr === null, 'WhatsApp status: the test server is not linked, and no QR is handed out');
+  check(!/auth|creds|secret|key/i.test(Object.keys(wa.body).join()), 'the status carries no credentials');
+  const ov = await call('GET', '/api/overview', { cookie: cookieA });
+  check(ov.status === 200 && ov.body.waitingChats === 1 && ov.body.awaitingPayment === 0 && ov.body.paidLast7Days.count === 1 && ov.body.paidLast7Days.total === 36000, 'the home numbers add up (waiting chats, unpaid orders, paid this week)');
+
   console.log('--- password and logout');
   check((await call('POST', '/api/auth/password', { cookie: cookieA, json: { current: 'wrong', next: 'a brand new password' } })).status === 401, 'changing the password needs the current one');
   check((await call('POST', '/api/auth/password', { cookie: cookieA, json: { current: password, next: 'short' } })).status === 400, 'a short new password is rejected');
@@ -181,7 +267,10 @@ try {
 } finally {
   cleanup.push(A.id, B.id);
   await prisma.merchant.deleteMany({ where: { id: { in: [A.id, B.id] } } });
-  for (const id of [A.id, B.id]) await rm(resolve(env.STORAGE_DIR, 'products', id), { recursive: true, force: true });
+  for (const id of [A.id, B.id]) {
+    await rm(resolve(env.STORAGE_DIR, 'products', id), { recursive: true, force: true });
+    await rm(resolve(env.STORAGE_DIR, 'receipts', id), { recursive: true, force: true });
+  }
   await app.close();
 }
 

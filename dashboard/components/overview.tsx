@@ -3,8 +3,8 @@
 import Link from "next/link";
 import useSWR from "swr";
 import { fetcher } from "@/lib/api";
-import type { Product } from "@/lib/types";
-import { plural } from "@/lib/format";
+import type { OverviewNumbers, Product } from "@/lib/types";
+import { naira, plural } from "@/lib/format";
 import { Badge, Button, Card, EmptyState, ErrorNote, PageHeader, Spinner } from "@/components/ui";
 import { ProductThumb } from "@/components/product-thumb";
 
@@ -19,7 +19,7 @@ function Stat({ label, value, tone }: { label: string; value: number; tone?: "wa
   );
 }
 
-export function Overview() {
+function ProductsOverview() {
   const { data, error, isLoading, mutate } = useSWR<Product[]>("/products?active=true", fetcher);
 
   if (isLoading) {
@@ -34,7 +34,6 @@ export function Overview() {
   if (data.length === 0) {
     return (
       <>
-        <PageHeader title="Welcome" subtitle="Your shop is empty. Add your first product and your WhatsApp assistant can start selling it." />
         <EmptyState
           title="No products yet"
           body="Add what you sell, with sizes, prices, stock and photos. Customers will see exactly this on WhatsApp."
@@ -62,15 +61,12 @@ export function Overview() {
 
   return (
     <>
-      <PageHeader
-        title="Overview"
-        subtitle="How your shop looks to customers right now."
-        action={
-          <Link href="/products/new">
-            <Button>Add product</Button>
-          </Link>
-        }
-      />
+      <div className="mb-3 mt-8 flex flex-wrap items-center justify-between gap-3">
+        <h2 className="text-lg font-semibold">Your products</h2>
+        <Link href="/products/new">
+          <Button variant="secondary">Add product</Button>
+        </Link>
+      </div>
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <Stat label="Products on sale" value={data.length} />
@@ -79,7 +75,7 @@ export function Overview() {
         <Stat label="Without photos" value={noPhotos.length} tone="warn" />
       </div>
 
-      <h2 className="mb-3 mt-8 text-lg font-semibold">Needs your attention</h2>
+      <h2 className="mb-3 mt-8 text-lg font-semibold">Products that need attention</h2>
       {attention.length === 0 ? (
         <Card>
           <p className="text-sm text-muted">Everything looks good: every product has sizes, stock and photos.</p>
@@ -100,6 +96,48 @@ export function Overview() {
           ))}
         </ul>
       )}
+    </>
+  );
+}
+
+const STATE_TEXT = {
+  CONNECTED: { label: "Connected", tone: "ok" as const },
+  QR_PENDING: { label: "Scan to connect", tone: "warn" as const },
+  DISCONNECTED: { label: "Not connected", tone: "danger" as const },
+};
+
+function Tile({ href, label, value, note, tone }: { href: string; label: string; value: string; note?: string; tone?: "warn" | "danger" | "ok" }) {
+  const color = tone === "danger" ? "text-danger" : tone === "warn" ? "text-warn" : tone === "ok" ? "text-ok" : "";
+  return (
+    <Link href={href} className="block min-w-0 rounded-xl border border-line bg-surface p-4 hover:border-brand">
+      <p className="text-sm text-muted">{label}</p>
+      <p className={`mt-1 truncate text-2xl font-semibold tabular-nums sm:text-3xl ${color}`}>{value}</p>
+      {note && <p className="mt-0.5 truncate text-xs text-muted">{note}</p>}
+    </Link>
+  );
+}
+
+/** What needs the owner today: customers waiting, money not yet in, and whether WhatsApp is connected. */
+function Today() {
+  const { data } = useSWR<OverviewNumbers>("/overview", fetcher, { refreshInterval: 20_000 });
+  if (!data) return null;
+  const wa = STATE_TEXT[data.whatsapp.state];
+  return (
+    <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <Tile href="/chats" label="Customers waiting for you" value={String(data.waitingChats)} tone={data.waitingChats > 0 ? "danger" : undefined} note={data.waitingChats > 0 ? "Tap to reply" : "The AI has it covered"} />
+      <Tile href="/orders" label="Orders not paid yet" value={String(data.awaitingPayment)} tone={data.awaitingPayment > 0 ? "warn" : undefined} />
+      <Tile href="/orders" label="Paid in the last 7 days" value={naira(data.paidLast7Days.total)} note={plural(data.paidLast7Days.count, "order")} tone={data.paidLast7Days.count > 0 ? "ok" : undefined} />
+      <Tile href="/whatsapp" label="WhatsApp" value={data.whatsapp.live ? wa.label : "Test mode"} tone={data.whatsapp.live ? (wa.tone === "ok" ? "ok" : wa.tone) : undefined} />
+    </div>
+  );
+}
+
+export function Overview() {
+  return (
+    <>
+      <PageHeader title="Overview" subtitle="What needs you today, and how your shop looks to customers." />
+      <Today />
+      <ProductsOverview />
     </>
   );
 }
