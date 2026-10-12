@@ -17,3 +17,5 @@ export type OrderItem = Prisma.OrderItemModel;
 export type Payment = Prisma.PaymentModel;
 export type Receipt = Prisma.ReceiptModel;
 export type ProcessedEvent = Prisma.ProcessedEventModel;
+export type AllowedNumber = Prisma.AllowedNumberModel;
+export type IgnoredNumber = Prisma.IgnoredNumberModel;

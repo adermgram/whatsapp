@@ -38,7 +38,9 @@ export const ModelName = {
     OrderItem: 'OrderItem',
     Payment: 'Payment',
     Receipt: 'Receipt',
-    ProcessedEvent: 'ProcessedEvent'
+    ProcessedEvent: 'ProcessedEvent',
+    AllowedNumber: 'AllowedNumber',
+    IgnoredNumber: 'IgnoredNumber'
 };
 export const TransactionIsolationLevel = runtime.makeStrictEnum({
     ReadUncommitted: 'ReadUncommitted',
@@ -56,6 +58,8 @@ export const MerchantScalarFieldEnum = {
     passwordHash: 'passwordHash',
     maxDiscountPercent: 'maxDiscountPercent',
     aiEnabled: 'aiEnabled',
+    replyMode: 'replyMode',
+    accessImportedAt: 'accessImportedAt',
     paystackSecretEnc: 'paystackSecretEnc',
     receiptCounter: 'receiptCounter',
     orderCounter: 'orderCounter',
@@ -196,6 +200,22 @@ export const ReceiptScalarFieldEnum = {
 export const ProcessedEventScalarFieldEnum = {
     id: 'id',
     createdAt: 'createdAt'
+};
+export const AllowedNumberScalarFieldEnum = {
+    id: 'id',
+    merchantId: 'merchantId',
+    phone: 'phone',
+    label: 'label',
+    createdAt: 'createdAt'
+};
+export const IgnoredNumberScalarFieldEnum = {
+    id: 'id',
+    merchantId: 'merchantId',
+    phone: 'phone',
+    pushName: 'pushName',
+    count: 'count',
+    firstSeenAt: 'firstSeenAt',
+    lastSeenAt: 'lastSeenAt'
 };
 export const SortOrder = {
     asc: 'asc',

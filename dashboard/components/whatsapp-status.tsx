@@ -7,6 +7,7 @@ import { fetcher } from "@/lib/api";
 import type { WhatsAppStatus } from "@/lib/types";
 import { phoneLabel, timeAgo } from "@/lib/format";
 import { Badge, Card, ErrorNote, PageHeader, Spinner } from "@/components/ui";
+import { AccessCard } from "@/components/access-card";
 
 const Step = ({ n, children }: { n: number; children: React.ReactNode }) => (
   <li className="flex gap-3">
@@ -92,22 +93,7 @@ export function WhatsAppPage() {
           )}
         </Card>
 
-        <Card>
-          <h2 className="text-lg font-semibold">Who the assistant answers</h2>
-          <p className="mt-2 text-sm">
-            {data.replyTo === "everyone" ? (
-              <>
-                <strong>Everyone</strong> who messages this number.
-              </>
-            ) : (
-              <>
-                Only <strong>{data.allowedCount}</strong> approved {data.allowedCount === 1 ? "number" : "numbers"} (test mode). Everyone else is ignored, so friends and family on this WhatsApp
-                are not answered by mistake.
-              </>
-            )}
-          </p>
-          <p className="mt-2 text-xs text-muted">This is set on the server, not here, so that nobody can switch it on by accident.</p>
-        </Card>
+        <AccessCard access={data.access} onChange={(access) => void mutate({ ...data, access }, { revalidate: false })} />
 
         <Card>
           <h2 className="text-lg font-semibold">Alerts to you</h2>

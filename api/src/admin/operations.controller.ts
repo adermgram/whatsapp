@@ -1,10 +1,11 @@
-import { Controller, Get, HttpCode, Param, ParseUUIDPipe, Post, Query, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, Param, ParseUUIDPipe, Post, Put, Query, Res, UseGuards } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
 import type { Response } from 'express';
 import { z } from 'zod';
 import { AuthGuard, CurrentMerchant } from '../auth/auth.guard.js';
 import type { AuthedMerchant } from '../auth/auth.guard.js';
 import { parse } from '../auth/auth.controller.js';
+import { AccessAdminService } from './access.admin.service.js';
 import { ChatsAdminService } from './chats.admin.service.js';
 import { ORDER_STATUSES, OrdersAdminService } from './orders.admin.service.js';
 import { WhatsAppAdminService } from './whatsapp.admin.service.js';
@@ -14,6 +15,8 @@ const orderQuery = z.object({
   q: z.string().trim().max(60).optional(),
 });
 const chatQuery = z.object({ waiting: z.enum(['true', 'false']).optional() });
+const addNumber = z.object({ phone: z.string().trim().min(5).max(30), label: z.string().trim().max(40).nullish() });
+const replyMode = z.object({ mode: z.enum(['ALLOWLIST', 'EVERYONE']) });
 
 /** Orders, chats and the WhatsApp link. Same rule as the product routes: the shop always comes from the login. */
 @Controller('api')
@@ -23,6 +26,7 @@ export class OperationsController {
     private readonly orders: OrdersAdminService,
     private readonly chats: ChatsAdminService,
     private readonly whatsapp: WhatsAppAdminService,
+    private readonly access: AccessAdminService,
   ) {}
 
   // ---- home ----
@@ -96,5 +100,38 @@ export class OperationsController {
   @Get('whatsapp')
   whatsappStatus(@CurrentMerchant() m: AuthedMerchant) {
     return this.whatsapp.status(m.id);
+  }
+
+  // ---- who the assistant answers ----
+
+  /** Switch between "only approved numbers" and "everyone". */
+  @Put('whatsapp/reply-mode')
+  setReplyMode(@CurrentMerchant() m: AuthedMerchant, @Body() body: unknown) {
+    return this.access.setMode(m.id, parse(replyMode, body).mode);
+  }
+
+  @Post('whatsapp/allowed')
+  @HttpCode(200)
+  @Throttle({ default: { limit: 30, ttl: 60_000 } })
+  addAllowed(@CurrentMerchant() m: AuthedMerchant, @Body() body: unknown) {
+    const b = parse(addNumber, body);
+    return this.access.add(m.id, b.phone, b.label);
+  }
+
+  @Delete('whatsapp/allowed/:id')
+  removeAllowed(@CurrentMerchant() m: AuthedMerchant, @Param('id', ParseUUIDPipe) id: string) {
+    return this.access.remove(m.id, id);
+  }
+
+  /** One tap to approve someone who messaged while they were not on the list. */
+  @Post('whatsapp/ignored/:id/allow')
+  @HttpCode(200)
+  allowIgnored(@CurrentMerchant() m: AuthedMerchant, @Param('id', ParseUUIDPipe) id: string) {
+    return this.access.allowIgnored(m.id, id);
+  }
+
+  @Delete('whatsapp/ignored/:id')
+  dismissIgnored(@CurrentMerchant() m: AuthedMerchant, @Param('id', ParseUUIDPipe) id: string) {
+    return this.access.dismissIgnored(m.id, id);
   }
 }

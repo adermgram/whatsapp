@@ -175,6 +175,8 @@ export declare const ModelName: {
     readonly Payment: "Payment";
     readonly Receipt: "Receipt";
     readonly ProcessedEvent: "ProcessedEvent";
+    readonly AllowedNumber: "AllowedNumber";
+    readonly IgnoredNumber: "IgnoredNumber";
 };
 export type ModelName = (typeof ModelName)[keyof typeof ModelName];
 export interface TypeMapCb<GlobalOmitOptions = {}> extends runtime.Types.Utils.Fn<{
@@ -187,7 +189,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         omit: GlobalOmitOptions;
     };
     meta: {
-        modelProps: "merchant" | "whatsAppSession" | "waAuthItem" | "product" | "productImage" | "variant" | "customer" | "conversation" | "message" | "negotiation" | "order" | "orderItem" | "payment" | "receipt" | "processedEvent";
+        modelProps: "merchant" | "whatsAppSession" | "waAuthItem" | "product" | "productImage" | "variant" | "customer" | "conversation" | "message" | "negotiation" | "order" | "orderItem" | "payment" | "receipt" | "processedEvent" | "allowedNumber" | "ignoredNumber";
         txIsolationLevel: TransactionIsolationLevel;
     };
     model: {
@@ -1301,6 +1303,154 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
                 };
             };
         };
+        AllowedNumber: {
+            payload: Prisma.$AllowedNumberPayload<ExtArgs>;
+            fields: Prisma.AllowedNumberFieldRefs;
+            operations: {
+                findUnique: {
+                    args: Prisma.AllowedNumberFindUniqueArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$AllowedNumberPayload> | null;
+                };
+                findUniqueOrThrow: {
+                    args: Prisma.AllowedNumberFindUniqueOrThrowArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$AllowedNumberPayload>;
+                };
+                findFirst: {
+                    args: Prisma.AllowedNumberFindFirstArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$AllowedNumberPayload> | null;
+                };
+                findFirstOrThrow: {
+                    args: Prisma.AllowedNumberFindFirstOrThrowArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$AllowedNumberPayload>;
+                };
+                findMany: {
+                    args: Prisma.AllowedNumberFindManyArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$AllowedNumberPayload>[];
+                };
+                create: {
+                    args: Prisma.AllowedNumberCreateArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$AllowedNumberPayload>;
+                };
+                createMany: {
+                    args: Prisma.AllowedNumberCreateManyArgs<ExtArgs>;
+                    result: BatchPayload;
+                };
+                createManyAndReturn: {
+                    args: Prisma.AllowedNumberCreateManyAndReturnArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$AllowedNumberPayload>[];
+                };
+                delete: {
+                    args: Prisma.AllowedNumberDeleteArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$AllowedNumberPayload>;
+                };
+                update: {
+                    args: Prisma.AllowedNumberUpdateArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$AllowedNumberPayload>;
+                };
+                deleteMany: {
+                    args: Prisma.AllowedNumberDeleteManyArgs<ExtArgs>;
+                    result: BatchPayload;
+                };
+                updateMany: {
+                    args: Prisma.AllowedNumberUpdateManyArgs<ExtArgs>;
+                    result: BatchPayload;
+                };
+                updateManyAndReturn: {
+                    args: Prisma.AllowedNumberUpdateManyAndReturnArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$AllowedNumberPayload>[];
+                };
+                upsert: {
+                    args: Prisma.AllowedNumberUpsertArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$AllowedNumberPayload>;
+                };
+                aggregate: {
+                    args: Prisma.AllowedNumberAggregateArgs<ExtArgs>;
+                    result: runtime.Types.Utils.Optional<Prisma.AggregateAllowedNumber>;
+                };
+                groupBy: {
+                    args: Prisma.AllowedNumberGroupByArgs<ExtArgs>;
+                    result: runtime.Types.Utils.Optional<Prisma.AllowedNumberGroupByOutputType>[];
+                };
+                count: {
+                    args: Prisma.AllowedNumberCountArgs<ExtArgs>;
+                    result: runtime.Types.Utils.Optional<Prisma.AllowedNumberCountAggregateOutputType> | number;
+                };
+            };
+        };
+        IgnoredNumber: {
+            payload: Prisma.$IgnoredNumberPayload<ExtArgs>;
+            fields: Prisma.IgnoredNumberFieldRefs;
+            operations: {
+                findUnique: {
+                    args: Prisma.IgnoredNumberFindUniqueArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$IgnoredNumberPayload> | null;
+                };
+                findUniqueOrThrow: {
+                    args: Prisma.IgnoredNumberFindUniqueOrThrowArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$IgnoredNumberPayload>;
+                };
+                findFirst: {
+                    args: Prisma.IgnoredNumberFindFirstArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$IgnoredNumberPayload> | null;
+                };
+                findFirstOrThrow: {
+                    args: Prisma.IgnoredNumberFindFirstOrThrowArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$IgnoredNumberPayload>;
+                };
+                findMany: {
+                    args: Prisma.IgnoredNumberFindManyArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$IgnoredNumberPayload>[];
+                };
+                create: {
+                    args: Prisma.IgnoredNumberCreateArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$IgnoredNumberPayload>;
+                };
+                createMany: {
+                    args: Prisma.IgnoredNumberCreateManyArgs<ExtArgs>;
+                    result: BatchPayload;
+                };
+                createManyAndReturn: {
+                    args: Prisma.IgnoredNumberCreateManyAndReturnArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$IgnoredNumberPayload>[];
+                };
+                delete: {
+                    args: Prisma.IgnoredNumberDeleteArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$IgnoredNumberPayload>;
+                };
+                update: {
+                    args: Prisma.IgnoredNumberUpdateArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$IgnoredNumberPayload>;
+                };
+                deleteMany: {
+                    args: Prisma.IgnoredNumberDeleteManyArgs<ExtArgs>;
+                    result: BatchPayload;
+                };
+                updateMany: {
+                    args: Prisma.IgnoredNumberUpdateManyArgs<ExtArgs>;
+                    result: BatchPayload;
+                };
+                updateManyAndReturn: {
+                    args: Prisma.IgnoredNumberUpdateManyAndReturnArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$IgnoredNumberPayload>[];
+                };
+                upsert: {
+                    args: Prisma.IgnoredNumberUpsertArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$IgnoredNumberPayload>;
+                };
+                aggregate: {
+                    args: Prisma.IgnoredNumberAggregateArgs<ExtArgs>;
+                    result: runtime.Types.Utils.Optional<Prisma.AggregateIgnoredNumber>;
+                };
+                groupBy: {
+                    args: Prisma.IgnoredNumberGroupByArgs<ExtArgs>;
+                    result: runtime.Types.Utils.Optional<Prisma.IgnoredNumberGroupByOutputType>[];
+                };
+                count: {
+                    args: Prisma.IgnoredNumberCountArgs<ExtArgs>;
+                    result: runtime.Types.Utils.Optional<Prisma.IgnoredNumberCountAggregateOutputType> | number;
+                };
+            };
+        };
     };
 } & {
     other: {
@@ -1342,6 +1492,8 @@ export declare const MerchantScalarFieldEnum: {
     readonly passwordHash: "passwordHash";
     readonly maxDiscountPercent: "maxDiscountPercent";
     readonly aiEnabled: "aiEnabled";
+    readonly replyMode: "replyMode";
+    readonly accessImportedAt: "accessImportedAt";
     readonly paystackSecretEnc: "paystackSecretEnc";
     readonly receiptCounter: "receiptCounter";
     readonly orderCounter: "orderCounter";
@@ -1498,6 +1650,24 @@ export declare const ProcessedEventScalarFieldEnum: {
     readonly createdAt: "createdAt";
 };
 export type ProcessedEventScalarFieldEnum = (typeof ProcessedEventScalarFieldEnum)[keyof typeof ProcessedEventScalarFieldEnum];
+export declare const AllowedNumberScalarFieldEnum: {
+    readonly id: "id";
+    readonly merchantId: "merchantId";
+    readonly phone: "phone";
+    readonly label: "label";
+    readonly createdAt: "createdAt";
+};
+export type AllowedNumberScalarFieldEnum = (typeof AllowedNumberScalarFieldEnum)[keyof typeof AllowedNumberScalarFieldEnum];
+export declare const IgnoredNumberScalarFieldEnum: {
+    readonly id: "id";
+    readonly merchantId: "merchantId";
+    readonly phone: "phone";
+    readonly pushName: "pushName";
+    readonly count: "count";
+    readonly firstSeenAt: "firstSeenAt";
+    readonly lastSeenAt: "lastSeenAt";
+};
+export type IgnoredNumberScalarFieldEnum = (typeof IgnoredNumberScalarFieldEnum)[keyof typeof IgnoredNumberScalarFieldEnum];
 export declare const SortOrder: {
     readonly asc: "asc";
     readonly desc: "desc";
@@ -1533,6 +1703,8 @@ export type ListStringFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaMod
 export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int'>;
 export type ListIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int[]'>;
 export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>;
+export type EnumReplyModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ReplyMode'>;
+export type ListEnumReplyModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ReplyMode[]'>;
 export type DateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime'>;
 export type ListDateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime[]'>;
 export type EnumSessionStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'SessionStatus'>;
@@ -1600,6 +1772,8 @@ export type GlobalOmitConfig = {
     payment?: Prisma.PaymentOmit;
     receipt?: Prisma.ReceiptOmit;
     processedEvent?: Prisma.ProcessedEventOmit;
+    allowedNumber?: Prisma.AllowedNumberOmit;
+    ignoredNumber?: Prisma.IgnoredNumberOmit;
 };
 export type LogLevel = 'info' | 'query' | 'warn' | 'error';
 export type LogDefinition = {

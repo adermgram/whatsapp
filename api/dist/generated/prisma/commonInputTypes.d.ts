@@ -43,6 +43,22 @@ export type BoolFilter<$PrismaModel = never> = {
     equals?: boolean | Prisma.BooleanFieldRefInput<$PrismaModel>;
     not?: Prisma.NestedBoolFilter<$PrismaModel> | boolean;
 };
+export type EnumReplyModeFilter<$PrismaModel = never> = {
+    equals?: $Enums.ReplyMode | Prisma.EnumReplyModeFieldRefInput<$PrismaModel>;
+    in?: $Enums.ReplyMode[] | Prisma.ListEnumReplyModeFieldRefInput<$PrismaModel>;
+    notIn?: $Enums.ReplyMode[] | Prisma.ListEnumReplyModeFieldRefInput<$PrismaModel>;
+    not?: Prisma.NestedEnumReplyModeFilter<$PrismaModel> | $Enums.ReplyMode;
+};
+export type DateTimeNullableFilter<$PrismaModel = never> = {
+    equals?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel> | null;
+    in?: Date[] | string[] | Prisma.ListDateTimeFieldRefInput<$PrismaModel> | null;
+    notIn?: Date[] | string[] | Prisma.ListDateTimeFieldRefInput<$PrismaModel> | null;
+    lt?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel>;
+    lte?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel>;
+    gt?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel>;
+    gte?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel>;
+    not?: Prisma.NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null;
+};
 export type DateTimeFilter<$PrismaModel = never> = {
     equals?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel>;
     in?: Date[] | string[] | Prisma.ListDateTimeFieldRefInput<$PrismaModel>;
@@ -112,6 +128,28 @@ export type BoolWithAggregatesFilter<$PrismaModel = never> = {
     _count?: Prisma.NestedIntFilter<$PrismaModel>;
     _min?: Prisma.NestedBoolFilter<$PrismaModel>;
     _max?: Prisma.NestedBoolFilter<$PrismaModel>;
+};
+export type EnumReplyModeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.ReplyMode | Prisma.EnumReplyModeFieldRefInput<$PrismaModel>;
+    in?: $Enums.ReplyMode[] | Prisma.ListEnumReplyModeFieldRefInput<$PrismaModel>;
+    notIn?: $Enums.ReplyMode[] | Prisma.ListEnumReplyModeFieldRefInput<$PrismaModel>;
+    not?: Prisma.NestedEnumReplyModeWithAggregatesFilter<$PrismaModel> | $Enums.ReplyMode;
+    _count?: Prisma.NestedIntFilter<$PrismaModel>;
+    _min?: Prisma.NestedEnumReplyModeFilter<$PrismaModel>;
+    _max?: Prisma.NestedEnumReplyModeFilter<$PrismaModel>;
+};
+export type DateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel> | null;
+    in?: Date[] | string[] | Prisma.ListDateTimeFieldRefInput<$PrismaModel> | null;
+    notIn?: Date[] | string[] | Prisma.ListDateTimeFieldRefInput<$PrismaModel> | null;
+    lt?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel>;
+    lte?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel>;
+    gt?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel>;
+    gte?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel>;
+    not?: Prisma.NestedDateTimeNullableWithAggregatesFilter<$PrismaModel> | Date | string | null;
+    _count?: Prisma.NestedIntNullableFilter<$PrismaModel>;
+    _min?: Prisma.NestedDateTimeNullableFilter<$PrismaModel>;
+    _max?: Prisma.NestedDateTimeNullableFilter<$PrismaModel>;
 };
 export type DateTimeWithAggregatesFilter<$PrismaModel = never> = {
     equals?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel>;
@@ -205,16 +243,6 @@ export type EnumHandoffSourceNullableFilter<$PrismaModel = never> = {
     notIn?: $Enums.HandoffSource[] | Prisma.ListEnumHandoffSourceFieldRefInput<$PrismaModel> | null;
     not?: Prisma.NestedEnumHandoffSourceNullableFilter<$PrismaModel> | $Enums.HandoffSource | null;
 };
-export type DateTimeNullableFilter<$PrismaModel = never> = {
-    equals?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel> | null;
-    in?: Date[] | string[] | Prisma.ListDateTimeFieldRefInput<$PrismaModel> | null;
-    notIn?: Date[] | string[] | Prisma.ListDateTimeFieldRefInput<$PrismaModel> | null;
-    lt?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel>;
-    lte?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel>;
-    gt?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel>;
-    gte?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel>;
-    not?: Prisma.NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null;
-};
 export type EnumConversationModeWithAggregatesFilter<$PrismaModel = never> = {
     equals?: $Enums.ConversationMode | Prisma.EnumConversationModeFieldRefInput<$PrismaModel>;
     in?: $Enums.ConversationMode[] | Prisma.ListEnumConversationModeFieldRefInput<$PrismaModel>;
@@ -232,19 +260,6 @@ export type EnumHandoffSourceNullableWithAggregatesFilter<$PrismaModel = never> 
     _count?: Prisma.NestedIntNullableFilter<$PrismaModel>;
     _min?: Prisma.NestedEnumHandoffSourceNullableFilter<$PrismaModel>;
     _max?: Prisma.NestedEnumHandoffSourceNullableFilter<$PrismaModel>;
-};
-export type DateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel> | null;
-    in?: Date[] | string[] | Prisma.ListDateTimeFieldRefInput<$PrismaModel> | null;
-    notIn?: Date[] | string[] | Prisma.ListDateTimeFieldRefInput<$PrismaModel> | null;
-    lt?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel>;
-    lte?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel>;
-    gt?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel>;
-    gte?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel>;
-    not?: Prisma.NestedDateTimeNullableWithAggregatesFilter<$PrismaModel> | Date | string | null;
-    _count?: Prisma.NestedIntNullableFilter<$PrismaModel>;
-    _min?: Prisma.NestedDateTimeNullableFilter<$PrismaModel>;
-    _max?: Prisma.NestedDateTimeNullableFilter<$PrismaModel>;
 };
 export type EnumMessageDirectionFilter<$PrismaModel = never> = {
     equals?: $Enums.MessageDirection | Prisma.EnumMessageDirectionFieldRefInput<$PrismaModel>;
@@ -423,6 +438,22 @@ export type NestedBoolFilter<$PrismaModel = never> = {
     equals?: boolean | Prisma.BooleanFieldRefInput<$PrismaModel>;
     not?: Prisma.NestedBoolFilter<$PrismaModel> | boolean;
 };
+export type NestedEnumReplyModeFilter<$PrismaModel = never> = {
+    equals?: $Enums.ReplyMode | Prisma.EnumReplyModeFieldRefInput<$PrismaModel>;
+    in?: $Enums.ReplyMode[] | Prisma.ListEnumReplyModeFieldRefInput<$PrismaModel>;
+    notIn?: $Enums.ReplyMode[] | Prisma.ListEnumReplyModeFieldRefInput<$PrismaModel>;
+    not?: Prisma.NestedEnumReplyModeFilter<$PrismaModel> | $Enums.ReplyMode;
+};
+export type NestedDateTimeNullableFilter<$PrismaModel = never> = {
+    equals?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel> | null;
+    in?: Date[] | string[] | Prisma.ListDateTimeFieldRefInput<$PrismaModel> | null;
+    notIn?: Date[] | string[] | Prisma.ListDateTimeFieldRefInput<$PrismaModel> | null;
+    lt?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel>;
+    lte?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel>;
+    gt?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel>;
+    gte?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel>;
+    not?: Prisma.NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null;
+};
 export type NestedDateTimeFilter<$PrismaModel = never> = {
     equals?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel>;
     in?: Date[] | string[] | Prisma.ListDateTimeFieldRefInput<$PrismaModel>;
@@ -507,6 +538,28 @@ export type NestedBoolWithAggregatesFilter<$PrismaModel = never> = {
     _min?: Prisma.NestedBoolFilter<$PrismaModel>;
     _max?: Prisma.NestedBoolFilter<$PrismaModel>;
 };
+export type NestedEnumReplyModeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.ReplyMode | Prisma.EnumReplyModeFieldRefInput<$PrismaModel>;
+    in?: $Enums.ReplyMode[] | Prisma.ListEnumReplyModeFieldRefInput<$PrismaModel>;
+    notIn?: $Enums.ReplyMode[] | Prisma.ListEnumReplyModeFieldRefInput<$PrismaModel>;
+    not?: Prisma.NestedEnumReplyModeWithAggregatesFilter<$PrismaModel> | $Enums.ReplyMode;
+    _count?: Prisma.NestedIntFilter<$PrismaModel>;
+    _min?: Prisma.NestedEnumReplyModeFilter<$PrismaModel>;
+    _max?: Prisma.NestedEnumReplyModeFilter<$PrismaModel>;
+};
+export type NestedDateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel> | null;
+    in?: Date[] | string[] | Prisma.ListDateTimeFieldRefInput<$PrismaModel> | null;
+    notIn?: Date[] | string[] | Prisma.ListDateTimeFieldRefInput<$PrismaModel> | null;
+    lt?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel>;
+    lte?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel>;
+    gt?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel>;
+    gte?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel>;
+    not?: Prisma.NestedDateTimeNullableWithAggregatesFilter<$PrismaModel> | Date | string | null;
+    _count?: Prisma.NestedIntNullableFilter<$PrismaModel>;
+    _min?: Prisma.NestedDateTimeNullableFilter<$PrismaModel>;
+    _max?: Prisma.NestedDateTimeNullableFilter<$PrismaModel>;
+};
 export type NestedDateTimeWithAggregatesFilter<$PrismaModel = never> = {
     equals?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel>;
     in?: Date[] | string[] | Prisma.ListDateTimeFieldRefInput<$PrismaModel>;
@@ -579,16 +632,6 @@ export type NestedEnumHandoffSourceNullableFilter<$PrismaModel = never> = {
     notIn?: $Enums.HandoffSource[] | Prisma.ListEnumHandoffSourceFieldRefInput<$PrismaModel> | null;
     not?: Prisma.NestedEnumHandoffSourceNullableFilter<$PrismaModel> | $Enums.HandoffSource | null;
 };
-export type NestedDateTimeNullableFilter<$PrismaModel = never> = {
-    equals?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel> | null;
-    in?: Date[] | string[] | Prisma.ListDateTimeFieldRefInput<$PrismaModel> | null;
-    notIn?: Date[] | string[] | Prisma.ListDateTimeFieldRefInput<$PrismaModel> | null;
-    lt?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel>;
-    lte?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel>;
-    gt?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel>;
-    gte?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel>;
-    not?: Prisma.NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null;
-};
 export type NestedEnumConversationModeWithAggregatesFilter<$PrismaModel = never> = {
     equals?: $Enums.ConversationMode | Prisma.EnumConversationModeFieldRefInput<$PrismaModel>;
     in?: $Enums.ConversationMode[] | Prisma.ListEnumConversationModeFieldRefInput<$PrismaModel>;
@@ -606,19 +649,6 @@ export type NestedEnumHandoffSourceNullableWithAggregatesFilter<$PrismaModel = n
     _count?: Prisma.NestedIntNullableFilter<$PrismaModel>;
     _min?: Prisma.NestedEnumHandoffSourceNullableFilter<$PrismaModel>;
     _max?: Prisma.NestedEnumHandoffSourceNullableFilter<$PrismaModel>;
-};
-export type NestedDateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel> | null;
-    in?: Date[] | string[] | Prisma.ListDateTimeFieldRefInput<$PrismaModel> | null;
-    notIn?: Date[] | string[] | Prisma.ListDateTimeFieldRefInput<$PrismaModel> | null;
-    lt?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel>;
-    lte?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel>;
-    gt?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel>;
-    gte?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel>;
-    not?: Prisma.NestedDateTimeNullableWithAggregatesFilter<$PrismaModel> | Date | string | null;
-    _count?: Prisma.NestedIntNullableFilter<$PrismaModel>;
-    _min?: Prisma.NestedDateTimeNullableFilter<$PrismaModel>;
-    _max?: Prisma.NestedDateTimeNullableFilter<$PrismaModel>;
 };
 export type NestedEnumMessageDirectionFilter<$PrismaModel = never> = {
     equals?: $Enums.MessageDirection | Prisma.EnumMessageDirectionFieldRefInput<$PrismaModel>;

@@ -26,6 +26,8 @@ export declare const ModelName: {
     readonly Payment: "Payment";
     readonly Receipt: "Receipt";
     readonly ProcessedEvent: "ProcessedEvent";
+    readonly AllowedNumber: "AllowedNumber";
+    readonly IgnoredNumber: "IgnoredNumber";
 };
 export type ModelName = (typeof ModelName)[keyof typeof ModelName];
 export declare const TransactionIsolationLevel: {
@@ -45,6 +47,8 @@ export declare const MerchantScalarFieldEnum: {
     readonly passwordHash: "passwordHash";
     readonly maxDiscountPercent: "maxDiscountPercent";
     readonly aiEnabled: "aiEnabled";
+    readonly replyMode: "replyMode";
+    readonly accessImportedAt: "accessImportedAt";
     readonly paystackSecretEnc: "paystackSecretEnc";
     readonly receiptCounter: "receiptCounter";
     readonly orderCounter: "orderCounter";
@@ -201,6 +205,24 @@ export declare const ProcessedEventScalarFieldEnum: {
     readonly createdAt: "createdAt";
 };
 export type ProcessedEventScalarFieldEnum = (typeof ProcessedEventScalarFieldEnum)[keyof typeof ProcessedEventScalarFieldEnum];
+export declare const AllowedNumberScalarFieldEnum: {
+    readonly id: "id";
+    readonly merchantId: "merchantId";
+    readonly phone: "phone";
+    readonly label: "label";
+    readonly createdAt: "createdAt";
+};
+export type AllowedNumberScalarFieldEnum = (typeof AllowedNumberScalarFieldEnum)[keyof typeof AllowedNumberScalarFieldEnum];
+export declare const IgnoredNumberScalarFieldEnum: {
+    readonly id: "id";
+    readonly merchantId: "merchantId";
+    readonly phone: "phone";
+    readonly pushName: "pushName";
+    readonly count: "count";
+    readonly firstSeenAt: "firstSeenAt";
+    readonly lastSeenAt: "lastSeenAt";
+};
+export type IgnoredNumberScalarFieldEnum = (typeof IgnoredNumberScalarFieldEnum)[keyof typeof IgnoredNumberScalarFieldEnum];
 export declare const SortOrder: {
     readonly asc: "asc";
     readonly desc: "desc";

@@ -439,9 +439,6 @@ export type EnumConversationModeFieldUpdateOperationsInput = {
 export type NullableEnumHandoffSourceFieldUpdateOperationsInput = {
     set?: $Enums.HandoffSource | null;
 };
-export type NullableDateTimeFieldUpdateOperationsInput = {
-    set?: Date | string | null;
-};
 export type ConversationCreateNestedOneWithoutMessagesInput = {
     create?: Prisma.XOR<Prisma.ConversationCreateWithoutMessagesInput, Prisma.ConversationUncheckedCreateWithoutMessagesInput>;
     connectOrCreate?: Prisma.ConversationCreateOrConnectWithoutMessagesInput;

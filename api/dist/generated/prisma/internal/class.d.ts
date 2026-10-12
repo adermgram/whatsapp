@@ -75,5 +75,11 @@ export interface PrismaClient<in LogOpts extends Prisma.LogLevel = never, in out
     get processedEvent(): Prisma.ProcessedEventDelegate<ExtArgs, {
         omit: OmitOpts;
     }>;
+    get allowedNumber(): Prisma.AllowedNumberDelegate<ExtArgs, {
+        omit: OmitOpts;
+    }>;
+    get ignoredNumber(): Prisma.IgnoredNumberDelegate<ExtArgs, {
+        omit: OmitOpts;
+    }>;
 }
 export declare function getPrismaClientClass(): PrismaClientConstructor;

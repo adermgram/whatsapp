@@ -14,6 +14,7 @@ import { AppModule } from '../app.module.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { env } from '../config/env.js';
 import { originCheck } from '../common/origin-check.js';
+import { ChatAccess } from '../messaging/chat-access.js';
 
 // Boots the real server and attacks the dashboard API over real HTTP.
 const PORT = 3998;
@@ -250,6 +251,63 @@ try {
   const wa = await call('GET', '/api/whatsapp', { cookie: cookieA });
   check(wa.status === 200 && wa.body.live === false && wa.body.state === 'DISCONNECTED' && wa.body.qr === null, 'WhatsApp status: the test server is not linked, and no QR is handed out');
   check(!/auth|creds|secret|key/i.test(Object.keys(wa.body).join()), 'the status carries no credentials');
+  console.log('--- who the assistant answers (approved numbers)');
+  const access = app.get(ChatAccess);
+  check((await call('POST', '/api/whatsapp/allowed', { json: { phone: '08012345678' } })).status === 401, 'adding a number without logging in is refused (401)');
+  check((await call('PUT', '/api/whatsapp/reply-mode', { json: { mode: 'EVERYONE' } })).status === 401, 'switching to "everyone" without logging in is refused (401)');
+  check((await call('PUT', '/api/whatsapp/reply-mode', { cookie: cookieA, json: { mode: 'EVERYONE' }, origin: 'https://evil.example' })).status === 403, 'switching to "everyone" from another website is refused (403)');
+  const w0 = (await call('GET', '/api/whatsapp', { cookie: cookieA })).body.access;
+  check(w0.mode === 'ALLOWLIST' && w0.allowed.length === 0 && w0.ignored.length === 0, 'a new shop answers nobody until a number is approved');
+  check((await access.isAllowed(A.id, '2348012345678', 'hi')) === false, 'and the bot really ignores an unapproved number');
+
+  const add1 = await call('POST', '/api/whatsapp/allowed', { cookie: cookieA, json: { phone: '0801 234 5678', label: 'Aunty Bisi' } });
+  check(add1.status === 200 && add1.body.allowed.length === 1 && add1.body.allowed[0].phone === '2348012345678' && add1.body.allowed[0].label === 'Aunty Bisi', 'a number typed the Nigerian way is saved in international form, with its label');
+  check((await access.isAllowed(A.id, '2348012345678', 'hi')) === true, 'and the bot answers it straight away, no restart needed');
+  const add2 = await call('POST', '/api/whatsapp/allowed', { cookie: cookieA, json: { phone: '+234 801 234 5678', label: 'Bisi (testing)' } });
+  check(add2.body.allowed.length === 1 && add2.body.allowed[0].label === 'Bisi (testing)', 'adding the same number in another format does not duplicate it (the label is updated)');
+  for (const bad of ['hello', '12345', 'lid:123', '', '0801234']) {
+    check((await call('POST', '/api/whatsapp/allowed', { cookie: cookieA, json: { phone: bad } })).status === 400, `"${bad}" is rejected as a phone number (400)`);
+  }
+  check((await call('PUT', '/api/whatsapp/reply-mode', { cookie: cookieA, json: { mode: 'ALL' } })).status === 400, 'an unknown reply mode is rejected (400)');
+  check((await access.isAllowed(A.id, '2340000000000', '/paid ORD-000001')) === true && (await access.isAllowed(A.id, '2340000000000', 'hello')) === false, "the owner's own commands always work, but their ordinary messages follow the list");
+
+  access.noteIgnored(A.id, '2347000000000', 'Stranger Danger');
+  access.noteIgnored(A.id, '2347000000000', 'Stranger Danger'); // within a minute: not counted twice
+  await new Promise((r) => setTimeout(r, 1500));
+  const w1 = (await call('GET', '/api/whatsapp', { cookie: cookieA })).body.access;
+  check(w1.ignored.length === 1 && w1.ignored[0].phone === '2347000000000' && w1.ignored[0].name === 'Stranger Danger' && w1.ignored[0].count === 1, 'someone who messaged without approval is remembered (name and number only, no message text)');
+  const ignoredId: string = w1.ignored[0].id;
+  check((await call('POST', `/api/whatsapp/ignored/${ignoredId}/allow`, { cookie: cookieB })).status === 404, "shop B cannot approve shop A's ignored number (404)");
+  const allowed1 = await call('POST', `/api/whatsapp/ignored/${ignoredId}/allow`, { cookie: cookieA });
+  check(allowed1.status === 200 && allowed1.body.ignored.length === 0 && allowed1.body.allowed.some((n: { phone: string; label: string }) => n.phone === '2347000000000' && n.label === 'Stranger Danger'), 'one tap approves an ignored number and takes it off the ignored list');
+  check((await access.isAllowed(A.id, '2347000000000', 'hi')) === true, 'and it is answered right away');
+
+  const wb = (await call('GET', '/api/whatsapp', { cookie: cookieB })).body.access;
+  check(wb.allowed.length === 0 && wb.ignored.length === 0, "shop B's lists do not contain shop A's numbers");
+  check((await access.isAllowed(B.id, '2348012345678', 'hi')) === false, "and shop A's approved number is not approved for shop B");
+  const entryId: string = allowed1.body.allowed.find((n: { phone: string }) => n.phone === '2348012345678').id;
+  check((await call('DELETE', `/api/whatsapp/allowed/${entryId}`, { cookie: cookieB })).status === 404, "shop B cannot remove shop A's approved number (404)");
+  check((await access.isAllowed(A.id, '2348012345678', 'hi')) === true, "which is therefore still approved");
+  const removed = await call('DELETE', `/api/whatsapp/allowed/${entryId}`, { cookie: cookieA });
+  check(removed.status === 200 && removed.body.allowed.every((n: { phone: string }) => n.phone !== '2348012345678'), 'removing a number takes it off the list');
+  check((await access.isAllowed(A.id, '2348012345678', 'hi')) === false, 'and the bot stops answering it straight away');
+
+  const everyone = await call('PUT', '/api/whatsapp/reply-mode', { cookie: cookieA, json: { mode: 'EVERYONE' } });
+  check(everyone.status === 200 && everyone.body.mode === 'EVERYONE' && (await access.isAllowed(A.id, '2347999999999', 'hi')) === true, 'switching to "everyone" makes the bot answer any number');
+  check((await access.isAllowed(B.id, '2347999999999', 'hi')) === false, "and that only applies to shop A, not shop B");
+  const back = await call('PUT', '/api/whatsapp/reply-mode', { cookie: cookieA, json: { mode: 'ALLOWLIST' } });
+  check(back.body.mode === 'ALLOWLIST' && (await access.isAllowed(A.id, '2347999999999', 'hi')) === false, 'switching back stops it again');
+
+  // limits: nobody can grow these lists without bound
+  await prisma.allowedNumber.createMany({ data: Array.from({ length: 200 }, (_, i) => ({ merchantId: B.id, phone: `23480000${String(i).padStart(5, '0')}` })) });
+  const over = await call('POST', '/api/whatsapp/allowed', { cookie: cookieB, json: { phone: '2348099999999' } });
+  check(over.status === 400 && /up to 200/.test(JSON.stringify(over.body)), 'a shop cannot approve more than 200 numbers (400)');
+  await prisma.ignoredNumber.createMany({ data: Array.from({ length: 100 }, (_, i) => ({ merchantId: B.id, phone: `23470000${String(i).padStart(5, '0')}`, lastSeenAt: new Date(Date.now() - (200 - i) * 1000) })) });
+  access.noteIgnored(B.id, '2347111111111', 'Newest');
+  await new Promise((r) => setTimeout(r, 2500));
+  const bIgnored = await prisma.ignoredNumber.findMany({ where: { merchantId: B.id } });
+  check(bIgnored.length === 100 && bIgnored.some((i) => i.phone === '2347111111111') && !bIgnored.some((i) => i.phone === '2347000000000'), 'the ignored list is capped at 100, dropping the oldest, so strangers cannot flood the database');
+
   const ov = await call('GET', '/api/overview', { cookie: cookieA });
   check(ov.status === 200 && ov.body.waitingChats === 1 && ov.body.awaitingPayment === 0 && ov.body.paidLast7Days.count === 1 && ov.body.paidLast7Days.total === 36000, 'the home numbers add up (waiting chats, unpaid orders, paid this week)');
 

@@ -15,7 +15,8 @@ import { resolve } from 'node:path';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import { env } from '../../config/env.js';
 import { InboundHandler, MediaTooLargeError, MessagingGateway, SessionState } from '../messaging.types.js';
-import { isChatAllowed, normalizePhone, parseAllowlist } from '../reply-policy.js';
+import { normalizePhone } from '../reply-policy.js';
+import { ChatAccess } from '../chat-access.js';
 import { chatIdFromKey, extractContent, jidFromChatId } from './wa-messages.js';
 import { hasStoredLogin, useDbAuthState } from './db-auth-state.js';
 
@@ -52,10 +53,6 @@ export class BaileysGateway extends MessagingGateway implements OnApplicationBoo
   private readonly baileysLog = pino({ level: process.env.BAILEYS_LOG ?? 'warn' });
   private readonly sessions = new Map<string, Session>();
   private handlers: InboundHandler[] = [];
-  private readonly policy = {
-    allowlist: parseAllowlist(env.WHATSAPP_ALLOWLIST),
-    replyToAll: env.WHATSAPP_REPLY_TO_ALL === 'true',
-  };
   private readonly warnedChats = new Set<string>();
   /** Ids of messages WE sent, so a copy echoed back by WhatsApp is not mistaken for the owner typing. */
   private readonly sentIds = new Set<string>();
@@ -63,19 +60,18 @@ export class BaileysGateway extends MessagingGateway implements OnApplicationBoo
   private readonly sendChain = new Map<string, Promise<unknown>>();
   private readonly lastSendAt = new Map<string, number>();
 
-  constructor(private readonly prisma: PrismaService) {
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly access: ChatAccess,
+  ) {
     super();
   }
 
   // ---- lifecycle ---------------------------------------------------------------------------------
 
   async onApplicationBootstrap() {
-    if (!this.policy.replyToAll && this.policy.allowlist.size === 0) {
-      this.log.warn(
-        'SAFE MODE: WHATSAPP_ALLOWLIST is empty and WHATSAPP_REPLY_TO_ALL is not true, so the bot will answer NOBODY. ' +
-          'Add the numbers you want to test with to WHATSAPP_ALLOWLIST in .env.',
-      );
-    }
+    // Who gets answered is managed on the dashboard now. Older installs had it in .env: copy that over, once.
+    await this.access.importEnvOnce().catch((e) => this.log.error(`Could not import the .env allowlist: ${String(e)}`));
     void this.connectKnownMerchants();
   }
 
@@ -218,10 +214,13 @@ export class BaileysGateway extends MessagingGateway implements OnApplicationBoo
     const content = extractContent(msg.message);
     if (!content) return;
 
-    if (!isChatAllowed(chatId, this.policy)) {
+    // Only approved numbers are answered (the owner manages the list on the dashboard); everyone else is ignored,
+    // but remembered so the owner can approve them with one tap.
+    if (!(await this.access.isAllowed(merchantId, chatId, content.text))) {
+      if (!fromMe) this.access.noteIgnored(merchantId, chatId, msg.pushName ?? undefined);
       if (!this.warnedChats.has(chatId)) {
         this.warnedChats.add(chatId);
-        this.log.warn(`Ignoring ${chatId}: not on WHATSAPP_ALLOWLIST. To let the bot answer this chat, add "${chatId}" to WHATSAPP_ALLOWLIST.`);
+        this.log.warn(`Ignoring ${chatId}: not on the approved list. Approve it on the dashboard's WhatsApp page if the bot should answer it.`);
       }
       return;
     }

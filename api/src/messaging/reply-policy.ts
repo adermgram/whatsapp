@@ -28,3 +28,13 @@ export interface ReplyPolicy {
 export function isChatAllowed(chatId: string, policy: ReplyPolicy): boolean {
   return policy.replyToAll || policy.allowlist.has(chatId);
 }
+
+/**
+ * A number typed in by the owner ("0801 234 5678", "+234 801 234 5678", "2348012345678"), or null when it cannot be a
+ * real phone number. WhatsApp privacy ids ("lid:...") are never typed by hand: they only come from the ignored list.
+ */
+export function parseTypedNumber(raw: string): string | null {
+  if (/[a-z]/i.test(raw)) return null;
+  const phone = normalizePhone(raw);
+  return /^[1-9]\d{9,14}$/.test(phone) ? phone : null;
+}

@@ -138,8 +138,13 @@ export interface WhatsAppStatus {
   ownerPhone: string | null;
   alertEmail: string | null;
   aiEnabled: boolean;
-  replyTo: "everyone" | "allowlist";
-  allowedCount: number;
+  access: AccessView;
+}
+
+export interface AccessView {
+  mode: "ALLOWLIST" | "EVERYONE";
+  allowed: { id: string; phone: string; label: string | null; createdAt: string }[];
+  ignored: { id: string; phone: string; name: string | null; count: number; lastSeenAt: string }[];
 }
 
 export interface OverviewNumbers {

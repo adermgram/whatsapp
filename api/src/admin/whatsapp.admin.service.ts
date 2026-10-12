@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import QRCode from 'qrcode';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { MessagingGateway } from '../messaging/messaging.types.js';
-import { parseAllowlist } from '../messaging/reply-policy.js';
+import { AccessAdminService } from './access.admin.service.js';
 import { env } from '../config/env.js';
 
 /** Where the shop's WhatsApp link stands, plus the small overview numbers the home page shows. */
@@ -11,17 +11,17 @@ export class WhatsAppAdminService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly gateway: MessagingGateway,
+    private readonly access: AccessAdminService,
   ) {}
 
   async status(merchantId: string) {
-    const [row, merchant] = await Promise.all([
+    const [row, merchant, access] = await Promise.all([
       this.prisma.whatsAppSession.findUnique({ where: { merchantId } }),
       this.prisma.merchant.findUnique({ where: { id: merchantId }, select: { ownerPhone: true, alertEmail: true, aiEnabled: true } }),
+      this.access.view(merchantId),
     ]);
 
-    // Real WhatsApp only runs in the bot process. Anywhere else (dev, tests) the answer is "not connected".
-    const live = env.WHATSAPP_ADAPTER === 'baileys';
-    const state = live ? this.gateway.sessionState(merchantId) : 'DISCONNECTED';
+    const { live, state } = this.linkState(merchantId);
 
     // The QR is only handed out while the phone still has to scan it, and only to the logged-in owner.
     const qr = live && state === 'QR_PENDING' && row?.qr ? await QRCode.toDataURL(row.qr, { width: 320, margin: 2 }) : null;
@@ -35,14 +35,19 @@ export class WhatsAppAdminService {
       ownerPhone: merchant?.ownerPhone ?? null,
       alertEmail: merchant?.alertEmail ?? null,
       aiEnabled: merchant?.aiEnabled ?? true,
-      replyTo: env.WHATSAPP_REPLY_TO_ALL === 'true' ? ('everyone' as const) : ('allowlist' as const),
-      allowedCount: parseAllowlist(env.WHATSAPP_ALLOWLIST).size,
+      access,
     };
+  }
+
+  /** Real WhatsApp only runs in the bot process. Anywhere else (dev, tests) the answer is "not connected". */
+  private linkState(merchantId: string) {
+    const live = env.WHATSAPP_ADAPTER === 'baileys';
+    return { live, state: live ? this.gateway.sessionState(merchantId) : ('DISCONNECTED' as const) };
   }
 
   async overview(merchantId: string) {
     const weekAgo = new Date(Date.now() - 7 * 24 * 3_600_000);
-    const [waitingChats, awaitingPayment, paid, whatsapp] = await Promise.all([
+    const [waitingChats, awaitingPayment, paid] = await Promise.all([
       this.prisma.conversation.count({ where: { merchantId, mode: 'HUMAN' } }),
       this.prisma.order.count({ where: { merchantId, status: 'AWAITING_PAYMENT' } }),
       this.prisma.order.aggregate({
@@ -50,13 +55,12 @@ export class WhatsAppAdminService {
         _count: true,
         _sum: { totalKobo: true },
       }),
-      this.status(merchantId),
     ]);
     return {
       waitingChats,
       awaitingPayment,
       paidLast7Days: { count: paid._count, total: (paid._sum.totalKobo ?? 0) / 100 },
-      whatsapp: { state: whatsapp.state, live: whatsapp.live },
+      whatsapp: this.linkState(merchantId),
     };
   }
 }

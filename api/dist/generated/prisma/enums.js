@@ -39,6 +39,10 @@ export const HandoffSource = {
     AI: 'AI',
     OWNER: 'OWNER'
 };
+export const ReplyMode = {
+    ALLOWLIST: 'ALLOWLIST',
+    EVERYONE: 'EVERYONE'
+};
 export const SessionStatus = {
     DISCONNECTED: 'DISCONNECTED',
     QR_PENDING: 'QR_PENDING',

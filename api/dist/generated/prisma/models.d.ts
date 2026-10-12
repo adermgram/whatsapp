@@ -13,4 +13,6 @@ export type * from './models/OrderItem.js';
 export type * from './models/Payment.js';
 export type * from './models/Receipt.js';
 export type * from './models/ProcessedEvent.js';
+export type * from './models/AllowedNumber.js';
+export type * from './models/IgnoredNumber.js';
 export type * from './commonInputTypes.js';

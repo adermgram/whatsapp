@@ -9,6 +9,7 @@ import { PrismaService } from '../prisma/prisma.service.js';
 import { env } from '../config/env.js';
 import { MessagingGateway } from './messaging.types.js';
 import { SimulatorGateway } from './simulator.gateway.js';
+import { ChatAccess } from './chat-access.js';
 let MessagingModule = class MessagingModule {
 };
 MessagingModule = __decorate([
@@ -16,18 +17,19 @@ MessagingModule = __decorate([
     Module({
         providers: [
             SimulatorGateway,
+            ChatAccess,
             {
                 provide: MessagingGateway,
-                inject: [SimulatorGateway, PrismaService],
-                useFactory: async (simulator, prisma) => {
+                inject: [SimulatorGateway, PrismaService, ChatAccess],
+                useFactory: async (simulator, prisma, access) => {
                     if (env.WHATSAPP_ADAPTER !== 'baileys')
                         return simulator;
                     const { BaileysGateway } = await import('./baileys/baileys.gateway.js');
-                    return new BaileysGateway(prisma);
+                    return new BaileysGateway(prisma, access);
                 },
             },
         ],
-        exports: [MessagingGateway, SimulatorGateway],
+        exports: [MessagingGateway, SimulatorGateway, ChatAccess],
     })
 ], MessagingModule);
 export { MessagingModule };

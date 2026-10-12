@@ -59,6 +59,11 @@ enum HandoffSource {
   OWNER // the owner typed in the chat from their phone: resumes after the owner goes quiet
 }
 
+enum ReplyMode {
+  ALLOWLIST // answer only the numbers the owner approved (the safe default)
+  EVERYONE // answer anyone who messages the shop's WhatsApp
+}
+
 enum SessionStatus {
   DISCONNECTED
   QR_PENDING
@@ -66,27 +71,31 @@ enum SessionStatus {
 }
 
 model Merchant {
-  id                  String   @id @default(uuid())
-  businessName        String
-  ownerName           String
-  ownerPhone          String // WhatsApp number that receives handoff alerts, digits only e.g. 2348012345678
-  ownerEmail          String   @unique // login identity
-  alertEmail          String? // where owner alerts are emailed; falls back to ownerEmail
-  passwordHash        String
-  maxDiscountPercent  Int      @default(0) // merchant-wide cap, applied on top of per-variant minPrice
-  aiEnabled           Boolean  @default(true)
-  paystackSecretEnc   String? // AES-GCM encrypted, never logged
-  receiptCounter      Int      @default(0)
-  orderCounter        Int      @default(0)
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
+  id                 String    @id @default(uuid())
+  businessName       String
+  ownerName          String
+  ownerPhone         String // WhatsApp number that receives handoff alerts, digits only e.g. 2348012345678
+  ownerEmail         String    @unique // login identity
+  alertEmail         String? // where owner alerts are emailed; falls back to ownerEmail
+  passwordHash       String
+  maxDiscountPercent Int       @default(0) // merchant-wide cap, applied on top of per-variant minPrice
+  aiEnabled          Boolean   @default(true)
+  replyMode          ReplyMode @default(ALLOWLIST)
+  accessImportedAt   DateTime? // set once the old .env allowlist has been copied into AllowedNumber
+  paystackSecretEnc  String? // AES-GCM encrypted, never logged
+  receiptCounter     Int       @default(0)
+  orderCounter       Int       @default(0)
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
 
-  session       WhatsAppSession?
-  authItems     WaAuthItem[]
-  products      Product[]
-  customers     Customer[]
-  conversations Conversation[]
-  orders        Order[]
+  session        WhatsAppSession?
+  authItems      WaAuthItem[]
+  products       Product[]
+  customers      Customer[]
+  conversations  Conversation[]
+  orders         Order[]
+  allowedNumbers AllowedNumber[]
+  ignoredNumbers IgnoredNumber[]
 }
 
 model WhatsAppSession {
@@ -120,7 +129,7 @@ model Product {
   active      Boolean         @default(true)
   createdAt   DateTime        @default(now())
 
-  merchant Merchant  @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+  merchant Merchant       @relation(fields: [merchantId], references: [id], onDelete: Cascade)
   variants Variant[]
   images   ProductImage[]
 
@@ -157,8 +166,8 @@ model Variant {
   reserved     Int      @default(0) // held for unpaid orders. available = stock - reserved
   createdAt    DateTime @default(now())
 
-  product     Product      @relation(fields: [productId], references: [id], onDelete: Cascade)
-  orderItems  OrderItem[]
+  product      Product       @relation(fields: [productId], references: [id], onDelete: Cascade)
+  orderItems   OrderItem[]
   negotiations Negotiation[]
 
   @@index([merchantId, productId])
@@ -180,16 +189,16 @@ model Customer {
 }
 
 model Conversation {
-  id             String           @id @default(uuid())
-  merchantId     String
-  customerId     String
-  chatId         String // gateway chat id
-  mode           ConversationMode @default(AI)
-  handoffReason  String?
-  handoffBy      HandoffSource?
-  humanSince     DateTime?
-  lastMessageAt  DateTime         @default(now())
-  createdAt      DateTime         @default(now())
+  id            String           @id @default(uuid())
+  merchantId    String
+  customerId    String
+  chatId        String // gateway chat id
+  mode          ConversationMode @default(AI)
+  handoffReason String?
+  handoffBy     HandoffSource?
+  humanSince    DateTime?
+  lastMessageAt DateTime         @default(now())
+  createdAt     DateTime         @default(now())
 
   merchant     Merchant      @relation(fields: [merchantId], references: [id], onDelete: Cascade)
   customer     Customer      @relation(fields: [customerId], references: [id], onDelete: Cascade)
@@ -236,20 +245,20 @@ model Negotiation {
 }
 
 model Order {
-  id               String      @id @default(uuid())
-  merchantId       String
-  customerId       String
-  conversationId   String
-  orderNumber      String // human readable per merchant, e.g. ORD-000123
-  status           OrderStatus @default(DRAFT)
-  subtotalKobo     Int         @default(0)
-  deliveryFeeKobo  Int         @default(0)
-  totalKobo        Int         @default(0)
-  deliveryAddress  String?
-  expiresAt        DateTime? // reservation expiry while AWAITING_PAYMENT
-  paidAt           DateTime?
-  createdAt        DateTime    @default(now())
-  updatedAt        DateTime    @updatedAt
+  id              String      @id @default(uuid())
+  merchantId      String
+  customerId      String
+  conversationId  String
+  orderNumber     String // human readable per merchant, e.g. ORD-000123
+  status          OrderStatus @default(DRAFT)
+  subtotalKobo    Int         @default(0)
+  deliveryFeeKobo Int         @default(0)
+  totalKobo       Int         @default(0)
+  deliveryAddress String?
+  expiresAt       DateTime? // reservation expiry while AWAITING_PAYMENT
+  paidAt          DateTime?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
 
   merchant     Merchant     @relation(fields: [merchantId], references: [id], onDelete: Cascade)
   customer     Customer     @relation(fields: [customerId], references: [id])
@@ -289,12 +298,12 @@ model Payment {
 }
 
 model Receipt {
-  id        String   @id @default(uuid())
-  orderId   String   @unique
+  id        String    @id @default(uuid())
+  orderId   String    @unique
   number    String // RCP-000123, per merchant
   fileKey   String
   sentAt    DateTime? // set atomically when the receipt is delivered, so it is never sent twice
-  createdAt DateTime @default(now())
+  createdAt DateTime  @default(now())
 
   order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
 }
@@ -303,4 +312,33 @@ model Receipt {
 model ProcessedEvent {
   id        String   @id // e.g. "paystack:charge.success:<reference>"
   createdAt DateTime @default(now())
+}
+
+/// Numbers the assistant is allowed to answer while the shop is in ALLOWLIST mode.
+model AllowedNumber {
+  id         String   @id @default(uuid())
+  merchantId String
+  phone      String // digits with country code (2348012345678), or a WhatsApp "lid:" privacy id
+  label      String?
+  createdAt  DateTime @default(now())
+
+  merchant Merchant @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+
+  @@unique([merchantId, phone])
+}
+
+/// Numbers that messaged while they were not approved, so the owner can tap "Allow". No message text is kept.
+model IgnoredNumber {
+  id          String   @id @default(uuid())
+  merchantId  String
+  phone       String
+  pushName    String? // the name the sender set for themselves in WhatsApp
+  count       Int      @default(1)
+  firstSeenAt DateTime @default(now())
+  lastSeenAt  DateTime @default(now())
+
+  merchant Merchant @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+
+  @@unique([merchantId, phone])
+  @@index([merchantId, lastSeenAt])
 }

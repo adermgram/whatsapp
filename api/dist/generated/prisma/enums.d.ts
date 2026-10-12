@@ -47,6 +47,11 @@ export declare const HandoffSource: {
     readonly OWNER: "OWNER";
 };
 export type HandoffSource = (typeof HandoffSource)[keyof typeof HandoffSource];
+export declare const ReplyMode: {
+    readonly ALLOWLIST: "ALLOWLIST";
+    readonly EVERYONE: "EVERYONE";
+};
+export type ReplyMode = (typeof ReplyMode)[keyof typeof ReplyMode];
 export declare const SessionStatus: {
     readonly DISCONNECTED: "DISCONNECTED";
     readonly QR_PENDING: "QR_PENDING";
